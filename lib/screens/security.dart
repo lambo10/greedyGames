@@ -99,7 +99,8 @@ class _SecurityState extends State<Security> {
                       height: 20,
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue)),
+                          border: Border.all(
+                              color: Color.fromARGB(255, 233, 183, 9))),
                     ),
                     enabled: false,
                     onCompleted: (_) async {
