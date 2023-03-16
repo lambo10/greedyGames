@@ -610,11 +610,11 @@ class _TokenState extends State<Token> {
                                                 height: 40,
                                                 decoration: const BoxDecoration(
                                                   shape: BoxShape.circle,
-                                                  color: Color(0xff0C66F1),
+                                                  color: appBackgroundblue,
                                                 ),
                                                 child: const Icon(
                                                     Icons.arrow_upward,
-                                                    color: Colors.white),
+                                                    color: Colors.black),
                                               ),
                                             ),
                                             const SizedBox(
@@ -651,11 +651,11 @@ class _TokenState extends State<Token> {
                                                 height: 40,
                                                 decoration: const BoxDecoration(
                                                   shape: BoxShape.circle,
-                                                  color: Color(0xff171840),
+                                                  color: appBackgroundblue,
                                                 ),
                                                 child: const Icon(
                                                     Icons.arrow_downward,
-                                                    color: Colors.white),
+                                                    color: Colors.black),
                                               ),
                                             ),
                                             const SizedBox(

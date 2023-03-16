@@ -7,10 +7,10 @@
       "key": "197370454a23b05daa8b03bfad14d4152689df694c8c2090760c386b2a268b29"
     },
     "peerMeta": {
-      "name": "Hodl Wallet",
-      "url": "https://hodlverse.app",
-      "description": "Hodl",
-      "icons": ["https://hodlverse.app/game/logo.png"]
+      "name": "GreedyVerse",
+      "url": "https://greedyverse.co",
+      "description": "GVE",
+      "icons": ["https://greedyverse.co/api/GV.png"]
     },
     "remotePeerMeta": {
       "name": "WalletConnect Example",

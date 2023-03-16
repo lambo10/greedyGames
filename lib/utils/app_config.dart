@@ -10,7 +10,7 @@ const stakeDexProviderUrl = 'https://pancakeswap.finance/pools';
 const fiatDexProviderUrl = 'https://paxful.com/';
 const browserDexProviderUrl = 'https://duckduckgo.com/';
 // addresses
-const tokenContractAddress = '0x677676c090c7CD76976E40285666e2D0A0108852';
+const tokenContractAddress = '0x6F155F1cB165635e189062a3e6e3617184E52672';
 const tokenSaleContractAddress = "0x677676c090c7CD76976E40285666e2D0A0108852";
 const tokenStakingContractAddress =
     '0xa85037b56Dc212eEa0DFBd76aFDfF47EB33650F9';
@@ -50,6 +50,7 @@ const green = Color(0xff01aa78);
 const grey = Colors.grey;
 const colorForAddress = Color(0xffEBF3FF);
 const appBackgroundblue = Color.fromARGB(255, 233, 183, 9);
+const appBackgroundblueDim = Color.fromARGB(140, 233, 185, 9);
 const portfolioCardColor = Color.fromARGB(255, 75, 75, 75);
 const portfolioCardColorLowerSection = Color.fromARGB(255, 39, 39, 39);
 const orangTxt = Colors.orange;

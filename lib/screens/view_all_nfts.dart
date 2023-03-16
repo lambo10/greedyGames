@@ -498,7 +498,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                                         AppLocalizations.of(context).send,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ),
