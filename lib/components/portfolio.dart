@@ -193,7 +193,7 @@ class _PortfolioState extends State<Portfolio> {
                                 );
                               },
                               child: Text(
-                                AppLocalizations.of(context).privateSale,
+                                AppLocalizations.of(context).exchange,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
