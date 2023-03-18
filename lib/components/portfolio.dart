@@ -5,6 +5,7 @@ import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/config/colors.dart';
 import 'package:cryptowallet/screens/claim_airdrop.dart';
 import 'package:cryptowallet/screens/private_sale.dart';
+import 'package:cryptowallet/screens/private_sale_busd.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -188,7 +189,7 @@ class _PortfolioState extends State<Portfolio> {
                                   context,
                                   PageTransition(
                                     type: PageTransitionType.rightToLeft,
-                                    child: const PrivateSale(),
+                                    child: const PrivateSaleBusd(),
                                   ),
                                 );
                               },

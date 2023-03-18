@@ -199,12 +199,13 @@ class _TokenState extends State<Token> {
     } catch (_) {}
   }
 
+  String rampName;
+  String currentAddress;
   Future getTokenTransactions() async {
     try {
       final pref = Hive.box(secureStorageKey);
 
       String mnemonic = pref.get(currentMmenomicKey);
-      String currentAddress;
 
       if (widget.data['POSNetwork'] != null) {
         currentAddress = (await getBitcoinFromMemnomic(
@@ -267,6 +268,8 @@ class _TokenState extends State<Token> {
         currentAddress =
             response['eth_wallet_address'].toString().toLowerCase();
       }
+
+      rampName = rampSwap[widget.data['symbol']];
       String contractAddrLookUpkey;
       String evmAddrLookUpkey;
 
@@ -445,6 +448,21 @@ class _TokenState extends State<Token> {
                   : const Color(0x00aaaaaa),
             ),
           ),
+          if (rampName != null)
+            IconButton(
+              onPressed: widget.data['default'] != null
+                  ? () async {
+                      final buyLink = getRampLink(rampName, currentAddress);
+                      await navigateToDappBrowser(context, buyLink);
+                    }
+                  : null,
+              icon: Icon(
+                Icons.shopping_bag,
+                color: widget.data['default'] != null
+                    ? Colors.white
+                    : const Color(0x00aaaaaa),
+              ),
+            ),
         ],
       ),
       body: SizedBox(

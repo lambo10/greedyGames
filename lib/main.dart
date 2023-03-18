@@ -1,4 +1,5 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -46,6 +47,10 @@ void main() async {
   };
 
   final pref = await Hive.openBox(secureStorageKey);
+  final currentPhrase = pref.get(currentMmenomicKey);
+  if (currentPhrase != null) {
+    seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
+  }
 
   await WebNotificationPermissionDb.loadSavedPermissions();
   runApp(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bech32/bech32.dart';
@@ -103,7 +104,7 @@ const erc721Abi =
 const erc20Abi =
     '''[{"inputs":[{"internalType":"string","name":"name_","type":"string"},{"internalType":"string","name":"symbol_","type":"string"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]''';
 const tokenSaleAbi =
-    '''[{"constant":false,"inputs":[{"name":"_isAirdropRunning","type":"bool"}],"name":"setAirdropActivation","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_refer","type":"address"}],"name":"getAirdrop","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"saleCap","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"tokens","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getBalance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"saleTot","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"tokens","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"privateSaletokensSold","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_saleChunk","type":"uint256"},{"name":"_salePrice","type":"uint256"},{"name":"_saleCap","type":"uint256"},{"name":"_sDivisionInt","type":"uint256"}],"name":"startSale","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"viewSale","outputs":[{"name":"SaleCap","type":"uint256"},{"name":"SaleCount","type":"uint256"},{"name":"ChunkSize","type":"uint256"},{"name":"SalePrice","type":"uint256"},{"name":"privateSaletokensSold","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_refer","type":"address"}],"name":"tokenSale","outputs":[{"name":"success","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"sDivisionInt","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"saleChunk","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"tokenOwner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"tran","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"acceptOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_airdropAmt","type":"uint256"},{"name":"_airdropCap","type":"uint256"},{"name":"_aDivisionInt","type":"uint256"}],"name":"startAirdrop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"isSaleRunning","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"airdropCap","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"tokens","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"txnToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"tokens","type":"uint256"},{"name":"data","type":"bytes"}],"name":"approveAndCall","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"airdropAmt","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"newOwner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"viewAirdrop","outputs":[{"name":"DropCap","type":"uint256"},{"name":"DropCount","type":"uint256"},{"name":"DropAmount","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"tokenOwner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"airdropTot","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_isSaleRunning","type":"bool"}],"name":"setSaleActivation","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"aDivisionInt","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"salePrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isAirdropRunning","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"tokens","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"tokenOwner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"tokens","type":"uint256"}],"name":"Approval","type":"event"}]''';
+    '''[{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":false,"internalType":"uint256","name":"_value","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"tokenName","type":"string"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"gverseEquivalent","type":"uint256"}],"name":"PaymentReceived","type":"event"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approveBusdExpenditure","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approveGverseExpenditure","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"buyBusd","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"int256","name":"_vestingNo","type":"int256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"depositeGVERSE","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"receiveBNB","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"receiveBUSD","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"tokenUsed","type":"string"},{"internalType":"uint256","name":"gverseEquivalent","type":"uint256"}],"name":"registerPayment","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_removalAddress","type":"address"}],"name":"removeBusdReminats","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_removalAddress","type":"address"}],"name":"removeGverseReminats","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_busd_contract_address","type":"address"}],"name":"set_busd_contract_address","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_gverse_contract_address","type":"address"}],"name":"set_gverse_contract_address","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"_startClaim","type":"bool"}],"name":"setStartClaim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_walletAddress","type":"address"},{"internalType":"uint256","name":"_gverse_usd_conversion_rate","type":"uint256"}],"name":"setTeamAddressAndRate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_usd_minimumPurchase","type":"uint256"}],"name":"setUsd_minimumPurchase","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_claimPercentage","type":"uint256"},{"internalType":"int256","name":"_vestingNo","type":"int256"}],"name":"setVestingScheduleClaimPercentage","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_timestamp","type":"uint256"},{"internalType":"int256","name":"_vestingNo","type":"int256"}],"name":"setVestingScheduleTime","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"busd_token","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"int256","name":"","type":"int256"}],"name":"claimedTokenFlags","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"bnbvalue","type":"uint256"}],"name":"getBNBtoBusdPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gverse_token","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gverse_usd_conversion_rate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"gversePurchases","outputs":[{"internalType":"string","name":"tokenUsed","type":"string"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"gverseEquivalent","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pancakeswapV2Router","outputs":[{"internalType":"contract IPancakeRouter02","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalTokensSold","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"usd_minimumPurchase","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"int256","name":"","type":"int256"}],"name":"vestingSchedule","outputs":[{"internalType":"uint256","name":"time","type":"uint256"},{"internalType":"uint256","name":"claimPercentage","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"walletAddress","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"}]''';
 const tokenStakingAbi =
     '''[{"inputs":[{"internalType":"address","name":"_rewardNftCollection","type":"address"},{"internalType":"contract IERC20","name":"_rewardToken","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[{"internalType":"address","name":"_staker","type":"address"}],"name":"availableRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"balance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"claimRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"commission","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_staker","type":"address"}],"name":"getStakerDetails","outputs":[{"internalType":"uint256","name":"_amountStaked","type":"uint256"},{"internalType":"uint256","name":"_lastUpdate","type":"uint256"},{"internalType":"uint256","name":"_unclaimedRewards","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTotalRewardsClaimed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"minimumStakeAmount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"minimumStakePeriod","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"rewardNftCollection","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rewardPool","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rewardToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_commission","type":"uint256"}],"name":"setCommission","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_minimumStakeAmount","type":"uint256"}],"name":"setMinimumStake","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_minimumStakePeriod","type":"uint256"}],"name":"setMinimumStakePeriod","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_rewardNftCollection","type":"address"}],"name":"setRewardNftCollection","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_rewardPerHour","type":"uint256"}],"name":"setRewardPerHour","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_rewardPool","type":"address"}],"name":"setRewardPool","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"contract IERC20","name":"_rewardToken","type":"address"}],"name":"setRewardToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"stakers","outputs":[{"internalType":"uint256","name":"amountStaked","type":"uint256"},{"internalType":"uint256","name":"timeOfLastUpdate","type":"uint256"},{"internalType":"uint256","name":"unclaimedRewards","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalAmountStaked","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalRewardClaimed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_newOwner","type":"address"}],"name":"tranferOwner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unStake","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}]''';
 const unstoppableDomainAbi =
@@ -711,16 +712,16 @@ Map getBitCoinPOSBlockchains() {
       'P2WPKH': true,
       'derivationPath': "m/84'/0'/0'/0/0"
     },
-    'BitcoinCash': {
-      'symbol': 'BCH',
-      'default': 'BCH',
-      'blockExplorer':
-          'https://www.blockchain.com/explorer/transactions/bch/$transactionhashTemplateKey',
-      'image': 'assets/bitcoin_cash.png',
-      'POSNetwork': bitcoincash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/145'/0'/0/0"
-    },
+    // 'BitcoinCash': {
+    //   'symbol': 'BCH',
+    //   'default': 'BCH',
+    //   'blockExplorer':
+    //       'https://www.blockchain.com/explorer/transactions/bch/$transactionhashTemplateKey',
+    //   'image': 'assets/bitcoin_cash.png',
+    //   'POSNetwork': bitcoincash,
+    //   'P2WPKH': false,
+    //   'derivationPath': "m/44'/145'/0'/0/0"
+    // },
     'Litecoin': {
       'symbol': 'LTC',
       'default': 'LTC',
@@ -731,26 +732,26 @@ Map getBitCoinPOSBlockchains() {
       'P2WPKH': true,
       'derivationPath': "m/84'/2'/0'/0/0"
     },
-    'Dash': {
-      'symbol': 'DASH',
-      'default': 'DASH',
-      'blockExplorer':
-          'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
-      'image': 'assets/dash.png',
-      'POSNetwork': dash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/5'/0'/0/0"
-    },
-    'ZCash': {
-      'symbol': 'ZEC',
-      'default': 'ZEC',
-      'blockExplorer':
-          'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
-      'image': 'assets/zcash.png',
-      'POSNetwork': zcash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/133'/0'/0/0"
-    },
+    // 'Dash': {
+    //   'symbol': 'DASH',
+    //   'default': 'DASH',
+    //   'blockExplorer':
+    //       'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
+    //   'image': 'assets/dash.png',
+    //   'POSNetwork': dash,
+    //   'P2WPKH': false,
+    //   'derivationPath': "m/44'/5'/0'/0/0"
+    // },
+    // 'ZCash': {
+    //   'symbol': 'ZEC',
+    //   'default': 'ZEC',
+    //   'blockExplorer':
+    //       'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
+    //   'image': 'assets/zcash.png',
+    //   'POSNetwork': zcash,
+    //   'P2WPKH': false,
+    //   'derivationPath': "m/44'/133'/0'/0/0"
+    // },
     'Dogecoin': {
       'symbol': 'DOGE',
       'default': 'DOGE',
@@ -780,6 +781,7 @@ Map getBitCoinPOSBlockchains() {
 }
 
 Map getCosmosBlockChains() {
+  return {};
   Map blockChains = {
     'Cosmos': {
       'blockExplorer':
@@ -822,6 +824,7 @@ final List<String> months = [
 ];
 
 Map getTronBlockchains() {
+  return {};
   Map blockChains = {
     'Tron': {
       'blockExplorer':
@@ -1198,31 +1201,29 @@ Map getFilecoinBlockChains() {
 }
 
 Map getCardanoBlockChains() {
-  return {};
-  //FIXME:
-  // Map blockChains = {
-  //   'Cardano': {
-  //     'symbol': 'ADA',
-  //     'default': 'ADA',
-  //     'blockExplorer':
-  //         'https://cardanoscan.io/transaction/$transactionhashTemplateKey',
-  //     'image': 'assets/cardano.png',
-  //     'cardano_network': cardano.NetworkId.mainnet,
-  //     'blockFrostKey': 'mainnetpgkQqXqQ4HjK6gzUKaHW6VU9jcmcKEbd'
-  //   }
-  // };
-  // if (enableTestNet) {
-  //   blockChains['Cardano(Prepod)'] = {
-  //     'symbol': 'ADA',
-  //     'default': 'ADA',
-  //     'blockExplorer':
-  //         'https://preprod.cardanoscan.io/transaction/$transactionhashTemplateKey',
-  //     'image': 'assets/cardano.png',
-  //     'cardano_network': cardano.NetworkId.testnet,
-  //     'blockFrostKey': 'preprodmpCaCFGCxLihVPPxXxqEvEnp7dyFmG6J'
-  //   };
-  // }
-  // return blockChains;
+  Map blockChains = {
+    'Cardano': {
+      'symbol': 'ADA',
+      'default': 'ADA',
+      'blockExplorer':
+          'https://cardanoscan.io/transaction/$transactionhashTemplateKey',
+      'image': 'assets/cardano.png',
+      'cardano_network': cardano.NetworkId.mainnet,
+      'blockFrostKey': 'mainnetpgkQqXqQ4HjK6gzUKaHW6VU9jcmcKEbd'
+    }
+  };
+  if (enableTestNet) {
+    blockChains['Cardano(Prepod)'] = {
+      'symbol': 'ADA',
+      'default': 'ADA',
+      'blockExplorer':
+          'https://preprod.cardanoscan.io/transaction/$transactionhashTemplateKey',
+      'image': 'assets/cardano.png',
+      'cardano_network': cardano.NetworkId.testnet,
+      'blockFrostKey': 'preprodmpCaCFGCxLihVPPxXxqEvEnp7dyFmG6J'
+    };
+  }
+  return blockChains;
 }
 
 const coinGeckCryptoSymbolToID = {
@@ -1476,71 +1477,70 @@ Future<void> initializeAllPrivateKeys(String mnemonic) async {
 }
 
 Future<Map> sendCardano(Map config) async {
-  return {};
-  // final walletBuilder = cardano.WalletBuilder()
-  //   ..networkId = config['cardanoNetwork']
-  //   ..mnemonic = config[mnemonicKey].split(' ');
+  final walletBuilder = cardano.WalletBuilder()
+    ..networkId = config['cardanoNetwork']
+    ..mnemonic = config[mnemonicKey].split(' ');
 
-  // if (config['cardanoNetwork'] == cardano.NetworkId.mainnet) {
-  //   walletBuilder.mainnetAdapterKey = config['blockfrostForCardanoApiKey'];
-  // } else if (config['cardanoNetwork'] == cardano.NetworkId.testnet) {
-  //   walletBuilder.testnetAdapterKey = config['blockfrostForCardanoApiKey'];
-  // }
-  // final result = await walletBuilder.buildAndSync();
-  // if (result.isErr()) {
-  //   if (kDebugMode) {
-  //     print(result.err());
-  //   }
-  //   return {};
-  // }
+  if (config['cardanoNetwork'] == cardano.NetworkId.mainnet) {
+    walletBuilder.mainnetAdapterKey = config['blockfrostForCardanoApiKey'];
+  } else if (config['cardanoNetwork'] == cardano.NetworkId.testnet) {
+    walletBuilder.testnetAdapterKey = config['blockfrostForCardanoApiKey'];
+  }
+  final result = await walletBuilder.buildAndSync();
+  if (result.isErr()) {
+    if (kDebugMode) {
+      print(result.err());
+    }
+    return {};
+  }
 
-  // cardano.Wallet userWallet = result.unwrap();
+  cardano.Wallet userWallet = result.unwrap();
 
-  // final coinSelection = await cardano.largestFirst(
-  //   unspentInputsAvailable: userWallet.unspentTransactions,
-  //   outputsRequested: [
-  //     cardano.MultiAssetRequest.lovelace(
-  //       config['lovelaceToSend'] + maxFeeGuessForCardano,
-  //     )
-  //   ],
-  //   ownedAddresses: userWallet.addresses.toSet(),
-  // );
+  final coinSelection = await cardano.largestFirst(
+    unspentInputsAvailable: userWallet.unspentTransactions,
+    outputsRequested: [
+      cardano.MultiAssetRequest.lovelace(
+        config['lovelaceToSend'] + maxFeeGuessForCardano,
+      )
+    ],
+    ownedAddresses: userWallet.addresses.toSet(),
+  );
 
-  // final builder = cardano.TransactionBuilder()
-  //   ..wallet(userWallet)
-  //   ..blockchainAdapter(userWallet.blockchainAdapter)
-  //   ..toAddress(config['recipientAddress'])
-  //   ..inputs(coinSelection.unwrap().inputs)
-  //   ..value(
-  //     cardano.ShelleyValue(
-  //       coin: config['lovelaceToSend'],
-  //       multiAssets: [],
-  //     ),
-  //   )
-  //   ..changeAddress(config['senderAddress']);
+  final builder = cardano.TransactionBuilder()
+    ..wallet(userWallet)
+    ..blockchainAdapter(userWallet.blockchainAdapter)
+    ..toAddress(config['recipientAddress'])
+    ..inputs(coinSelection.unwrap().inputs)
+    ..value(
+      cardano.ShelleyValue(
+        coin: config['lovelaceToSend'],
+        multiAssets: [],
+      ),
+    )
+    ..changeAddress(config['senderAddress']);
 
-  // final txResult = await builder.buildAndSign();
+  final txResult = await builder.buildAndSign();
 
-  // if (txResult.isErr()) {
-  //   if (kDebugMode) {
-  //     print(txResult.err());
-  //   }
-  //   return {};
-  // }
+  if (txResult.isErr()) {
+    if (kDebugMode) {
+      print(txResult.err());
+    }
+    return {};
+  }
 
-  // final submitTrx = await userWallet.blockchainAdapter.submitTransaction(
-  //   txResult.unwrap().serialize,
-  // );
+  final submitTrx = await userWallet.blockchainAdapter.submitTransaction(
+    txResult.unwrap().serialize,
+  );
 
-  // if (submitTrx.isErr()) {
-  //   if (kDebugMode) {
-  //     print(submitTrx.err());
-  //   }
-  //   return {};
-  // }
+  if (submitTrx.isErr()) {
+    if (kDebugMode) {
+      print(submitTrx.err());
+    }
+    return {};
+  }
 
-  // final txHash = submitTrx.unwrap();
-  // return {'txid': txHash.replaceAll('"', '')};
+  final txHash = submitTrx.unwrap();
+  return {'txid': txHash.replaceAll('"', '')};
 }
 
 Future<Map> sendCosmos(Map config) async {
@@ -1630,6 +1630,40 @@ Future<Map> sendAlgorand(
   return {'txid': signature};
 }
 
+const rampSwap = {
+  "ETH": "ETH_ETH",
+  "AVAX": "AVAX_AVAX",
+  "BCH": "BCH_BCH",
+  "BNB": "BSC_BNB",
+  "BTC": "BTC_BTC",
+  "ADA": "CARDANO_ADA",
+  "CELO": "CELO_CELO",
+  "ATOM": "COSMOS_ATOM",
+  "DOGE": "DOGE_DOGE",
+  "EGLD": "ELROND_EGLD",
+  "FTM": "FANTOM_FTM",
+  "FIL": "FILECOIN_FIL",
+  "FLOW": "FLOW_FLOW",
+  "FUSD": "FUSE_FUSD",
+  "ONE": "HARMONY_ONE",
+  "KSM": "KUSAMA_KSM",
+  "LTC": "LTC_LTC",
+  "MATIC": "MATIC_MATIC",
+  "NEAR": "NEAR_NEAR",
+  "DOT": "POLKADOT_DOT",
+  "RON": "RONIN_RON",
+  "RDOC": "RSK_RDOC",
+  "RIF": "RSK_RIF",
+  "SOL": "SOLANA_SOL",
+  "XDAI": "XDAI_XDAI",
+  "XLM": "XLM_XLM",
+  "XRP": "XRP_XRP",
+  "ZIL": "ZILLIQA_ZIL",
+};
+getRampLink(String asset, String userAddress) {
+  return 'https://buy.ramp.network/?defaultAsset=$asset&fiatCurrency=USD&fiatValue=150.000000&hostApiKey=$rampApiKey&swapAsset=$asset&userAddress=$userAddress';
+}
+
 Future<Map> getSolanaFromMemnomic(String mnemonic) async {
   final pref = Hive.box(secureStorageKey);
   const keyName = 'solanaDetail';
@@ -1654,8 +1688,7 @@ Future<Map> getSolanaFromMemnomic(String mnemonic) async {
 
 Future<Map> getCardanoFromMemnomic(
   String mnemonic,
-  // cardano.NetworkId
-  cardanoNetwork,
+  cardano.NetworkId cardanoNetwork,
 ) async {
   final pref = Hive.box(secureStorageKey);
 
@@ -2016,23 +2049,22 @@ Future calculateSolanaKey(Map config) async {
 }
 
 Map calculateCardanoKey(Map config) {
-  return {};
-  // final wallet = cardano.HdWallet.fromMnemonic(config[mnemonicKey]);
-  // const cardanoAccountHardOffsetKey = 0x80000000;
+  final wallet = cardano.HdWallet.fromMnemonic(config[mnemonicKey]);
+  const cardanoAccountHardOffsetKey = 0x80000000;
 
-  // String userWalletAddress = wallet
-  //     .deriveUnusedBaseAddressKit(
-  //         networkId: config['network'],
-  //         index: 0,
-  //         account: cardanoAccountHardOffsetKey,
-  //         role: 0,
-  //         unusedCallback: (cardano.ShelleyAddress address) => true)
-  //     .address
-  //     .toString();
+  String userWalletAddress = wallet
+      .deriveUnusedBaseAddressKit(
+          networkId: config['network'],
+          index: 0,
+          account: cardanoAccountHardOffsetKey,
+          role: 0,
+          unusedCallback: (cardano.ShelleyAddress address) => true)
+      .address
+      .toString();
 
-  // return {
-  //   'address': userWalletAddress,
-  // };
+  return {
+    'address': userWalletAddress,
+  };
 }
 
 Future<Map> calculateStellarKey(Map config) async {
@@ -2107,8 +2139,7 @@ Future<double> getTronAddressBalance(
 
 Future<double> getCardanoAddressBalance(
   String address,
-  // cardano.NetworkId
-  cardanoNetwork,
+  cardano.NetworkId cardanoNetwork,
   String blockfrostForCardanoApiKey, {
   bool skipNetworkRequest = false,
 }) async {
@@ -2124,34 +2155,32 @@ Future<double> getCardanoAddressBalance(
   }
 
   if (skipNetworkRequest) return savedBalance;
-  // FIXME:
-  return 0;
-  //
-  // try {
-  //   final cardanoBlockfrostBaseUrl =
-  //       'https://cardano-${cardanoNetwork == cardano.NetworkId.mainnet ? 'mainnet' : 'preprod'}.blockfrost.io/api/v0/addresses/';
-  //   final request = await get(
-  //     Uri.parse('$cardanoBlockfrostBaseUrl$address'),
-  //     headers: {'project_id': blockfrostForCardanoApiKey},
-  //   );
 
-  //   if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-  //     throw Exception('Request failed');
-  //   }
-  //   Map decodedData = jsonDecode(request.body);
-  //   final String balance = (decodedData['amount'] as List)
-  //       .where((element) => element['unit'] == 'lovelace')
-  //       .toList()[0]['quantity'];
+  try {
+    final cardanoBlockfrostBaseUrl =
+        'https://cardano-${cardanoNetwork == cardano.NetworkId.mainnet ? 'mainnet' : 'preprod'}.blockfrost.io/api/v0/addresses/';
+    final request = await get(
+      Uri.parse('$cardanoBlockfrostBaseUrl$address'),
+      headers: {'project_id': blockfrostForCardanoApiKey},
+    );
 
-  //   final balanceFromAdaToLoveLace =
-  //       (BigInt.parse(balance) / BigInt.from(pow(10, cardanoDecimals)))
-  //           .toDouble();
-  //   await pref.put(key, balanceFromAdaToLoveLace);
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception('Request failed');
+    }
+    Map decodedData = jsonDecode(request.body);
+    final String balance = (decodedData['amount'] as List)
+        .where((element) => element['unit'] == 'lovelace')
+        .toList()[0]['quantity'];
 
-  //   return balanceFromAdaToLoveLace;
-  // } catch (e) {
-  //   return savedBalance;
-  // }
+    final balanceFromAdaToLoveLace =
+        (BigInt.parse(balance) / BigInt.from(pow(10, cardanoDecimals)))
+            .toDouble();
+    await pref.put(key, balanceFromAdaToLoveLace);
+
+    return balanceFromAdaToLoveLace;
+  } catch (e) {
+    return savedBalance;
+  }
 }
 
 Future<double> getStellarAddressBalance(
@@ -3064,7 +3093,7 @@ validateAddress(Map data, String recipient) {
   } else if (data['default'] == 'SOL') {
     solana.Ed25519HDPublicKey.fromBase58(recipient);
   } else if (data['default'] == 'ADA') {
-    // cardano.ShelleyAddress.fromBech32(recipient);
+    cardano.ShelleyAddress.fromBech32(recipient);
   } else if (data['default'] == 'XLM') {
     stellar.KeyPair.fromAccountId(recipient);
   } else if (data['default'] == 'FIL') {

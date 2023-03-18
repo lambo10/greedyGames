@@ -26,6 +26,7 @@ class PrivateSale extends StatefulWidget {
 
 class _PrivateSaleState extends State<PrivateSale> {
   bool isLoading = false;
+  bool isClaiming = false;
   String error = '';
   final etherAmountController = TextEditingController()..text = '1';
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -103,15 +104,23 @@ class _PrivateSaleState extends State<PrivateSale> {
         web3.EthereumAddress.fromHex(tokenSaleContractAddress),
       );
 
-      final tokenPriceFunction = tokenSaleContract.function('viewSale');
+      final tokenPriceFunction =
+          tokenSaleContract.function('gverse_usd_conversion_rate');
+      final bnbPriceBusd = tokenSaleContract.function('getBNBtoBusdPrice');
 
       final tokenPrice = await client.call(
           contract: tokenSaleContract,
           function: tokenPriceFunction,
           params: []);
 
-      double tokenPriceDouble =
-          pow(10, etherDecimals) / double.parse(tokenPrice[3].toString());
+      final bnbPrice1Usd = await client.call(
+          contract: tokenSaleContract,
+          function: bnbPriceBusd,
+          params: [BigInt.from(1)]);
+
+      double bnb1UsdPriceDouble = double.parse(bnbPrice1Usd[0].toString());
+
+      double tokenPriceDouble = double.parse(tokenPrice[0].toString());
 
       Map tokenDetails = await getERC20TokenNameSymbolDecimal(
         contractAddress: tokenContractAddress,
@@ -119,7 +128,7 @@ class _PrivateSaleState extends State<PrivateSale> {
       );
 
       privateSaleDetails = {
-        'tokenPrice': tokenPriceDouble,
+        'tokenPrice': tokenPriceDouble * bnb1UsdPriceDouble,
         'appTokenSymbol': tokenDetails['symbol'],
         'success': true
       };
@@ -534,16 +543,14 @@ class _PrivateSaleState extends State<PrivateSale> {
                                         tokenSaleContractAddress));
 
                                 final tokenSale = tokenSaleContract.function(
-                                  'tokenSale',
+                                  'receiveBNB',
                                 );
                                 final trans = await client.signTransaction(
                                     credentials,
                                     Transaction.callContract(
                                       contract: tokenSaleContract,
                                       function: tokenSale,
-                                      parameters: [
-                                        EthereumAddress.fromHex(zeroAddress)
-                                      ],
+                                      parameters: [],
                                       value: web3.EtherAmount.inWei(BigInt.from(
                                           (double.tryParse(etherAmountController
                                                       .text
@@ -664,6 +671,205 @@ class _PrivateSaleState extends State<PrivateSale> {
                                     padding: const EdgeInsets.all(15),
                                     child: Text(
                                       AppLocalizations.of(context).swap,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                      (states) => appBackgroundblue),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                            onPressed: () async {
+                              // remove focus
+                              if ((double.tryParse(
+                                          etherAmountController.text.trim()) ??
+                                      0) <
+                                  minimumNetworkTokenForSwap) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: Colors.red,
+                                    content: Text(
+                                      '${AppLocalizations.of(context).minimumAmountIs} $minimumNetworkTokenForSwap ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                isClaiming = true;
+                              });
+
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              ScaffoldMessenger.of(context)
+                                  .hideCurrentSnackBar();
+                              String transactionHash;
+                              bool purchasedSuccessfully = true;
+                              try {
+                                final client = web3.Web3Client(
+                                  getEVMBlockchains()[tokenSaleContractNetwork]
+                                      ['rpc'],
+                                  Client(),
+                                );
+                                final mnemonic = Hive.box(secureStorageKey)
+                                    .get(currentMmenomicKey);
+                                final response = await getEthereumFromMemnomic(
+                                  mnemonic,
+                                  getEVMBlockchains()[tokenSaleContractNetwork]
+                                      ['coinType'],
+                                );
+
+                                final credentials = EthPrivateKey.fromHex(
+                                  response['eth_wallet_privateKey'],
+                                );
+
+                                final tokenSaleContract = web3.DeployedContract(
+                                    web3.ContractAbi.fromJson(
+                                        tokenSaleAbi, walletName),
+                                    web3.EthereumAddress.fromHex(
+                                        tokenSaleContractAddress));
+
+                                final tokenSale = tokenSaleContract.function(
+                                  'claim',
+                                );
+                                final trans = await client.signTransaction(
+                                    credentials,
+                                    Transaction.callContract(
+                                      contract: tokenSaleContract,
+                                      function: tokenSale,
+                                      parameters: [BigInt.from(1)],
+                                    ),
+                                    chainId: getEVMBlockchains()[
+                                        tokenSaleContractNetwork]['chainId']);
+
+                                transactionHash =
+                                    await client.sendRawTransaction(trans);
+                              } catch (e) {
+                                purchasedSuccessfully = false;
+                                setState(() {
+                                  isClaiming = false;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: Colors.red,
+                                    content: Text(
+                                      e.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              setState(() {
+                                isClaiming = false;
+                              });
+
+                              await slideUpPanel(context,
+                                  StatefulBuilder(builder: (ctx, setState) {
+                                String privateSaleBscScan = getEVMBlockchains()[
+                                            tokenSaleContractNetwork]
+                                        ['blockExplorer']
+                                    .toString()
+                                    .replaceFirst(
+                                      transactionhashTemplateKey,
+                                      transactionHash,
+                                    );
+
+                                return Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      purchasedSuccessfully
+                                          ? Image.asset(
+                                              'assets/images/successIcon.png',
+                                              scale: 10,
+                                            )
+                                          : Image.asset(
+                                              'assets/images/failedIcon.png',
+                                              scale: 10,
+                                            ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(30),
+                                        child: Text(
+                                          purchasedSuccessfully
+                                              ? AppLocalizations.of(context)
+                                                  .privateSaleSuccessful
+                                              : AppLocalizations.of(context)
+                                                  .privateSaleFailed,
+                                          style: title1,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Text(
+                                          AppLocalizations.of(context)
+                                              .viewOnBscScan,
+                                          style: s_agRegular_gray12,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: GestureDetector(
+                                            child: Text(
+                                              privateSaleBscScan,
+                                              style:
+                                                  s_agRegularLinkBlue5Underline,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            onTap: () async {
+                                              setState(() {
+                                                isClaiming = true;
+                                              });
+                                              try {
+                                                await navigateToDappBrowser(
+                                                  context,
+                                                  privateSaleBscScan,
+                                                );
+                                              } catch (_) {}
+                                              setState(() {
+                                                isClaiming = false;
+                                              });
+                                            }),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }));
+                            },
+                            child: isClaiming
+                                ? const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Loader(color: white),
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.all(15),
+                                    child: Text(
+                                      AppLocalizations.of(context).claim,
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black),
