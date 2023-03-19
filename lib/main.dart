@@ -49,6 +49,7 @@ void main() async {
   final pref = await Hive.openBox(secureStorageKey);
 
   await reInstianteSeedRoot();
+  print(seedRootKey);
   await WebNotificationPermissionDb.loadSavedPermissions();
   runApp(
     MyApp(

@@ -326,47 +326,47 @@ void main() async {
     final bitcoinKeyLive = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Bitcoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final litecoinKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Litecoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final bitcoinCashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['BitcoinCash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final dogecoinKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Dogecoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final zcashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['ZCash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
     final dashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Dash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final tezosKey = await compute(
       calculateTezorKey,
-      {seedRoot: seedPhraseRoot, mnemonicKey: mnemonic},
+      {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
     );
 
     final ethereumKey = await compute(
       calculateEthereumKey,
       {
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
         mnemonicKey: mnemonic,
         'coinType': getEVMBlockchains()['Ethereum']['coinType'],
       },
@@ -374,7 +374,7 @@ void main() async {
     final ethereumClassicKey = await compute(
       calculateEthereumKey,
       {
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
         mnemonicKey: mnemonic,
         'coinType': getEVMBlockchains()['Ethereum Classic']['coinType'],
       },
@@ -391,14 +391,14 @@ void main() async {
       calculateStellarKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
     // final filecoinKey = await compute(calculateFileCoinKey, mnemonic);
     final cosmosKey = await compute(calculateCosmosKey, {
       mnemonicKey: mnemonic,
-      seedRoot: seedPhraseRoot,
+      seedRootKey: seedPhraseRoot,
       "networkInfo": cosmos.NetworkInfo(
         bech32Hrp: 'cosmos',
         lcdUrl: Uri.parse(''),
@@ -408,7 +408,7 @@ void main() async {
       calculateSolanaKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
@@ -416,14 +416,14 @@ void main() async {
       calculateAlgorandKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
     final tronKey = await compute(
       calculateTronKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
@@ -431,7 +431,7 @@ void main() async {
       final bitcoinKeyTest = await compute(
         calculateBitCoinKey,
         Map.from(getBitCoinPOSBlockchains()['Bitcoin(Test)'])
-          ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+          ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
       );
       expect(bitcoinKeyTest['address'], 'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E');
     }

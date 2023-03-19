@@ -97,7 +97,7 @@ List getAlchemyNFTs() {
 
 const infuraApiKey = '53163c736f1d4ba78f0a39ffda8d87b4';
 const pureStakeApiKey = 'G322hXkYM4749xUANJXm02d6M98WvYjtaWeAgJ4m';
-const seedRoot = 'seedRoot';
+const seedRootKey = 'seedRoot';
 
 // settings key...not to be edited
 const addcontactKey = 'addContactdk383laskdnco3';

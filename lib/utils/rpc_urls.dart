@@ -1600,7 +1600,7 @@ Future<Map> sendSolana(
   final keyPair = await compute(calculateSolanaKey, {
     mnemonicKey: mnemonic,
     'getSolanaKeys': true,
-    seedRoot: seedPhraseRoot,
+    seedRootKey: seedPhraseRoot,
   });
 
   final signature = await getSolanaClient(solanaClustersType).transferLamports(
@@ -1622,7 +1622,7 @@ Future<Map> sendAlgorand(
   final keyPair = await compute(calculateAlgorandKey, {
     mnemonicKey: mnemonic,
     'getAlgorandKeys': true,
-    seedRoot: seedPhraseRoot,
+    seedRootKey: seedPhraseRoot,
   });
 
   String signature = await getAlgorandClient(type).sendPayment(
@@ -1684,7 +1684,7 @@ Future<Map> getSolanaFromMemnomic(String mnemonic) async {
 
   final keys = await compute(calculateSolanaKey, {
     mnemonicKey: mnemonic,
-    seedRoot: seedPhraseRoot,
+    seedRootKey: seedPhraseRoot,
   });
   mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
   await pref.put(keyName, jsonEncode(mmenomicMapping));
@@ -1803,7 +1803,7 @@ Future<Map> getBitcoinFromMemnomic(
     Map.from(posDetails)
       ..addAll({
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       }),
   );
   mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
@@ -1833,7 +1833,7 @@ Future<Map> getTezorFromMemnomic(
     Map.from(tezorDetails)
       ..addAll({
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       }),
   );
   mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
@@ -1891,7 +1891,7 @@ Future<Map> getFileCoinFromMemnomic(
   }
   final keys = await compute(calculateFileCoinKey, {
     mnemonicKey: mnemonic,
-    seedRoot: seedPhraseRoot,
+    seedRootKey: seedPhraseRoot,
   });
 
   String address = await fileCoinAddressFromCk(
@@ -1919,7 +1919,7 @@ Future<Map> calculateTezorKey(Map config) async {
 }
 
 Map calculateBitCoinKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
   final node = seedRoot_.root.derivePath(config['derivationPath']);
 
   String address;
@@ -1963,7 +1963,7 @@ Map calculateBitCoinKey(Map config) {
 }
 
 Map calculateFileCoinKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
   final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
   final rs0 = node.derive(0);
   final ck = base64Encode(rs0.privateKey);
@@ -2001,7 +2001,7 @@ algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {
 }
 
 Future calculateAlgorandKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
   KeyData masterKey =
       await ED25519_HD_KEY.derivePath("m/44'/283'/0'/0'/0'", seedRoot_.seed);
 
@@ -2017,12 +2017,12 @@ Future calculateAlgorandKey(Map config) async {
 }
 
 String calculateEthereumKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
   return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
 }
 
 calculateTronKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
   final master = wallet.ExtendedPrivateKey.master(seedRoot_.seed, wallet.xprv);
   final root = master.forPath("m/44'/195'/0'/0/0");
 
@@ -2036,7 +2036,7 @@ calculateTronKey(Map config) {
 }
 
 Future calculateSolanaKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRoot];
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
 
   final solana.Ed25519HDKeyPair keyPair =
       await solana.Ed25519HDKeyPair.fromSeedWithHdPath(
@@ -2618,7 +2618,7 @@ Future<Map> getTronFromMemnomic(
     calculateTronKey,
     {
       mnemonicKey: mnemonic,
-      seedRoot: seedPhraseRoot,
+      seedRootKey: seedPhraseRoot,
     },
   );
 
@@ -2647,7 +2647,7 @@ Future<Map> getAlgorandFromMemnomic(
     calculateAlgorandKey,
     {
       mnemonicKey: mnemonic,
-      seedRoot: seedPhraseRoot,
+      seedRootKey: seedPhraseRoot,
     },
   );
 
@@ -2677,7 +2677,7 @@ Future<Map> getEthereumFromMemnomic(
     {
       mnemonicKey: mnemonic,
       'coinType': coinType,
-      seedRoot: seedPhraseRoot,
+      seedRootKey: seedPhraseRoot,
     },
   );
 
