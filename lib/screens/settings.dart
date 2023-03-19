@@ -287,6 +287,8 @@ class _SettingsState extends State<Settings> {
                                 ),
                               ),
                             );
+
+                            await reInstianteSeedRoot();
                           },
                           child: Container(
                             color: Colors.transparent,
