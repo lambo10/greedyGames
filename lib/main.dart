@@ -47,11 +47,8 @@ void main() async {
   };
 
   final pref = await Hive.openBox(secureStorageKey);
-  final currentPhrase = pref.get(currentMmenomicKey);
-  if (currentPhrase != null) {
-    seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
-  }
 
+  await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
   runApp(
     MyApp(

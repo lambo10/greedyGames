@@ -887,6 +887,14 @@ Map getAlgorandBlockchains() {
   return blockChains;
 }
 
+reInstianteSeedRoot() async {
+  final pref = Hive.box(secureStorageKey);
+  final currentPhrase = pref.get(currentMmenomicKey);
+  if (currentPhrase != null) {
+    seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
+  }
+}
+
 Map getEVMBlockchains() {
   final pref = Hive.box(secureStorageKey);
   Map userAddedEVM = {};
@@ -1589,8 +1597,6 @@ Future<Map> sendSolana(
 ) async {
   final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
 
-  seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
-
   final keyPair = await compute(calculateSolanaKey, {
     mnemonicKey: mnemonic,
     'getSolanaKeys': true,
@@ -1612,7 +1618,6 @@ Future<Map> sendAlgorand(
   int amount,
 ) async {
   final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-  seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
   final keyPair = await compute(calculateAlgorandKey, {
     mnemonicKey: mnemonic,
@@ -3191,7 +3196,6 @@ addAddressBlockchain({
     ),
     canDismiss: false,
   );
-
 }
 
 showBlockChainDialog({
