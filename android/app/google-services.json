@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:734209097355:android:0dd04b86fc600c6d3f1e8e",
         "android_client_info": {
-          "package_name": "wallet.hodlverse.app"
+          "package_name": "co.greedyverse.www"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "734209097355-flbgpmaedoskiaag8mrsdich1lvf9t6v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "wallet.hodlverse.app",
+            "package_name": "co.greedyverse.www",
             "certificate_hash": "7946110963de5c2947711389123bf9b2d829a57c"
           }
         },
