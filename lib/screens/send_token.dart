@@ -551,7 +551,7 @@ class _SendTokenState extends State<SendToken> {
                       };
 
                       ScaffoldMessenger.of(context).clearSnackBars();
-
+                      await reInstianteSeedRoot();
                       await Navigator.push(
                         context,
                         MaterialPageRoute(

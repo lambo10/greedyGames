@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -13,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'screens/main_screen.dart';
@@ -44,9 +48,23 @@ void main() async {
       ),
     );
   };
+  const FlutterSecureStorage secureStorage = FlutterSecureStorage();
+  var containsEncryptionKey =
+      await secureStorage.containsKey(key: secureEncryptionKey);
+  if (!containsEncryptionKey) {
+    var key = Hive.generateSecureKey();
+    await secureStorage.write(
+      key: secureEncryptionKey,
+      value: base64UrlEncode(key),
+    );
+  }
 
-  final pref = await Hive.openBox(secureStorageKey);
+  var encryptionKey =
+      base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
+  final pref = await Hive.openBox(secureStorageKey,
+      encryptionCipher: HiveAesCipher(encryptionKey));
 
+  await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
   runApp(
     MyApp(

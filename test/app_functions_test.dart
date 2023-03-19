@@ -6,7 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'dart:convert';
-
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/utils/alt_ens.dart';
@@ -196,6 +196,7 @@ void main() async {
     final cosmosMap = {'default': "ATOM", 'bech32Hrp': 'cosmos'};
     final zecMap = {'default': "ZEC", 'name': 'ZCash', 'P2WPKH': ''};
     final xtz = {'default': "XTZ"};
+    final adaMap = {'default': "ADA"};
 
     // valid addresses
     validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
@@ -212,6 +213,8 @@ void main() async {
     validateAddress(cosmosMap, 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
     validateAddress(zecMap, 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
     validateAddress(xtz, 'tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
+    validateAddress(adaMap,
+        'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
 
     // invalid address
 
@@ -241,6 +244,8 @@ void main() async {
         throwsA(isA<Exception>()));
     expect(
         () => validateAddress(xtz, invalidAddress), throwsA(isA<Exception>()));
+    expect(() => validateAddress(adaMap, invalidAddress),
+        throwsA(isA<Exception>()));
   });
 
   test('bitcoin-kind of blockchain pos network,hd path, p2wpkh not null', () {
@@ -326,47 +331,47 @@ void main() async {
     final bitcoinKeyLive = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Bitcoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final litecoinKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Litecoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final bitcoinCashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['BitcoinCash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final dogecoinKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Dogecoin'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final zcashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['ZCash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
     final dashKey = await compute(
       calculateBitCoinKey,
       Map.from(getBitCoinPOSBlockchains()['Dash'])
-        ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
     final tezosKey = await compute(
       calculateTezorKey,
-      {seedRoot: seedPhraseRoot, mnemonicKey: mnemonic},
+      {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
     );
 
     final ethereumKey = await compute(
       calculateEthereumKey,
       {
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
         mnemonicKey: mnemonic,
         'coinType': getEVMBlockchains()['Ethereum']['coinType'],
       },
@@ -374,31 +379,31 @@ void main() async {
     final ethereumClassicKey = await compute(
       calculateEthereumKey,
       {
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
         mnemonicKey: mnemonic,
         'coinType': getEVMBlockchains()['Ethereum Classic']['coinType'],
       },
     );
-    // final cardanoLiveKey = await compute(
-    //   calculateCardanoKey,
-    //   {mnemonicKey: mnemonic, 'network': cardano.NetworkId.mainnet},
-    // );
-    // final cardanoTestNetKey = await compute(
-    //   calculateCardanoKey,
-    //   {mnemonicKey: mnemonic, 'network': cardano.NetworkId.testnet},
-    // );
+    final cardanoLiveKey = await compute(
+      calculateCardanoKey,
+      {mnemonicKey: mnemonic, 'network': cardano.NetworkId.mainnet},
+    );
+    final cardanoTestNetKey = await compute(
+      calculateCardanoKey,
+      {mnemonicKey: mnemonic, 'network': cardano.NetworkId.testnet},
+    );
     final stellarKey = await compute(
       calculateStellarKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
     // final filecoinKey = await compute(calculateFileCoinKey, mnemonic);
     final cosmosKey = await compute(calculateCosmosKey, {
       mnemonicKey: mnemonic,
-      seedRoot: seedPhraseRoot,
+      seedRootKey: seedPhraseRoot,
       "networkInfo": cosmos.NetworkInfo(
         bech32Hrp: 'cosmos',
         lcdUrl: Uri.parse(''),
@@ -408,7 +413,7 @@ void main() async {
       calculateSolanaKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
@@ -416,14 +421,14 @@ void main() async {
       calculateAlgorandKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
     final tronKey = await compute(
       calculateTronKey,
       {
         mnemonicKey: mnemonic,
-        seedRoot: seedPhraseRoot,
+        seedRootKey: seedPhraseRoot,
       },
     );
 
@@ -431,7 +436,7 @@ void main() async {
       final bitcoinKeyTest = await compute(
         calculateBitCoinKey,
         Map.from(getBitCoinPOSBlockchains()['Bitcoin(Test)'])
-          ..addAll({seedRoot: seedPhraseRoot, mnemonicKey: mnemonic}),
+          ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
       );
       expect(bitcoinKeyTest['address'], 'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E');
     }
@@ -467,14 +472,14 @@ void main() async {
       solanaKey['address'],
       '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
     );
-    // expect(
-    //   cardanoLiveKey['address'],
-    //   'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
-    // );
-    // expect(
-    //   cardanoTestNetKey['address'],
-    //   'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
-    // );
+    expect(
+      cardanoLiveKey['address'],
+      'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
+    );
+    expect(
+      cardanoTestNetKey['address'],
+      'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
+    );
   });
 
   test('user pin length and pin trials is secured and correct.', () async {
