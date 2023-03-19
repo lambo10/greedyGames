@@ -202,6 +202,7 @@ class _PortfolioState extends State<Portfolio> {
                                   blockchains.add(
                                     InkWell(
                                       onTap: () async {
+                                        Navigator.pop(context);
                                         if (acceptedCurrencies[i]['name'] ==
                                             'BUSD') {
                                           await Navigator.push(
@@ -222,7 +223,6 @@ class _PortfolioState extends State<Portfolio> {
                                             ),
                                           );
                                         }
-                                        Navigator.pop(context);
                                       },
                                       child: buildRow(
                                         acceptedCurrencies[i]['asset'],
