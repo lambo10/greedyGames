@@ -30,48 +30,20 @@ class _MainScreenState extends State<MainScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  // text with different color
-                  const Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: walletAbbr,
-                          style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: appPrimaryColor),
-                        ),
-                      ],
+                  Center(
+                    child: Image(
+                      image: AssetImage('assets/logo.png'),
+                      width: 200,
+                      height: 200,
                     ),
                   ),
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  Text(
-                    AppLocalizations.of(context).swap,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    '${AppLocalizations.of(context).send} & ${AppLocalizations.of(context).receive}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    AppLocalizations.of(context).privateAndSecure,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    AppLocalizations.of(context).defiAccess,
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                  // Center(
+                  //   child: Image(
+                  //     image: AssetImage('assets/logo.png'),
+                  //     width: 200,
+                  //     height: 200,
+                  //   ),
+                  // ),
                   const SizedBox(
                     height: 150,
                   ),
@@ -101,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: Text(
                           AppLocalizations.of(context).createNewWallet,
                           style: const TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 16),
                         ),
@@ -137,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: Text(
                           AppLocalizations.of(context).restoreWithPassphrase,
                           style: const TextStyle(
-                            color: appBackgroundblue,
+                            color: Colors.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),

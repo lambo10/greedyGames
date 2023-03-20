@@ -1,6 +1,7 @@
 import 'package:cryptowallet/screens/dapp_ui.dart';
 import 'package:cryptowallet/screens/exchange_token.dart';
 import 'package:cryptowallet/screens/games.dart';
+import 'package:cryptowallet/screens/Home.dart';
 import 'package:cryptowallet/screens/view_all_nfts.dart';
 import 'package:cryptowallet/screens/wallet_main_body.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -49,7 +50,7 @@ class _WalletState extends State<Wallet> {
   }
 
   final pages = [
-    const Games(),
+    // const Home(),
     const WalletMainBody(),
     const DappUI(),
     const ExchangeToken(),
@@ -65,23 +66,23 @@ class _WalletState extends State<Wallet> {
         elevation: 0,
         onTap: _onTapped,
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              FontAwesomeIcons.gamepad,
-              size: 25,
-              color: currentIndex_ == 0
-                  ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
-                  : Theme.of(context)
-                      .bottomNavigationBarTheme
-                      .unselectedItemColor,
-            ),
-            label: AppLocalizations.of(context).games,
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(
+          //     FontAwesomeIcons.gamepad,
+          //     size: 25,
+          //     color: currentIndex_ == 0
+          //         ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
+          //         : Theme.of(context)
+          //             .bottomNavigationBarTheme
+          //             .unselectedItemColor,
+          //   ),
+          //   label: AppLocalizations.of(context).games,
+          // ),
           BottomNavigationBarItem(
             icon: Icon(
               FontAwesomeIcons.wallet,
               size: 25,
-              color: currentIndex_ == 1
+              color: currentIndex_ == 0
                   ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
                   : Theme.of(context)
                       .bottomNavigationBarTheme
@@ -93,7 +94,7 @@ class _WalletState extends State<Wallet> {
             icon: Icon(
               FontAwesomeIcons.cubes,
               size: 25,
-              color: currentIndex_ == 2
+              color: currentIndex_ == 1
                   ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
                   : Theme.of(context)
                       .bottomNavigationBarTheme
@@ -105,7 +106,7 @@ class _WalletState extends State<Wallet> {
             icon: Icon(
               FontAwesomeIcons.exchangeAlt,
               size: 25,
-              color: currentIndex_ == 3
+              color: currentIndex_ == 2
                   ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
                   : Theme.of(context)
                       .bottomNavigationBarTheme
@@ -117,7 +118,7 @@ class _WalletState extends State<Wallet> {
             icon: Icon(
               FontAwesomeIcons.solidImage,
               size: 25,
-              color: currentIndex_ == 4
+              color: currentIndex_ == 3
                   ? Theme.of(context).bottomNavigationBarTheme.selectedItemColor
                   : Theme.of(context)
                       .bottomNavigationBarTheme
