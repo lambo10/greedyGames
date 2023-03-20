@@ -47,6 +47,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
 
   autoFillNameDecimalSymbol(String enteredContractAddress) async {
     emptyInput();
+    if (enteredContractAddress.isEmpty) return;
     try {
       Map erc20Details = await getERC20TokenNameSymbolDecimal(
         contractAddress: enteredContractAddress.trim(),
@@ -104,7 +105,9 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                                 network = blockChainData['name'];
                                 networkImage = blockChainData['image'];
                               });
-                              emptyInput();
+                              await autoFillNameDecimalSymbol(
+                                contractAddressController.text,
+                              );
                             }
                           },
                           selectedChainId: getEVMBlockchains()[network]

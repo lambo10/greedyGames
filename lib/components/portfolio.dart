@@ -5,6 +5,7 @@ import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/config/colors.dart';
 import 'package:cryptowallet/screens/claim_airdrop.dart';
 import 'package:cryptowallet/screens/private_sale.dart';
+import 'package:cryptowallet/screens/private_sale_busd.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+import '../screens/build_row.dart';
 import '../utils/app_config.dart';
+import '../utils/slide_up_panel.dart';
 
 class Portfolio extends StatefulWidget {
   const Portfolio({Key key}) : super(key: key);
@@ -184,12 +187,103 @@ class _PortfolioState extends State<Portfolio> {
                                 ),
                               ),
                               onPressed: () async {
-                                await Navigator.push(
+                                final blockchains = <Widget>[];
+                                final acceptedCurrencies = [
+                                  {
+                                    'name': 'BNB',
+                                    'asset': 'assets/smartchain.png'
+                                  },
+                                  {'name': 'BUSD', 'asset': 'assets/busd.png'},
+                                ];
+
+                                for (int i = 0;
+                                    i < acceptedCurrencies.length;
+                                    i++) {
+                                  blockchains.add(
+                                    InkWell(
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        if (acceptedCurrencies[i]['name'] ==
+                                            'BUSD') {
+                                          await Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: const PrivateSaleBusd(),
+                                            ),
+                                          );
+                                        } else {
+                                          await Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: const PrivateSale(),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: buildRow(
+                                        acceptedCurrencies[i]['asset'],
+                                        acceptedCurrencies[i]['name'],
+                                        isSelected: false,
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                slideUpPanel(
                                   context,
-                                  PageTransition(
-                                    type: PageTransitionType.rightToLeft,
-                                    child: const PrivateSale(),
+                                  Container(
+                                    color: Colors.transparent,
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      children: <Widget>[
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Align(
+                                              alignment: Alignment.centerRight,
+                                              child: IconButton(
+                                                onPressed: null,
+                                                icon: Icon(
+                                                  Icons.close,
+                                                  color: Colors.transparent,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              AppLocalizations.of(context)
+                                                  .currency,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20.0,
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: IconButton(
+                                                onPressed: () {
+                                                  if (Navigator.canPop(
+                                                      context)) {
+                                                    Navigator.pop(context);
+                                                  }
+                                                },
+                                                icon: const Icon(Icons.close),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 20),
+                                        ...blockchains,
+                                        const SizedBox(height: 20),
+                                      ],
+                                    ),
                                   ),
+                                  canDismiss: false,
                                 );
                               },
                               child: Text(

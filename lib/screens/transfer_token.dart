@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:algorand_dart/algorand_dart.dart' as algoRan;
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cryptowallet/api/notification_api.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/config/colors.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
-// import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cryptowallet/utils/stellar_utils.dart';
 import 'package:dartez/dartez.dart';
 import 'package:flutter/foundation.dart';
@@ -756,10 +756,9 @@ class _TransferTokenState extends State<TransferToken> {
                                           coinDecimals = algorandDecimals;
                                           userAddress =
                                               getAlgorandDetails['address'];
-                                          AlgorandTypes type =
-                                              widget.data['algoType'];
+
                                           userTransactionsKey =
-                                              '${widget.data['default']}${type.index} Details';
+                                              '${widget.data['default']} Details';
                                         } else if (isSolana) {
                                           final getSolanaDetails =
                                               await getSolanaFromMemnomic(
@@ -794,32 +793,32 @@ class _TransferTokenState extends State<TransferToken> {
                                           int amountToSend = (amount *
                                                   pow(10, cardanoDecimals))
                                               .toInt();
-                                          // final transaction = await compute(
-                                          //   sendCardano,
-                                          //   {
-                                          //     'cardanoNetwork': widget
-                                          //         .data['cardano_network'],
-                                          //     'blockfrostForCardanoApiKey':
-                                          //         widget.data['blockFrostKey'],
-                                          //     'mnemonic': mnemonic,
-                                          //     'lovelaceToSend': amountToSend,
-                                          //     'senderAddress': cardano
-                                          //         .ShelleyAddress.fromBech32(
-                                          //       getCardanoDetails['address'],
-                                          //     ),
-                                          //     'recipientAddress': cardano
-                                          //         .ShelleyAddress.fromBech32(
-                                          //       widget.data['recipient'],
-                                          //     )
-                                          //   },
-                                          // );
-                                          // transactionHash = transaction['txid'];
+                                          final transaction = await compute(
+                                            sendCardano,
+                                            {
+                                              'cardanoNetwork': widget
+                                                  .data['cardano_network'],
+                                              'blockfrostForCardanoApiKey':
+                                                  widget.data['blockFrostKey'],
+                                              'mnemonic': mnemonic,
+                                              'lovelaceToSend': amountToSend,
+                                              'senderAddress': cardano
+                                                  .ShelleyAddress.fromBech32(
+                                                getCardanoDetails['address'],
+                                              ),
+                                              'recipientAddress': cardano
+                                                  .ShelleyAddress.fromBech32(
+                                                widget.data['recipient'],
+                                              )
+                                            },
+                                          );
+                                          transactionHash = transaction['txid'];
 
-                                          // coinDecimals = cardanoDecimals;
-                                          // userAddress =
-                                          //     getCardanoDetails['address'];
-                                          // userTransactionsKey =
-                                          //     '${widget.data['default']} Details';
+                                          coinDecimals = cardanoDecimals;
+                                          userAddress =
+                                              getCardanoDetails['address'];
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
                                         } else if (isFilecoin) {
                                           final getFileCoinDetails =
                                               await getFileCoinFromMemnomic(

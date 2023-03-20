@@ -11,9 +11,10 @@ const fiatDexProviderUrl = 'https://paxful.com/';
 const browserDexProviderUrl = 'https://duckduckgo.com/';
 // addresses
 const tokenContractAddress = '0x6F155F1cB165635e189062a3e6e3617184E52672';
-const tokenSaleContractAddress = "0x677676c090c7CD76976E40285666e2D0A0108852";
+const tokenSaleContractAddress = "0x8ad2B931A9aB12caA19DdBe9b4cdF69a9f261374";
 const tokenStakingContractAddress =
     '0xa85037b56Dc212eEa0DFBd76aFDfF47EB33650F9';
+const busdAddress = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
 
 const mnemonicKey = 'mnemonic';
 
@@ -76,6 +77,8 @@ const alchemyEthMainnetApiKey = 'DyEtOvLwpEw43cr-lTgQWre7HfjPeUlq';
 const alchemyEthGoerliApiKey = 's00aWtjDOmCnUYS7cFBFIL3fbVCzsc8Z';
 const alchemyMumbaiApiKey = 'gpR0c9Le2dR45Fqit9OXTz6dtpf1HPfa';
 const alchemyPolygonApiKey = 'DtU0__wTk6KUpZElU8pYQRpaHK0b8mip';
+const rampApiKey = '9842oj9c45xuzc93bm7zd7z4rn8cub3fs45decqh';
+const bscApiKey = '2WQ9Q2TTNSMD5DJ7GJR8F7TAEMZUCNCI5B';
 
 List getAlchemyNFTs() {
   List allowedNFTNames = [
@@ -94,9 +97,10 @@ List getAlchemyNFTs() {
 
 const infuraApiKey = '53163c736f1d4ba78f0a39ffda8d87b4';
 const pureStakeApiKey = 'G322hXkYM4749xUANJXm02d6M98WvYjtaWeAgJ4m';
-const seedRoot = 'seedRoot';
+const seedRootKey = 'seedRoot';
 
 // settings key...not to be edited
+const secureEncryptionKey = 'encryptionKeyekalslslaidkeiaoa';
 const addcontactKey = 'addContactdk383laskdnco3';
 const userUnlockPasscodeKey = 'userUnlockPasscode';
 const languageKey = 'languageksks38q830qialdkjd';
