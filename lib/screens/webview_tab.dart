@@ -1,16 +1,18 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:isolate';
 import 'dart:ui';
 import 'package:cryptowallet/api/notification_api.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-
+import 'package:solana/solana.dart' as solana;
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,6 +23,7 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../utils/app_config.dart';
+import '../utils/json_model_callback.dart';
 import '../utils/web_notifications.dart';
 
 class WebViewTab extends StatefulWidget {
@@ -122,9 +125,14 @@ class WebViewTab extends StatefulWidget {
     await state?.goForward();
   }
 
-  Future<void> changeBrowserChainId_(int chainId, String rpc) async {
+  Future<void> readloadWeb3_() async {
     final state = (key as GlobalKey).currentState as _WebViewTabState;
-    await state?.changeBrowserChainId_(chainId, rpc);
+    await state?.reloadWeb3_();
+  }
+
+  Future<void> switchWeb3(int chainId, String rpc) async {
+    final state = (key as GlobalKey).currentState as _WebViewTabState;
+    await state?.switchWeb3_(chainId, rpc);
   }
 }
 
@@ -150,6 +158,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
       TextEditingController();
   PullToRefreshController _pullToRefreshController;
   FindInteractionController _findInteractionController;
+  final pref = Hive.box(secureStorageKey);
   @override
   void initState() {
     super.initState();
@@ -189,12 +198,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
         : PullToRefreshController(
             settings: PullToRefreshSettings(color: Colors.blue),
             onRefresh: () async {
-              if (defaultTargetPlatform == TargetPlatform.android) {
-                _controller.reload();
-              } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-                _controller.loadUrl(
-                    urlRequest: URLRequest(url: await _controller.getUrl()));
-              }
+              reloadWeb3_();
             },
           );
     FlutterDownloader.registerCallback(downloadCallback);
@@ -217,25 +221,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
     _httpAuthUsernameController.dispose();
     _httpAuthPasswordController.dispose();
     super.dispose();
-  }
-
-  changeBrowserChainId_(int chainId, String rpc) async {
-    if (_controller == null) return;
-    initJs = await changeBlockChainAndReturnInit(
-      getEthereumDetailsFromChainId(chainId)['coinType'],
-      chainId,
-      rpc,
-    );
-
-    await _controller.removeAllUserScripts();
-    await _controller.addUserScripts(userScripts: [
-      UserScript(
-        source: widget.provider + initJs,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ),
-      ...webNotification
-    ]);
-    await _controller.reload();
   }
 
   @override
@@ -297,6 +282,102 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
     );
 
     return action;
+  }
+
+  String _addChain(int chainId, String rpcUrl, String sendingAddress) {
+    String source = '''
+        window.ethereum.setConfig({
+          ethereum:{
+            chainId: $chainId,
+            rpcUrl: "$rpcUrl",
+            address: "$sendingAddress"
+            }
+          }
+        )
+        ''';
+    return source;
+  }
+
+  Future<void> _sendError(String network, String message, int methodId) {
+    String script = "window.$network.sendError($methodId, \"$message\")";
+    return _controller.evaluateJavascript(source: script);
+  }
+
+  Future<void> _sendResult(String network, String message, int methodId) {
+    String script = "window.$network.sendResponse($methodId, \"$message\")";
+    debugPrint(script);
+    return _controller
+        .evaluateJavascript(source: script)
+        .then((value) => debugPrint(value))
+        .onError((error, stackTrace) => debugPrint(error.toString()));
+  }
+
+  Future _switchWeb3ChainRequest({
+    Map currentChainIdData,
+    Map switchChainIdData,
+    int switchChainId,
+    String initString,
+    JsCallbackModel jsData,
+    bool haveNotExecuted = true,
+  }) async {
+    switchEthereumChain(
+      context: context,
+      currentChainIdData: currentChainIdData,
+      switchChainIdData: switchChainIdData,
+      onConfirm: () async {
+        initJs = await changeBlockChainAndReturnInit(
+          switchChainId,
+          switchChainIdData['rpc'],
+        );
+        await _sendCustomResponse(initString);
+        await _emitChange(switchChainId);
+        await _sendNull(
+          "ethereum",
+          jsData.id ?? 0,
+        );
+
+        Navigator.pop(context);
+      },
+      onReject: () async {
+        if (haveNotExecuted) {
+          _sendError("ethereum", 'canceled', jsData.id ?? 0);
+        }
+
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Future _emitChange(int chainId) {
+    final chain16 = "0x${chainId.toRadixString(16)}";
+    String script = "trustwallet.ethereum.emitChainChanged(\"$chain16\");";
+    return _controller
+        .evaluateJavascript(source: script)
+        .then((value) => debugPrint(value))
+        .onError((error, stackTrace) => debugPrint(error.toString()));
+  }
+
+  Future<void> _sendNull(String network, int methodId) {
+    String script = "window.$network.sendResponse($methodId, null)";
+    debugPrint(script);
+    return _controller
+        .evaluateJavascript(source: script)
+        .then((value) => debugPrint(value))
+        .onError((error, stackTrace) => debugPrint(error.toString()));
+  }
+
+  Future<void> _sendCustomResponse(String response) {
+    return _controller
+        .evaluateJavascript(source: response)
+        .then((value) => debugPrint(value))
+        .onError((error, stackTrace) => debugPrint(error.toString()));
+  }
+
+  Future<void> _sendResults(
+      String network, List<String> messages, int methodId) {
+    String message = messages.join(",");
+    String script = "window.$network.sendResponse($methodId, \"$message\")";
+    return _controller.evaluateJavascript(source: script);
   }
 
   @override
@@ -464,499 +545,607 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                     onCloseNotification(notificationId);
                   },
                 );
+
                 _controller.addJavaScriptHandler(
-                  handlerName: 'requestAccounts',
-                  callback: (args) async {
-                    final pref = Hive.box(secureStorageKey);
-                    final mnemonic = pref.get(currentMmenomicKey);
-
-                    int chainId = pref.get(dappChainIdKey);
-                    final blockChainDetails =
-                        getEthereumDetailsFromChainId(chainId);
-                    final web3Response = await getEthereumFromMemnomic(
-                      mnemonic,
-                      blockChainDetails['coinType'],
-                    );
-
-                    final sendingAddress = web3Response['eth_wallet_address'];
-                    final id = args[0];
-                    try {
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, null, ["$sendingAddress"]);',
-                      );
-                    } catch (e) {
-                      //  replace all quotes in error
-                      final error = e.toString().replaceAll('"', '\'');
-
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, "$error",null);',
-                      );
-                    }
-                  },
-                );
-                _controller.addJavaScriptHandler(
-                  handlerName: 'walletAddEthereumChain',
-                  callback: (args) async {
-                    if (kDebugMode) {
-                      print(args);
-                    }
-                    final pref = Hive.box(secureStorageKey);
-                    int chainId = pref.get(dappChainIdKey);
-                    final id = args[0];
-                    final dataValue = json.decode(args[1]);
-
-                    final switchChainId =
-                        BigInt.parse(dataValue['chainId']).toInt();
-
-                    final currentChainIdData =
-                        getEthereumDetailsFromChainId(chainId);
-
-                    Map switchChainIdData =
-                        getEthereumDetailsFromChainId(switchChainId);
-
-                    if (chainId == switchChainId) {
-                      await _controller.evaluateJavascript(
-                          source:
-                              'AlphaWallet.executeCallback($id, "cancelled", null);');
-                      return;
-                    }
-
-                    bool switchNetwork = true;
-                    bool haveNotExecuted = true;
-
-                    if (switchChainIdData == null) {
-                      switchNetwork = false;
-                      haveNotExecuted = false;
-                      List blockExplorers = dataValue['blockExplorerUrls'];
-                      String blockExplorer = '';
-                      if (blockExplorers.isNotEmpty) {
-                        blockExplorer = blockExplorers[0];
-                        if (blockExplorer.endsWith('/')) {
-                          blockExplorer = blockExplorer.substring(
-                              0, blockExplorer.length - 1);
-                        }
-                      }
-                      List rpcUrl = dataValue['rpcUrls'];
-
-                      Map addBlockChain = {};
-                      if (pref.get(newEVMChainKey) != null) {
-                        addBlockChain =
-                            Map.from(jsonDecode(pref.get(newEVMChainKey)));
-                      }
-
-                      switchChainIdData = {
-                        "rpc": rpcUrl.isNotEmpty ? rpcUrl[0] : null,
-                        'chainId': switchChainId,
-                        'blockExplorer': blockExplorers.isNotEmpty
-                            ? '$blockExplorer/tx/$transactionhashTemplateKey'
-                            : null,
-                        'symbol': dataValue['nativeCurrency']['symbol'],
-                        'default': dataValue['nativeCurrency']['symbol'],
-                        'image': 'assets/ethereum-2.png',
-                        'coinType': 60
-                      };
-
-                      Map details = {
-                        dataValue['chainName']: switchChainIdData,
-                      };
-                      addBlockChain.addAll(details);
-
-                      await addEthereumChain(
-                        context: context,
-                        jsonObj: json.encode(
-                          Map.from({
-                            'name': dataValue['chainName'],
-                          })
-                            ..addAll(switchChainIdData)
-                            ..remove('image')
-                            ..remove('coinType'),
-                        ),
-                        onConfirm: () async {
-                          try {
-                            const id = 83;
-                            final response = await post(
-                              Uri.parse(switchChainIdData['rpc']),
-                              body: json.encode(
-                                {
-                                  "jsonrpc": "2.0",
-                                  "method": "eth_chainId",
-                                  "params": [],
-                                  "id": id
-                                },
-                              ),
-                              headers: {"Content-Type": "application/json"},
-                            );
-                            String responseBody = response.body;
-                            if (response.statusCode ~/ 100 == 4 ||
-                                response.statusCode ~/ 100 == 5) {
-                              if (kDebugMode) {
-                                print(responseBody);
-                              }
-                              throw Exception(responseBody);
-                            }
-
-                            final jsonResponse = json.decode(responseBody);
-
-                            final chainIdResponse =
-                                BigInt.parse(jsonResponse['result']).toInt();
-
-                            if (jsonResponse['id'] != id) {
-                              throw Exception('invalid eth_chainId');
-                            } else if (chainIdResponse != switchChainId) {
-                              throw Exception(
-                                  'chain Id different with eth_chainId');
-                            }
-
-                            await pref.put(
-                              newEVMChainKey,
-                              jsonEncode(addBlockChain),
-                            );
-
-                            await _controller.evaluateJavascript(
-                              source:
-                                  'AlphaWallet.executeCallback($id, null, null);',
-                            );
-
-                            switchNetwork = true;
-                            Navigator.pop(context);
-                          } catch (e) {
-                            final error = e.toString().replaceAll('"', '\'');
-
-                            await _controller.evaluateJavascript(
-                              source:
-                                  'AlphaWallet.executeCallback($id, "$error",null);',
-                            );
-                            Navigator.pop(context);
-                          }
-                        },
-                        onReject: () async {
-                          await _controller.evaluateJavascript(
-                              source:
-                                  'AlphaWallet.executeCallback($id, "user rejected add", null);');
-
-                          Navigator.pop(context);
-                        },
-                      );
-                    }
-                    if (switchNetwork) {
-                      switchEthereumChain(
-                        context: context,
-                        currentChainIdData: currentChainIdData,
-                        switchChainIdData: switchChainIdData,
-                        onConfirm: () async {
-                          await changeBrowserChainId_(
-                            switchChainIdData['chainId'],
-                            switchChainIdData['rpc'],
-                          );
-
-                          if (haveNotExecuted) {
-                            await _controller.evaluateJavascript(
-                              source:
-                                  'AlphaWallet.executeCallback($id, null, null);',
-                            );
-                          }
-
-                          Navigator.pop(context);
-                        },
-                        onReject: () async {
-                          if (haveNotExecuted) {
-                            await _controller.evaluateJavascript(
-                              source:
-                                  'AlphaWallet.executeCallback($id, "user rejected switch", null);',
-                            );
-                          }
-
-                          Navigator.pop(context);
-                        },
-                      );
-                    }
-                  },
-                );
-                _controller.addJavaScriptHandler(
-                  handlerName: 'walletSwitchEthereumChain',
-                  callback: (args) async {
-                    final pref = Hive.box(secureStorageKey);
-                    int chainId = pref.get(dappChainIdKey);
-                    final id = args[0];
-
-                    final switchChainId =
-                        BigInt.parse(json.decode(args[1])['chainId']).toInt();
-
-                    final currentChainIdData =
-                        getEthereumDetailsFromChainId(chainId);
-
-                    final switchChainIdData =
-                        getEthereumDetailsFromChainId(switchChainId);
-
-                    if (chainId == switchChainId) {
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, "cancelled", null);',
-                      );
-                      return;
-                    }
-
-                    if (switchChainIdData == null) {
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, "we can not add this block", null);',
-                      );
-                    } else {
-                      switchEthereumChain(
-                        context: context,
-                        currentChainIdData: currentChainIdData,
-                        switchChainIdData: switchChainIdData,
-                        onConfirm: () async {
-                          await changeBrowserChainId_(
-                            switchChainIdData['chainId'],
-                            switchChainIdData['rpc'],
-                          );
-
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, null, null);',
-                          );
-                          Navigator.pop(context);
-                        },
-                        onReject: () async {
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, "user rejected switch", null);',
-                          );
-                          Navigator.pop(context);
-                        },
-                      );
-                    }
-                  },
-                );
-                _controller.addJavaScriptHandler(
-                  handlerName: 'ethCall',
-                  callback: (args) async {
-                    final pref = Hive.box(secureStorageKey);
-                    int chainId = pref.get(dappChainIdKey);
-                    final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
-                    final id = args[0];
-                    final tx = json.decode(args[1]) as Map;
-                    try {
-                      final client = Web3Client(
-                        rpc,
-                        Client(),
-                      );
+                    handlerName: 'CryptoHandler',
+                    callback: (callback) async {
+                      final jsData =
+                          JsCallbackModel.fromJson(json.decode(callback[0]));
 
                       final mnemonic = pref.get(currentMmenomicKey);
-                      final blockChainDetails =
-                          getEthereumDetailsFromChainId(chainId);
-                      final web3Response = await getEthereumFromMemnomic(
-                        mnemonic,
-                        blockChainDetails['coinType'],
-                      );
+                      if (jsData.network == 'solana') {
+                        final solanaResponse =
+                            await getSolanaFromMemnomic(mnemonic);
+                        final sendingAddress = solanaResponse['address'];
 
-                      final sendingAddress = web3Response['eth_wallet_address'];
+                        final keyPair = await compute(calculateSolanaKey, {
+                          mnemonicKey: mnemonic,
+                          'getSolanaKeys': true,
+                          seedRootKey: seedPhraseRoot,
+                        });
+                        solana.Ed25519HDKeyPair solanaKeyPair = keyPair;
+                        switch (jsData.name) {
+                          case "signMessage":
+                            {
+                              try {
+                                //FIXME:
+                                // final data = JsSolanaTransactionObject.fromJson(
+                                //     jsData.object ?? {});
+                                // final tx = await solanaKeyPair.signMessage();
 
-                      final response = await client.callRaw(
-                        sender: EthereumAddress.fromHex(sendingAddress),
-                        contract: EthereumAddress.fromHex(tx['to']),
-                        data: txDataToUintList(tx['data']),
-                      );
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, null, "$response");',
-                      );
-                    } catch (e) {
-                      final error = e.toString().replaceAll('"', '\'');
-
-                      await _controller.evaluateJavascript(
-                        source:
-                            'AlphaWallet.executeCallback($id, "$error",null);',
-                      );
-                    }
-                  },
-                );
-                _controller.addJavaScriptHandler(
-                  handlerName: 'signTransaction',
-                  callback: (args) async {
-                    final pref = Hive.box(secureStorageKey);
-                    int chainId = pref.get(dappChainIdKey);
-                    final mnemonic = pref.get(currentMmenomicKey);
-
-                    final blockChainDetails =
-                        getEthereumDetailsFromChainId(chainId);
-                    final rpc = blockChainDetails['rpc'];
-                    final web3Response = await getEthereumFromMemnomic(
-                      mnemonic,
-                      blockChainDetails['coinType'],
-                    );
-
-                    final privateKey = web3Response['eth_wallet_privateKey'];
-
-                    final sendingAddress = web3Response['eth_wallet_address'];
-                    final client = Web3Client(
-                      rpc,
-                      Client(),
-                    );
-                    final credentials = EthPrivateKey.fromHex(privateKey);
-
-                    final id = args[0];
-                    final to = args[1];
-                    final value = args[2];
-                    final nonce = args[3] == -1 ? null : args[3];
-                    final gasPrice = args[5];
-                    final data = args[6];
-
-                    await signTransaction(
-                      gasPriceInWei_: gasPrice,
-                      to: to,
-                      from: sendingAddress,
-                      txData: data,
-                      valueInWei_: value,
-                      gasInWei_: null,
-                      networkIcon: null,
-                      context: context,
-                      blockChainCurrencySymbol: blockChainDetails['symbol'],
-                      name: '',
-                      onConfirm: () async {
-                        try {
-                          final signedTransaction =
-                              await client.signTransaction(
-                            credentials,
-                            Transaction(
-                              to: to != null
-                                  ? EthereumAddress.fromHex(to)
-                                  : null,
-                              value: value != null
-                                  ? EtherAmount.inWei(
-                                      BigInt.parse(value),
-                                    )
-                                  : null,
-                              nonce: nonce,
-                              gasPrice: gasPrice != null
-                                  ? EtherAmount.inWei(BigInt.parse(gasPrice))
-                                  : null,
-                              data: txDataToUintList(data),
-                            ),
-                            chainId: chainId,
-                          );
-
-                          final response = await client
-                              .sendRawTransaction(signedTransaction);
-
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, null, "$response");',
-                          );
-                        } catch (e) {
-                          final error = e.toString().replaceAll('"', '\'');
-
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, "$error",null);',
-                          );
-                        } finally {
-                          Navigator.pop(context);
-                        }
-                      },
-                      onReject: () async {
-                        await _controller.evaluateJavascript(
-                          source:
-                              'AlphaWallet.executeCallback($id, "user rejected transaction",null);',
-                        );
-                        Navigator.pop(context);
-                      },
-                      title: 'Sign Transaction',
-                      chainId: chainId,
-                    );
-                  },
-                );
-
-                _controller.addJavaScriptHandler(
-                  handlerName: 'signMessage',
-                  callback: (args) async {
-                    final pref = Hive.box(secureStorageKey);
-                    int chainId = pref.get(dappChainIdKey);
-                    final mnemonic = pref.get(currentMmenomicKey);
-
-                    final blockChainDetails =
-                        getEthereumDetailsFromChainId(chainId);
-                    final web3Response = await getEthereumFromMemnomic(
-                      mnemonic,
-                      blockChainDetails['coinType'],
-                    );
-
-                    final privateKey = web3Response['eth_wallet_privateKey'];
-
-                    final credentials = EthPrivateKey.fromHex(privateKey);
-
-                    final id = args[0];
-                    String data = args[1];
-                    String messageType = args[2];
-                    if (messageType == typedMessageSignKey) {
-                      data = json.decode(data)['data'];
-                    }
-
-                    await signMessage(
-                      context: context,
-                      messageType: messageType,
-                      data: data,
-                      networkIcon: null,
-                      name: null,
-                      onConfirm: () async {
-                        try {
-                          String signedDataHex;
-                          Uint8List signedData;
-                          if (messageType == typedMessageSignKey) {
-                            signedDataHex = EthSigUtil.signTypedData(
-                              privateKey: privateKey,
-                              jsonData: data,
-                              version: TypedDataVersion.V4,
-                            );
-                          } else if (messageType == personalSignKey) {
-                            signedData = await credentials.signPersonalMessage(
-                              txDataToUintList(data),
-                            );
-                            signedDataHex =
-                                bytesToHex(signedData, include0x: true);
-                          } else if (messageType == normalSignKey) {
-                            try {
-                              signedDataHex = EthSigUtil.signMessage(
-                                privateKey: privateKey,
-                                message: txDataToUintList(data),
-                              );
-                            } catch (e) {
-                              signedData =
-                                  await credentials.signPersonalMessage(
-                                txDataToUintList(data),
-                              );
-                              signedDataHex =
-                                  bytesToHex(signedData, include0x: true);
+                                // _sendResult(
+                                //     "solana", tx.encode(), jsData.id ?? 0);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("solana", error, jsData.id ?? 0);
+                              }
+                              break;
                             }
-                          }
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, null, "$signedDataHex");',
-                          );
-                        } catch (e) {
-                          final error = e.toString().replaceAll('"', '\'');
+                          case "signRawTransaction":
+                            {
+                              try {
+                                //FIXME:
+                                // final data = JsSolanaTransactionObject.fromJson(
+                                //     jsData.object ?? {});
+                                // final tx = await solana.signTransaction(
+                                //   null,
+                                //   null,
+                                //   [solanaKeyPair],
+                                // );
 
-                          await _controller.evaluateJavascript(
-                            source:
-                                'AlphaWallet.executeCallback($id, "$error",null);',
-                          );
-                        } finally {
-                          Navigator.pop(context);
+                                // _sendResult(
+                                //     "solana", tx.encode(), jsData.id ?? 0);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("solana", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "signRawTransactionMulti":
+                            {
+                              final data = JsSolanaTransactionObject.fromJson(
+                                  jsData.object ?? {});
+
+                              try {} catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("solana", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "requestAccounts":
+                            {
+                              try {
+                                final setAddress =
+                                    "trustwallet.solana.setAddress(\"$sendingAddress\");";
+
+                                String callback =
+                                    "trustwallet.solana.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
+
+                                await _sendCustomResponse(setAddress);
+
+                                await _sendCustomResponse(callback);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("solana", error, jsData.id ?? 0);
+                              }
+
+                              break;
+                            }
                         }
-                      },
-                      onReject: () {
-                        _controller.evaluateJavascript(
-                          source:
-                              'AlphaWallet.executeCallback($id, "user rejected signature",null);',
+                      } else if (jsData.network == 'ethereum') {
+                        int chainId = pref.get(dappChainIdKey);
+
+                        final blockChainDetails =
+                            getEthereumDetailsFromChainId(chainId);
+                        final rpc = blockChainDetails['rpc'];
+                        final web3Response = await getEthereumFromMemnomic(
+                          mnemonic,
+                          blockChainDetails['coinType'],
                         );
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                );
+
+                        final privateKey =
+                            web3Response['eth_wallet_privateKey'];
+                        final credentials = EthPrivateKey.fromHex(privateKey);
+
+                        final sendingAddress =
+                            web3Response['eth_wallet_address'];
+                        switch (jsData.name) {
+                          case "signTransaction":
+                            {
+                              final data = JsTransactionObject.fromJson(
+                                  jsData.object ?? {});
+                              await signTransaction(
+                                gasPriceInWei_: null,
+                                to: data.to,
+                                from: sendingAddress,
+                                txData: data.data,
+                                valueInWei_: data.value,
+                                gasInWei_: null,
+                                networkIcon: null,
+                                context: context,
+                                blockChainCurrencySymbol:
+                                    blockChainDetails['symbol'],
+                                name: '',
+                                onConfirm: () async {
+                                  try {
+                                    final client = Web3Client(
+                                      rpc,
+                                      Client(),
+                                    );
+
+                                    final signedTransaction =
+                                        await client.signTransaction(
+                                      credentials,
+                                      Transaction(
+                                        to: data.to != null
+                                            ? EthereumAddress.fromHex(data.to)
+                                            : null,
+                                        value: data.value != null
+                                            ? EtherAmount.inWei(
+                                                BigInt.parse(data.value),
+                                              )
+                                            : null,
+                                        nonce: data.nonce != null
+                                            ? int.parse(data.nonce)
+                                            : null,
+                                        data: txDataToUintList(data.data),
+                                        gasPrice: data.gasPrice != null
+                                            ? EtherAmount.inWei(
+                                                BigInt.parse(data.gasPrice))
+                                            : null,
+                                      ),
+                                      chainId: chainId,
+                                    );
+
+                                    final response = await client
+                                        .sendRawTransaction(signedTransaction);
+
+                                    _sendResult(
+                                        "ethereum", response, jsData.id ?? 0);
+                                  } catch (e) {
+                                    final error =
+                                        e.toString().replaceAll('"', '\'');
+                                    _sendError(
+                                        "ethereum", error, jsData.id ?? 0);
+                                  } finally {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                onReject: () async {
+                                  _sendError(
+                                    "ethereum",
+                                    'user rejected transaction',
+                                    jsData.id ?? 0,
+                                  );
+                                  Navigator.pop(context);
+                                },
+                                title: 'Sign Transaction',
+                                chainId: chainId,
+                              );
+
+                              break;
+                            }
+                          case "signPersonalMessage":
+                            {
+                              final data =
+                                  JsDataModel.fromJson(jsData.object ?? {});
+
+                              await signMessage(
+                                context: context,
+                                messageType: personalSignKey,
+                                data: data.data,
+                                networkIcon: null,
+                                name: null,
+                                onConfirm: () async {
+                                  try {
+                                    List signedData =
+                                        await credentials.signPersonalMessage(
+                                      txDataToUintList(data.data),
+                                    );
+
+                                    _sendResult(
+                                      "ethereum",
+                                      bytesToHex(signedData, include0x: true),
+                                      jsData.id ?? 0,
+                                    );
+                                  } catch (e) {
+                                    final error =
+                                        e.toString().replaceAll('"', '\'');
+                                    _sendError(
+                                        "ethereum", error, jsData.id ?? 0);
+                                  } finally {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                onReject: () {
+                                  _sendError(
+                                      "ethereum",
+                                      'user rejected signature',
+                                      jsData.id ?? 0);
+                                  Navigator.pop(context);
+                                },
+                              );
+                              break;
+                            }
+                          case "signMessage":
+                            {
+                              try {
+                                final data =
+                                    JsDataModel.fromJson(jsData.object ?? {});
+
+                                String signedDataHex;
+
+                                await signMessage(
+                                  context: context,
+                                  messageType: normalSignKey,
+                                  data: data.data,
+                                  networkIcon: null,
+                                  name: null,
+                                  onConfirm: () async {
+                                    try {
+                                      try {
+                                        signedDataHex = EthSigUtil.signMessage(
+                                          privateKey: privateKey,
+                                          message: txDataToUintList(data.data),
+                                        );
+                                      } catch (e) {
+                                        Uint8List signedData = await credentials
+                                            .signPersonalMessage(
+                                          txDataToUintList(data.data),
+                                        );
+                                        signedDataHex = bytesToHex(signedData,
+                                            include0x: true);
+                                      }
+                                      _sendResult("ethereum", signedDataHex,
+                                          jsData.id ?? 0);
+                                    } catch (e) {
+                                      final error =
+                                          e.toString().replaceAll('"', '\'');
+                                      _sendError(
+                                          "ethereum", error, jsData.id ?? 0);
+                                    } finally {
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  onReject: () {
+                                    _sendError(
+                                        "ethereum",
+                                        'user rejected signature',
+                                        jsData.id ?? 0);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "signTypedMessage":
+                            {
+                              final data = JsEthSignTypedData.fromJson(
+                                  jsData.object ?? {});
+
+                              await signMessage(
+                                context: context,
+                                messageType: typedMessageSignKey,
+                                data: data.raw,
+                                networkIcon: null,
+                                name: null,
+                                onConfirm: () async {
+                                  try {
+                                    String signedDataHex =
+                                        EthSigUtil.signTypedData(
+                                      privateKey: privateKey,
+                                      jsonData: data.raw,
+                                      version: TypedDataVersion.V4,
+                                    );
+                                    _sendResult("ethereum", signedDataHex,
+                                        jsData.id ?? 0);
+                                  } catch (e) {
+                                    final error =
+                                        e.toString().replaceAll('"', '\'');
+                                    _sendError(
+                                        "ethereum", error, jsData.id ?? 0);
+                                  } finally {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                onReject: () {
+                                  _sendError(
+                                      "ethereum",
+                                      'user rejected signature',
+                                      jsData.id ?? 0);
+                                  Navigator.pop(context);
+                                },
+                              );
+
+                              break;
+                            }
+                          case "ecRecover":
+                            {
+                              final data = JsEcRecoverObject.fromJson(
+                                  jsData.object ?? {});
+
+                              try {
+                                final signature = EthSigUtil.recoverSignature(
+                                  message: txDataToUintList(data.message),
+                                  signature: data.signature,
+                                );
+                                _sendResult(
+                                    "ethereum", signature, jsData.id ?? 0);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "requestAccounts":
+                            {
+                              try {
+                                final setAddress =
+                                    "window.ethereum.setAddress(\"$sendingAddress\");";
+
+                                String callback =
+                                    "window.ethereum.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
+
+                                await _sendCustomResponse(setAddress);
+
+                                await _sendCustomResponse(callback);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+
+                              break;
+                            }
+                          case "watchAsset":
+                            {
+                              final data =
+                                  JsWatchAsset.fromJson(jsData.object ?? {});
+                              try {
+                                throw Exception('not Implemented');
+                                // _sendResult("ethereum", '', jsData.id ?? 0);
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "addEthereumChain":
+                            {
+                              final data = JsAddEthereumChain.fromJson(
+                                  jsData.object ?? {});
+
+                              try {
+                                final switchChainId =
+                                    BigInt.parse(data.chainId).toInt();
+
+                                final currentChainIdData =
+                                    getEthereumDetailsFromChainId(chainId);
+
+                                Map switchChainIdData =
+                                    getEthereumDetailsFromChainId(
+                                        switchChainId);
+
+                                if (chainId == switchChainId) {
+                                  _sendNull(
+                                    "ethereum",
+                                    jsData.id ?? 0,
+                                  );
+                                  return;
+                                }
+
+                                bool switchNetwork = true;
+                                bool haveNotExecuted = true;
+                                final initString = _addChain(
+                                  switchChainId,
+                                  switchChainIdData['rpc'],
+                                  sendingAddress,
+                                );
+                                if (switchChainIdData == null) {
+                                  switchNetwork = false;
+                                  haveNotExecuted = false;
+                                  List blockExplorers = data.blockExplorerUrls;
+                                  String blockExplorer = '';
+                                  if (blockExplorers.isNotEmpty) {
+                                    blockExplorer = blockExplorers[0];
+                                    if (blockExplorer.endsWith('/')) {
+                                      blockExplorer = blockExplorer.substring(
+                                          0, blockExplorer.length - 1);
+                                    }
+                                  }
+                                  List rpcUrl = data.rpcUrls;
+
+                                  Map addBlockChain = {};
+                                  if (pref.get(newEVMChainKey) != null) {
+                                    addBlockChain = Map.from(
+                                        jsonDecode(pref.get(newEVMChainKey)));
+                                  }
+
+                                  switchChainIdData = {
+                                    "rpc": rpcUrl.isNotEmpty ? rpcUrl[0] : null,
+                                    'chainId': switchChainId,
+                                    'blockExplorer': blockExplorers.isNotEmpty
+                                        ? '$blockExplorer/tx/$transactionhashTemplateKey'
+                                        : null,
+                                    'symbol': data.symbol,
+                                    'default': data.symbol,
+                                    'image': 'assets/ethereum-2.png',
+                                    'coinType': 60
+                                  };
+
+                                  Map details = {
+                                    data.chainName: switchChainIdData,
+                                  };
+                                  addBlockChain.addAll(details);
+
+                                  await addEthereumChain(
+                                    context: context,
+                                    jsonObj: json.encode(
+                                      Map.from({
+                                        'name': data.chainName,
+                                      })
+                                        ..addAll(switchChainIdData)
+                                        ..remove('image')
+                                        ..remove('coinType'),
+                                    ),
+                                    onConfirm: () async {
+                                      try {
+                                        const id = 83;
+                                        final response = await post(
+                                          Uri.parse(switchChainIdData['rpc']),
+                                          body: json.encode(
+                                            {
+                                              "jsonrpc": "2.0",
+                                              "method": "eth_chainId",
+                                              "params": [],
+                                              "id": id
+                                            },
+                                          ),
+                                          headers: {
+                                            "Content-Type": "application/json"
+                                          },
+                                        );
+                                        String responseBody = response.body;
+                                        if (response.statusCode ~/ 100 == 4 ||
+                                            response.statusCode ~/ 100 == 5) {
+                                          if (kDebugMode) {
+                                            print(responseBody);
+                                          }
+                                          throw Exception(responseBody);
+                                        }
+
+                                        final jsonResponse =
+                                            json.decode(responseBody);
+
+                                        final chainIdResponse =
+                                            BigInt.parse(jsonResponse['result'])
+                                                .toInt();
+
+                                        if (jsonResponse['id'] != id) {
+                                          throw Exception(
+                                              'invalid eth_chainId');
+                                        } else if (chainIdResponse !=
+                                            switchChainId) {
+                                          throw Exception(
+                                              'chain Id different with eth_chainId');
+                                        }
+
+                                        await pref.put(
+                                          newEVMChainKey,
+                                          jsonEncode(addBlockChain),
+                                        );
+
+                                        await _sendCustomResponse(initString);
+                                        initJs =
+                                            await changeBlockChainAndReturnInit(
+                                          switchChainId,
+                                          switchChainIdData['rpc'],
+                                        );
+                                        switchNetwork = true;
+                                        Navigator.pop(context);
+                                      } catch (e) {
+                                        final error =
+                                            e.toString().replaceAll('"', '\'');
+                                        _sendError(
+                                            "ethereum", error, jsData.id ?? 0);
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                    onReject: () async {
+                                      _sendError("ethereum", 'canceled',
+                                          jsData.id ?? 0);
+
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                }
+                                if (switchNetwork) {
+                                  await _switchWeb3ChainRequest(
+                                    currentChainIdData: currentChainIdData,
+                                    switchChainIdData: switchChainIdData,
+                                    switchChainId: switchChainId,
+                                    initString: initString,
+                                    jsData: jsData,
+                                    haveNotExecuted: haveNotExecuted,
+                                  );
+                                }
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          case "switchEthereumChain":
+                            {
+                              final data = JsAddEthereumChain.fromJson(
+                                  jsData.object ?? {});
+                              try {
+                                final switchChainId =
+                                    BigInt.parse(data.chainId).toInt();
+
+                                final currentChainIdData =
+                                    getEthereumDetailsFromChainId(chainId);
+
+                                final switchChainIdData =
+                                    getEthereumDetailsFromChainId(
+                                        switchChainId);
+
+                                if (chainId == switchChainId) {
+                                  _sendNull(
+                                    "ethereum",
+                                    jsData.id ?? 0,
+                                  );
+
+                                  return;
+                                }
+
+                                if (switchChainIdData == null) {
+                                  _sendError(
+                                    "ethereum",
+                                    'unknown chain id',
+                                    jsData.id ?? 0,
+                                  );
+                                } else {
+                                  final initString = _addChain(
+                                    switchChainId,
+                                    switchChainIdData['rpc'],
+                                    sendingAddress,
+                                  );
+                                  await _switchWeb3ChainRequest(
+                                    currentChainIdData: currentChainIdData,
+                                    switchChainIdData: switchChainIdData,
+                                    switchChainId: switchChainId,
+                                    initString: initString,
+                                    jsData: jsData,
+                                  );
+                                }
+                              } catch (e) {
+                                final error =
+                                    e.toString().replaceAll('"', '\'');
+                                _sendError("ethereum", error, jsData.id ?? 0);
+                              }
+                              break;
+                            }
+                          default:
+                            {
+                              _sendError(jsData.network.toString(),
+                                  "Operation not supported", jsData.id ?? 0);
+                              break;
+                            }
+                        }
+                      }
+                    });
               },
               initialUserScripts: UnmodifiableListView([
                 UserScript(
@@ -967,8 +1156,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
               ]),
               onLoadStart: (InAppWebViewController controller, Uri url) async {
                 _browserController.text = url.toString();
-
-                final pref = Hive.box(secureStorageKey);
 
                 final documentTitle = await controller.getTitle();
 
@@ -1204,5 +1391,22 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
     if (await canGoForward()) {
       await _controller?.goForward();
     }
+  }
+
+  switchWeb3_(int chainId, String rpc) async {
+    initJs = await changeBlockChainAndReturnInit(chainId, rpc);
+    await reloadWeb3_();
+  }
+
+  reloadWeb3_() async {
+    await _controller.removeAllUserScripts();
+    await _controller.addUserScripts(userScripts: [
+      UserScript(
+        source: widget.provider + initJs,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      ),
+      ...webNotification
+    ]);
+    await _controller.reload();
   }
 }

@@ -19,7 +19,7 @@ PODS:
     - Flutter
   - flutter_local_notifications (0.0.1):
     - Flutter
-  - flutter_secure_storage (3.3.1):
+  - flutter_secure_storage (6.0.0):
     - Flutter
   - flutter_sodium (0.0.1):
     - Flutter
@@ -169,7 +169,7 @@ SPEC CHECKSUMS:
   flutter_inappwebview: 4fe74e5e65809c3d363febfd9e2b21aa79bb0f1c
   flutter_js: 95929d4e146e8ceb1c8e1889d8c2065c5d840076
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
-  flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
+  flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
   flutter_sodium: c84426b4de738514b5b66cfdeb8a06634e72fe0b
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb

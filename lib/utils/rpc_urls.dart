@@ -3277,34 +3277,58 @@ showBlockChainDialog({
   );
 }
 
-changeBlockChainAndReturnInit(
-  int coinType,
+Future changeBlockChainAndReturnInit(
   int chainId,
   String rpc,
 ) async {
-  final init = await rootBundle.loadString('dappBrowser/init.js');
   final pref = Hive.box(secureStorageKey);
+  await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
+  final coinType = getEthereumDetailsFromChainId(chainId)['coinType'];
   final response = await getEthereumFromMemnomic(mnemonic, coinType);
 
-  final sendingAddress = response['eth_wallet_address'];
-  await pref.put(dappChainIdKey, chainId);
-
-  return init
-      .replaceFirst("%1\$s", sendingAddress)
-      .replaceFirst("%2\$s", rpc)
-      .replaceFirst(
-        "%3\$s",
-        chainId.toString(),
-      );
+  final address = response['eth_wallet_address'];
+  return '''
+   (function() {
+    let isFlutterInAppWebViewReady = false;
+    window.addEventListener("flutterInAppWebViewPlatformReady", function (event) {
+      isFlutterInAppWebViewReady = true;
+      console.log("done and ready");
+    });
+    var config = {                
+        ethereum: {
+            chainId: $chainId,
+            rpcUrl: "$rpc",  
+            address: "$address"
+        },
+        solana: {
+            cluster: "mainnet-beta",
+        },
+        isDebug: false
+    };
+    trustwallet.ethereum = new trustwallet.Provider(config);
+    trustwallet.solana = new trustwallet.SolanaProvider(config);
+    trustwallet.postMessage = (json) => {
+        const interval = setInterval(() => {
+          if (isFlutterInAppWebViewReady) {
+            clearInterval(interval);
+            window.flutter_inappwebview.callHandler(
+              "CryptoHandler",
+              JSON.stringify(json)
+            );
+          }
+        }, 100);
+    }
+    window.ethereum = trustwallet.ethereum;
+  })();
+''';
 }
 
 Future navigateToDappBrowser(
   BuildContext context,
   String data,
 ) async {
-  final provider =
-      await rootBundle.loadString('dappBrowser/alphawallet.min.js');
+  final provider = await rootBundle.loadString('js/trust.min.js');
   final webNotifer = await rootBundle.loadString('js/web_notification.js');
 
   final pref = Hive.box(secureStorageKey);
@@ -3319,7 +3343,6 @@ Future navigateToDappBrowser(
   final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
 
   final init = await changeBlockChainAndReturnInit(
-    getEthereumDetailsFromChainId(chainId)['coinType'],
     chainId,
     rpc,
   );
