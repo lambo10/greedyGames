@@ -163,7 +163,7 @@
   "sign": "Sign",
   "message": "Message",
   "signMessage": "Sign Message",
-  "switchChainIdMessage": "This site is requesting you to switch to the {symbol} chain with chain ID: {chainId}. This will reload the page",
+  "switchChainIdMessage": "This site is requesting you to switch to the {symbol} chain with chain ID: {chainId}.",
   "@switchChainIdMessage": {
     "placeholders": {
       "symbol": {},

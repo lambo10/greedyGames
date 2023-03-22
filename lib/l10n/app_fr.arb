@@ -153,7 +153,7 @@
   "sign": "pancarte",
   "message": "Message",
   "signMessage": "Signer le message",
-  "switchChainIdMessage": "Ce site vous demande de passer à la chaîne {symbol} avec l'ID de chaîne : {chainId}. Cela rechargera la page",
+  "switchChainIdMessage": "Ce site vous demande de passer à la chaîne {symbol} avec l'ID de chaîne : {chainId}.",
   "switchChainRequest": "Demande de chaîne de commutation",
   "info": "INFO",
   "searchCoin": "Rechercher une pièce",
