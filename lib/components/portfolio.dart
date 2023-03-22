@@ -94,13 +94,21 @@ class _PortfolioState extends State<Portfolio> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 // color: portfolioCardColor,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [portfolioCardColor, portfolioCardColorLowerSection],
-                ),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? null
+                    : primaryMaterialColor,
+                gradient: Theme.of(context).brightness == Brightness.light
+                    ? null
+                    : const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          portfolioCardColor,
+                          portfolioCardColorLowerSection
+                        ],
+                      ),
                 borderRadius: BorderRadius.all(Radius.circular(20)),
               ),
               width: double.infinity,
