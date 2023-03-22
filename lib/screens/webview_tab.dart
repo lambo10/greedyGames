@@ -831,6 +831,20 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                               final data = JsEthSignTypedData.fromJson(
                                   jsData.object ?? {});
 
+                              final typedChainId = BigInt.parse(
+                                      jsonDecode(data.raw)['domain']['chainId']
+                                          .toString())
+                                  .toInt();
+
+                              if (typedChainId != chainId) {
+                                _sendError(
+                                  "ethereum",
+                                  "Provided chainId $typedChainId must match the active chainId $chainId",
+                                  jsData.id ?? 0,
+                                );
+                                return;
+                              }
+
                               await signMessage(
                                 context: context,
                                 messageType: typedMessageSignKey,
