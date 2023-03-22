@@ -258,8 +258,7 @@ class _DappState extends State<Dapp> {
                                   if (webViewTabs[currentTabIndex].controller !=
                                       null) {
                                     await webViewTabs[currentTabIndex]
-                                        .controller
-                                        .reload();
+                                        .readloadWeb3_();
                                     Navigator.pop(context);
                                   }
                                 },
@@ -456,7 +455,7 @@ class _DappState extends State<Dapp> {
                                       context: context,
                                       onTap: (blockChainData) async {
                                         await webViewTabs[currentTabIndex]
-                                            .changeBrowserChainId_(
+                                            .switchWeb3(
                                           blockChainData['chainId'],
                                           blockChainData['rpc'],
                                         );

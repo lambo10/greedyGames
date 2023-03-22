@@ -153,7 +153,7 @@
   "sign": "संकेत",
   "message": "संदेश",
   "signMessage": "संदेश पर हस्ताक्षर करें",
-  "switchChainIdMessage": "यह साइट आपसे अनुरोध कर रही है कि चेन आईडी के साथ {symbol} चेन पर स्विच करें: {chainId}। यह पृष्ठ को पुनः लोड करेगा",
+  "switchChainIdMessage": "यह साइट आपसे अनुरोध कर रही है कि आप श्रृंखला आईडी के साथ {symbol} श्रृंखला पर स्विच करें: {chainId}",
   "switchChainRequest": "स्विच चेन अनुरोध",
   "info": "जानकारी",
   "searchCoin": "सिक्का खोजें",
