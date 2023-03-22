@@ -568,7 +568,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                           case "signMessage":
                             {
                               try {
-                                //FIXME:
                                 // final data = JsSolanaTransactionObject.fromJson(
                                 //     jsData.object ?? {});
                                 // final tx = await solanaKeyPair.signMessage();
