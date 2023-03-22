@@ -161,10 +161,7 @@ final lightTheme = ThemeData(
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: Color(0xffEBF3FF),
-    selectedItemColor: Colors.black,
     unselectedItemColor: Colors.grey,
-    selectedIconTheme:
-        IconThemeData(color: Colors.blue, opacity: 1.0, size: 30.0),
   ),
   checkboxTheme: CheckboxThemeData(
     fillColor: MaterialStateProperty.all(appPrimaryColor),
