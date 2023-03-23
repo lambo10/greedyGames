@@ -112,7 +112,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     MyApp.themeNotifier.value =
         widget.userDarkMode ? ThemeMode.dark : ThemeMode.light;
-
+    if (Theme.of(context).brightness == Brightness.light) {
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.light,
+        ),
+      );
+    }
     return ValueListenableBuilder(
       valueListenable: MyApp.themeNotifier,
       builder: (_, ThemeMode currentMode, __) {
