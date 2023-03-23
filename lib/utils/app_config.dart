@@ -153,12 +153,6 @@ final darkTheme = ThemeData(
     surface: const Color.fromARGB(255, 47, 47, 47),
     onSurface: Colors.white,
   ),
-  appBarTheme: const AppBarTheme(
-    systemOverlayStyle: SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.dark,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  ),
 );
 
 final lightTheme = ThemeData(
