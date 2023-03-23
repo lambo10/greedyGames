@@ -159,7 +159,6 @@ final lightTheme = ThemeData(
   appBarTheme: const AppBarTheme(
     systemOverlayStyle: SystemUiOverlayStyle(
       statusBarBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.light,
     ),
   ),
   fontFamily: 'Roboto',
