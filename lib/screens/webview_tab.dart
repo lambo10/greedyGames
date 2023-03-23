@@ -568,6 +568,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                           case "signMessage":
                             {
                               try {
+                                //FIXME:
                                 // final data = JsSolanaTransactionObject.fromJson(
                                 //     jsData.object ?? {});
                                 // final tx = await solanaKeyPair.signMessage();
@@ -886,7 +887,8 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   jsData.object ?? {});
 
                               try {
-                                final signature = EthSigUtil.recoverSignature(
+                                final signature =
+                                    EthSigUtil.recoverPersonalSignature(
                                   message: txDataToUintList(data.message),
                                   signature: data.signature,
                                 );
@@ -923,9 +925,34 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                             {
                               final data =
                                   JsWatchAsset.fromJson(jsData.object ?? {});
+
                               try {
+                                if (data.type == null) {
+                                  throw Exception(
+                                    'ERC type not supported yet.',
+                                  );
+                                }
+                                if (data.decimals == null) {
+                                  throw Exception(
+                                    'invalid asset decimals',
+                                  );
+                                }
+                                if (data.symbol == null) {
+                                  throw Exception(
+                                    'invalid asset symbol',
+                                  );
+                                }
+                                if (data.type.toLowerCase() != 'erc20') {
+                                  throw Exception(
+                                    'ERC type not supported yet.',
+                                  );
+                                }
+                                validateAddress(
+                                  {'rpc': blockChainDetails['rpc']},
+                                  data.contract,
+                                );
                                 final assetDetails = {
-                                  'name': data.name,
+                                  'name': '',
                                   'symbol': data.symbol,
                                   'decimals': data.decimals.toString(),
                                   'contractAddress': data.contract,
@@ -936,7 +963,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   'blockExplorer':
                                       blockChainDetails['blockExplorer'],
                                 };
-
                                 if (kDebugMode) {
                                   print(assetDetails);
                                 }

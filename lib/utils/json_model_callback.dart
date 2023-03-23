@@ -140,7 +140,6 @@ class JsWatchAsset {
   String type;
   String contract;
   String symbol;
-  String name;
   int decimals;
 
   JsWatchAsset({
@@ -148,7 +147,6 @@ class JsWatchAsset {
     this.contract,
     this.symbol,
     this.decimals,
-    this.name,
   });
 
   JsWatchAsset.fromJson(Map<String, dynamic> json) {
@@ -156,7 +154,6 @@ class JsWatchAsset {
     contract = json['contract'];
     symbol = json['symbol'];
     decimals = json['decimals'];
-    name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -165,7 +162,6 @@ class JsWatchAsset {
     data['contract'] = contract;
     data['symbol'] = symbol;
     data['decimals'] = decimals;
-    data['name'] = name;
     return data;
   }
 }
