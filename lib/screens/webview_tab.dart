@@ -927,11 +927,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   JsWatchAsset.fromJson(jsData.object ?? {});
 
                               try {
-                                if (data.type == null) {
-                                  throw Exception(
-                                    'ERC type not supported yet.',
-                                  );
-                                }
                                 if (data.decimals == null) {
                                   throw Exception(
                                     'invalid asset decimals',
@@ -940,11 +935,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                 if (data.symbol == null) {
                                   throw Exception(
                                     'invalid asset symbol',
-                                  );
-                                }
-                                if (data.type.toLowerCase() != 'erc20') {
-                                  throw Exception(
-                                    'ERC type not supported yet.',
                                   );
                                 }
                                 validateAddress(
