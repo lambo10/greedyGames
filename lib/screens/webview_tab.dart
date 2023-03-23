@@ -1001,11 +1001,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
 
                                 bool switchNetwork = true;
                                 bool haveNotExecuted = true;
-                                final initString = _addChain(
-                                  switchChainId,
-                                  switchChainIdData['rpc'],
-                                  sendingAddress,
-                                );
+
                                 if (switchChainIdData == null) {
                                   switchNetwork = false;
                                   haveNotExecuted = false;
@@ -1100,12 +1096,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                           jsonEncode(addBlockChain),
                                         );
 
-                                        await _sendCustomResponse(initString);
-                                        initJs =
-                                            await changeBlockChainAndReturnInit(
-                                          switchChainId,
-                                          switchChainIdData['rpc'],
-                                        );
                                         switchNetwork = true;
                                         Navigator.pop(context);
                                       } catch (e) {
@@ -1125,6 +1115,11 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   );
                                 }
                                 if (switchNetwork) {
+                                  final initString = _addChain(
+                                    switchChainId,
+                                    switchChainIdData['rpc'],
+                                    sendingAddress,
+                                  );
                                   await _switchWeb3ChainRequest(
                                     currentChainIdData: currentChainIdData,
                                     switchChainIdData: switchChainIdData,
