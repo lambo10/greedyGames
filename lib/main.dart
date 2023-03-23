@@ -122,6 +122,7 @@ class _MyAppState extends State<MyApp> {
             statusBarBrightness: currentMode == ThemeMode.light
                 ? Brightness.light
                 : Brightness.dark,
+            statusBarColor: Colors.black,
           ),
         );
         return MaterialApp(
