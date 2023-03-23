@@ -952,7 +952,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   data.contract,
                                 );
                                 final assetDetails = {
-                                  'name': '',
+                                  'name': data.symbol,
                                   'symbol': data.symbol,
                                   'decimals': data.decimals.toString(),
                                   'contractAddress': data.contract,
