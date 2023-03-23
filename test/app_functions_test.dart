@@ -454,7 +454,7 @@ void main() async {
     expect(algorandKey['address'],
         'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
     expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-    expect(tezosKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
+    expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
     expect(
         cosmosKey['address'], 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
     expect(stellarKey['address'],
