@@ -19,6 +19,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path/path.dart';
 import 'screens/main_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -112,16 +113,17 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     MyApp.themeNotifier.value =
         widget.userDarkMode ? ThemeMode.dark : ThemeMode.light;
-    if (Theme.of(context).brightness == Brightness.light) {
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarBrightness: Brightness.light,
-        ),
-      );
-    }
+
     return ValueListenableBuilder(
       valueListenable: MyApp.themeNotifier,
       builder: (_, ThemeMode currentMode, __) {
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            statusBarBrightness: currentMode == ThemeMode.light
+                ? Brightness.light
+                : Brightness.dark,
+          ),
+        );
         return MaterialApp(
           navigatorKey: NavigationService.navigatorKey, // set property
           debugShowCheckedModeBanner: false,
