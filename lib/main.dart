@@ -117,6 +117,7 @@ class _MyAppState extends State<MyApp> {
     return ValueListenableBuilder(
       valueListenable: MyApp.themeNotifier,
       builder: (_, ThemeMode currentMode, __) {
+        print(getEthereumDetailsFromChainId(1));
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarBrightness: currentMode == ThemeMode.light

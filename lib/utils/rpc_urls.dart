@@ -3014,7 +3014,10 @@ Map getEthereumDetailsFromChainId(int chainId) {
   List blockChains = getEVMBlockchains().values.toList();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['chainId'] == chainId) {
-      return blockChains[i];
+      return Map.from(blockChains[i])
+        ..addAll({
+          'name': getEVMBlockchains().keys.toList()[i],
+        });
     }
   }
   return null;

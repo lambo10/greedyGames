@@ -924,6 +924,22 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                               final data =
                                   JsWatchAsset.fromJson(jsData.object ?? {});
                               try {
+                                final assetDetails = {
+                                  'name': data.name,
+                                  'symbol': data.symbol,
+                                  'decimals': data.decimals.toString(),
+                                  'contractAddress': data.contract,
+                                  'network': blockChainDetails['name'],
+                                  'rpc': blockChainDetails['rpc'],
+                                  'chainId': blockChainDetails['chainId'],
+                                  'coinType': blockChainDetails['coinType'],
+                                  'blockExplorer':
+                                      blockChainDetails['blockExplorer'],
+                                };
+
+                                if (kDebugMode) {
+                                  print(assetDetails);
+                                }
                                 throw Exception('not Implemented');
                                 // _sendResult("ethereum", '', jsData.id ?? 0);
                               } catch (e) {
