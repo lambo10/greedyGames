@@ -17,8 +17,6 @@ class Wallet extends StatefulWidget {
   _WalletState createState() => _WalletState();
 }
 
-bool isDarkMode = true;
-
 class _WalletState extends State<Wallet> {
   PageController pageController;
   int currentIndex_ = 0;

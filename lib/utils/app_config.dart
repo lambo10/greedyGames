@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const walletAbbr = 'GVERSE';
 const walletName = 'GreedyVerse';
@@ -131,7 +132,7 @@ const enableTestNet = kDebugMode ? true : false;
 
 // app theme
 final darkTheme = ThemeData(
-  dialogBackgroundColor: Color.fromARGB(255, 26, 26, 26),
+  dialogBackgroundColor: const Color.fromARGB(255, 26, 26, 26),
   fontFamily: 'Roboto',
   primaryColor: const Color.fromARGB(255, 233, 183, 9),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -141,30 +142,32 @@ final darkTheme = ThemeData(
   ),
   backgroundColor: const Color.fromARGB(255, 26, 26, 26),
   scaffoldBackgroundColor: const Color.fromARGB(255, 26, 26, 26),
-  cardColor: Color.fromARGB(255, 47, 47, 47),
-  dividerColor: Color.fromARGB(255, 57, 57, 57),
+  cardColor: const Color.fromARGB(255, 47, 47, 47),
+  dividerColor: const Color.fromARGB(255, 57, 57, 57),
   bottomSheetTheme: const BottomSheetThemeData(
     backgroundColor: Color.fromARGB(255, 26, 26, 26),
   ),
   colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.grey).copyWith(
     secondary: Colors.white,
     brightness: Brightness.dark,
-    surface: Color.fromARGB(255, 47, 47, 47),
+    surface: const Color.fromARGB(255, 47, 47, 47),
     onSurface: Colors.white,
   ),
 );
 
 final lightTheme = ThemeData(
+  appBarTheme: const AppBarTheme(
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.light,
+    ),
+  ),
   fontFamily: 'Roboto',
   primaryColor: Colors.white,
   backgroundColor: const Color(0xFFE5E5E5),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: Color(0xffEBF3FF),
-    selectedItemColor: Colors.black,
     unselectedItemColor: Colors.grey,
-    selectedIconTheme:
-        IconThemeData(color: Colors.blue, opacity: 1.0, size: 30.0),
   ),
   checkboxTheme: CheckboxThemeData(
     fillColor: MaterialStateProperty.all(appPrimaryColor),

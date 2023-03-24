@@ -142,7 +142,12 @@ class JsWatchAsset {
   String symbol;
   int decimals;
 
-  JsWatchAsset({this.type, this.contract, this.symbol, this.decimals});
+  JsWatchAsset({
+    this.type,
+    this.contract,
+    this.symbol,
+    this.decimals,
+  });
 
   JsWatchAsset.fromJson(Map<String, dynamic> json) {
     type = json['type'];

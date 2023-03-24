@@ -887,7 +887,8 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   jsData.object ?? {});
 
                               try {
-                                final signature = EthSigUtil.recoverSignature(
+                                final signature =
+                                    EthSigUtil.recoverPersonalSignature(
                                   message: txDataToUintList(data.message),
                                   signature: data.signature,
                                 );
@@ -924,7 +925,37 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                             {
                               final data =
                                   JsWatchAsset.fromJson(jsData.object ?? {});
+
                               try {
+                                if (data.decimals == null) {
+                                  throw Exception(
+                                    'invalid asset decimals',
+                                  );
+                                }
+                                if (data.symbol == null) {
+                                  throw Exception(
+                                    'invalid asset symbol',
+                                  );
+                                }
+                                validateAddress(
+                                  {'rpc': blockChainDetails['rpc']},
+                                  data.contract,
+                                );
+                                final assetDetails = {
+                                  'name': data.symbol,
+                                  'symbol': data.symbol,
+                                  'decimals': data.decimals.toString(),
+                                  'contractAddress': data.contract,
+                                  'network': blockChainDetails['name'],
+                                  'rpc': blockChainDetails['rpc'],
+                                  'chainId': blockChainDetails['chainId'],
+                                  'coinType': blockChainDetails['coinType'],
+                                  'blockExplorer':
+                                      blockChainDetails['blockExplorer'],
+                                };
+                                if (kDebugMode) {
+                                  print(assetDetails);
+                                }
                                 throw Exception('not Implemented');
                                 // _sendResult("ethereum", '', jsData.id ?? 0);
                               } catch (e) {
@@ -960,11 +991,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
 
                                 bool switchNetwork = true;
                                 bool haveNotExecuted = true;
-                                final initString = _addChain(
-                                  switchChainId,
-                                  switchChainIdData['rpc'],
-                                  sendingAddress,
-                                );
+
                                 if (switchChainIdData == null) {
                                   switchNetwork = false;
                                   haveNotExecuted = false;
@@ -1059,12 +1086,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                           jsonEncode(addBlockChain),
                                         );
 
-                                        await _sendCustomResponse(initString);
-                                        initJs =
-                                            await changeBlockChainAndReturnInit(
-                                          switchChainId,
-                                          switchChainIdData['rpc'],
-                                        );
                                         switchNetwork = true;
                                         Navigator.pop(context);
                                       } catch (e) {
@@ -1084,6 +1105,11 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                   );
                                 }
                                 if (switchNetwork) {
+                                  final initString = _addChain(
+                                    switchChainId,
+                                    switchChainIdData['rpc'],
+                                    sendingAddress,
+                                  );
                                   await _switchWeb3ChainRequest(
                                     currentChainIdData: currentChainIdData,
                                     switchChainIdData: switchChainIdData,
