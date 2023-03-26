@@ -73,8 +73,8 @@ void main() async {
   rippleJsRuntime = getJavascriptRuntime()
     ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'))
     ..enableHandlePromises()
-    ..enableFetch()
     ..enableXhr();
+  await rippleJsRuntime.enableFetch();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),
