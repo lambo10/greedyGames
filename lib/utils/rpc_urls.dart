@@ -1190,7 +1190,7 @@ Map getXRPBlockChains() {
       'blockExplorer':
           'https://livenet.xrpl.org/transactions/$transactionhashTemplateKey',
       'image': 'assets/ripple.png',
-      'ws': 'wss://s1.ripple.com/'
+      'ws': 'https://s1.ripple.com:51234/'
     }
   };
   if (enableTestNet) {
@@ -1200,7 +1200,7 @@ Map getXRPBlockChains() {
       'blockExplorer':
           'https://testnet.xrpl.org/transactions/$transactionhashTemplateKey',
       'image': 'assets/ripple.png',
-      'ws': 'wss://s.altnet.rippletest.net:51233',
+      'ws': 'https://s.altnet.rippletest.net:51234/',
     };
   }
   return blockChains;
