@@ -1509,6 +1509,7 @@ Future<void> initializeAllPrivateKeys(String mnemonic) async {
   await getStellarFromMemnomic(mnemonic);
   await getAlgorandFromMemnomic(mnemonic);
   await getTronFromMemnomic(mnemonic);
+  await getXRPFromMemnomic(mnemonic);
 }
 
 Future<Map> sendCardano(Map config) async {
@@ -3062,6 +3063,23 @@ Future<double> totalCryptoBalance({
     );
 
     totalBalance += tezoBalance * tezosPrice;
+  }
+
+  for (String i in getXRPBlockChains().keys) {
+    final Map xrpBlockchains = getXRPBlockChains()[i];
+    final xrpPrice =
+        (allCryptoPrice[coinGeckCryptoSymbolToID[xrpBlockchains['symbol']]]
+                [defaultCurrency.toLowerCase()] as num)
+            .toDouble();
+    final getXrpDetails = await getXRPFromMemnomic(mnemonic);
+
+    final xrpBalance = await getXRPAddressBalance(
+      getXrpDetails['address'],
+      xrpBlockchains['ws'],
+      skipNetworkRequest: skipNetworkRequest,
+    );
+
+    totalBalance += xrpBalance * xrpPrice;
   }
 
   return totalBalance;
