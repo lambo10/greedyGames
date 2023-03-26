@@ -163,7 +163,6 @@ flutter:
     - assets/fonts/
     - assets/currency_flags/
     - assets/images/
-    - dappBrowser/
     - json/
     - js/
 

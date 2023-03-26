@@ -62,6 +62,7 @@ const etherDecimals = 18;
 const bitCoinDecimals = 8;
 const cardanoDecimals = 6;
 const cosmosDecimals = 6;
+const xrpDecimals = 6;
 const fileCoinDecimals = 18;
 const solanaDecimals = 9;
 const satoshiDustAmount = 546;
@@ -76,6 +77,7 @@ const Duration httpPollingDelay = Duration(seconds: 15);
 
 // extra seedValues.
 SeedPhraseRoot seedPhraseRoot;
+String rippleJs;
 
 // useful ether addresses
 const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -1179,6 +1181,30 @@ Map getStellarBlockChains() {
   return blockChains;
 }
 
+Map getXRPBlockChains() {
+  Map blockChains = {
+    'XRP': {
+      'symbol': 'XRP',
+      'default': 'XRP',
+      'blockExplorer':
+          'https://livenet.xrpl.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/ripple.png',
+      'ws': 'wss://s1.ripple.com/'
+    }
+  };
+  if (enableTestNet) {
+    blockChains['XRP(Testnet)'] = {
+      'symbol': 'XRP',
+      'default': 'XRP',
+      'blockExplorer':
+          'https://testnet.xrpl.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/ripple.png',
+      'ws': 'wss://s.altnet.rippletest.net:51233',
+    };
+  }
+  return blockChains;
+}
+
 Map getFilecoinBlockChains() {
   return {};
   // FIXME:
@@ -1851,27 +1877,34 @@ Future<String> fileCoinAddressFromCk(String ck, String addressPrefix) async {
 }
 
 Future<Map> decodeAbi(String txData) async {
-  final js = await rootBundle.loadString('js/abi-decoder.js');
   JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
+  try {
+    final js = await rootBundle.loadString('js/abi-decoder.js');
 
-  javaScriptRuntime.evaluate(js);
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($oneInchAbi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($uniswapAbi2)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($uniswapAbi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($wrappedEthAbi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($erc20Abi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($erc721Abi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($tokenSaleAbi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($ensResolver)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($ensInterface)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($erc1155Abi)''');
-  javaScriptRuntime.evaluate('''abiDecoder.addABI($unstoppableDomainAbi)''');
+    javaScriptRuntime.evaluate(js);
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($oneInchAbi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($uniswapAbi2)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($uniswapAbi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($wrappedEthAbi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($erc20Abi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($erc721Abi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($tokenSaleAbi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($ensResolver)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($ensInterface)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($erc1155Abi)''');
+    javaScriptRuntime.evaluate('''abiDecoder.addABI($unstoppableDomainAbi)''');
 
-  final decode = javaScriptRuntime
-      .evaluate('JSON.stringify(abiDecoder.decodeMethod("$txData"))');
-  if (decode.stringResult == 'undefined') return null;
-  Map result_ = json.decode(decode.stringResult);
-  return result_;
+    final decode = javaScriptRuntime
+        .evaluate('JSON.stringify(abiDecoder.decodeMethod("$txData"))');
+    if (decode.stringResult == 'undefined') return null;
+    Map result_ = json.decode(decode.stringResult);
+
+    return result_;
+  } catch (_) {
+    rethrow;
+  } finally {
+    javaScriptRuntime.dispose();
+  }
 }
 
 Future<Map> getFileCoinFromMemnomic(
@@ -2035,6 +2068,26 @@ calculateTronKey(Map config) {
   };
 }
 
+Map<String, String> calculateRippleKey(Map config) {
+  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
+
+  try {
+    javaScriptRuntime.evaluate(rippleJs);
+    final decode = javaScriptRuntime.evaluate(
+        '''JSON.stringify(xrpl.Wallet.fromMnemonic('${config[mnemonicKey]}'))''');
+    if (decode.stringResult == 'undefined') return null;
+    Map xrpWallet = json.decode(decode.stringResult);
+    return {
+      'address': xrpWallet['classicAddress'],
+      'privateKey': xrpWallet['privateKey'],
+    };
+  } catch (_) {
+    rethrow;
+  } finally {
+    javaScriptRuntime.dispose();
+  }
+}
+
 Future calculateSolanaKey(Map config) async {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
 
@@ -2079,6 +2132,84 @@ Future<Map> calculateStellarKey(Map config) async {
     'address': userWalletAddress.accountId,
     'private_key': userWalletAddress.secretSeed,
   };
+}
+
+Future<Map> sendXRP({
+  String ws,
+  String recipient,
+  String amount,
+  String mnemonic,
+}) async {
+  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
+
+  try {
+    javaScriptRuntime.evaluate(rippleJs);
+    javaScriptRuntime
+        .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
+    var asyncResult = await javaScriptRuntime.evaluateAsync("""
+    (new xrpl.Client("$ws")).submitAndWait({
+      TransactionType: "Payment",
+      Account: wallet.address,
+      Amount: xrpl.xrpToDrops("$amount"),
+      Destination: "$recipient",
+    }, {
+      autofill: true,
+      wallet: wallet,
+    });
+    """);
+    javaScriptRuntime.executePendingJob();
+    final promiseResolved = await javaScriptRuntime.handlePromise(asyncResult);
+    Map accountInfo = json.decode(promiseResolved.stringResult);
+    return {
+      'txid': accountInfo['result']['meta']['TransactionResult'],
+    };
+  } catch (e) {
+    rethrow;
+  } finally {
+    javaScriptRuntime.dispose();
+  }
+}
+
+Future<double> getXRPAddressBalance(
+  String address,
+  String ws, {
+  bool skipNetworkRequest = false,
+}) async {
+  final pref = Hive.box(secureStorageKey);
+
+  final key = 'xrpAddressBalance$address';
+
+  final storedBalance = pref.get(key);
+
+  double savedBalance = 0;
+
+  if (storedBalance != null) {
+    savedBalance = storedBalance;
+  }
+
+  if (skipNetworkRequest) return savedBalance;
+  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
+  try {
+    javaScriptRuntime.evaluate(rippleJs);
+    var asyncResult = await javaScriptRuntime.evaluateAsync("""
+    (new xrpl.Client("$ws")).request({
+      command: "account_info",
+      account: "$address",
+    })
+    """);
+    javaScriptRuntime.executePendingJob();
+    final promiseResolved = await javaScriptRuntime.handlePromise(asyncResult);
+    Map accountInfo = json.decode(promiseResolved.stringResult);
+    final balance = accountInfo['result']['account_data']['Balance'];
+    final userBalance = balance / pow(10, xrpDecimals);
+    await pref.put(key, userBalance);
+
+    return userBalance;
+  } catch (e) {
+    return savedBalance;
+  } finally {
+    javaScriptRuntime.dispose();
+  }
 }
 
 Future<double> getAlgorandAddressBalance(
@@ -2627,6 +2758,32 @@ Future<Map> getTronFromMemnomic(
   return keys;
 }
 
+Future<Map> getXRPFromMemnomic(
+  String mnemonic,
+) async {
+  String key = 'xrpDetails$mnemonic';
+
+  final pref = Hive.box(secureStorageKey);
+  List mmenomicMapping = [];
+  if (pref.get(key) != null) {
+    mmenomicMapping = jsonDecode(pref.get(key)) as List;
+    for (int i = 0; i < mmenomicMapping.length; i++) {
+      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
+        return mmenomicMapping[i]['key'];
+      }
+    }
+  }
+
+  final keys = calculateRippleKey({
+    mnemonicKey: mnemonic,
+    seedRootKey: seedPhraseRoot,
+  });
+
+  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
+  await pref.put(key, jsonEncode(mmenomicMapping));
+  return keys;
+}
+
 Future<Map> getAlgorandFromMemnomic(
   String mnemonic,
 ) async {
@@ -3058,7 +3215,26 @@ showDialogWithMessage({
 }
 
 validateAddress(Map data, String recipient) {
-  if (data['default'] == 'ALGO') {
+  if (data['default'] == 'XRP') {
+    JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
+
+    try {
+      javaScriptRuntime.evaluate(rippleJs);
+      final decode = javaScriptRuntime
+          .evaluate('''JSON.stringify(xrpl.isValidAddress('$recipient'))''');
+      if (decode.stringResult == 'undefined') {
+        throw Exception('invalid xrp address');
+      }
+
+      if (!json.decode(decode.stringResult)) {
+        throw Exception('invalid xrp address');
+      }
+    } catch (_) {
+      rethrow;
+    } finally {
+      javaScriptRuntime.dispose();
+    }
+  } else if (data['default'] == 'ALGO') {
     algo_rand.Address.fromAlgorandAddress(
       address: recipient,
     );
