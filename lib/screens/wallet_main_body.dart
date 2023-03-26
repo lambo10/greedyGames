@@ -736,6 +736,71 @@ class _WalletMainBodyState extends State<WalletMainBody>
       blockChainsArray.add(const Divider());
     }
 
+    for (String i in getXRPBlockChains().keys) {
+      final Map xrpBlockchain = Map.from(getXRPBlockChains()[i])
+        ..addAll({'name': i});
+
+      final notifier = ValueNotifier<double>(null);
+      cryptoBalanceListNotifiers.add(notifier);
+
+      blockChainsArray.addAll([
+        InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => Token(
+                    data: xrpBlockchain,
+                  ),
+                ),
+              );
+            },
+            child: GetBlockChainWidget(
+              name_: i,
+              symbol_: xrpBlockchain['symbol'],
+              hasPrice_: true,
+              image_: AssetImage(
+                xrpBlockchain['image'],
+              ),
+              cryptoAmount_: ValueListenableBuilder(
+                valueListenable: notifier,
+                builder: ((context, value, child) {
+                  if (value == null) {
+                    () async {
+                      final getXRPDetails = await getXRPFromMemnomic(mnemonic);
+                      try {
+                        notifier.value = await getXRPAddressBalance(
+                          getXRPDetails['address'],
+                          xrpBlockchain['ws'],
+                          skipNetworkRequest: notifier.value == null,
+                        );
+                      } catch (_) {}
+
+                      cryptoBalancesTimer.add(
+                        Timer.periodic(httpPollingDelay, (timer) async {
+                          try {
+                            notifier.value = await getXRPAddressBalance(
+                              getXRPDetails['address'],
+                              xrpBlockchain['ws'],
+                              skipNetworkRequest: notifier.value == null,
+                            );
+                          } catch (_) {}
+                        }),
+                      );
+                    }();
+                    return Container();
+                  }
+                  return UserBalance(
+                    symbol: xrpBlockchain['symbol'],
+                    balance: value,
+                  );
+                }),
+              ),
+            )),
+      ]);
+      blockChainsArray.add(const Divider());
+    }
+
     for (String name in getTezosBlockchains().keys) {
       Map tezorBlockchain = Map.from(getTezosBlockchains()[name])
         ..addAll({'name': name});
