@@ -15,6 +15,7 @@ import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_js/flutter_js.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_test/hive_test.dart';
 import 'package:sacco/sacco.dart' as cosmos;
@@ -25,7 +26,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  rippleJs = await rootBundle.loadString('js/xrpl-latest-min.js');
+  rippleJsRuntime = getJavascriptRuntime()
+    ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'));
   setUp(() async {
     await setUpTestHive();
     await Hive.openBox(secureStorageKey);
