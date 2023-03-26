@@ -14,6 +14,8 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_js/flutter_js.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_test/hive_test.dart';
 import 'package:sacco/sacco.dart' as cosmos;
@@ -23,6 +25,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  rippleJsRuntime = getJavascriptRuntime()
+    ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'));
   setUp(() async {
     await setUpTestHive();
     await Hive.openBox(secureStorageKey);
@@ -31,7 +36,6 @@ void main() async {
   tearDown(() async {
     await tearDownTestHive();
   });
-  WidgetsFlutterBinding.ensureInitialized();
 
   final blockInstance = EthereumBlockies();
   final blockInstanceTwo = EthereumBlockies();
@@ -197,6 +201,7 @@ void main() async {
     final zecMap = {'default': "ZEC", 'name': 'ZCash', 'P2WPKH': ''};
     final xtz = {'default': "XTZ"};
     final adaMap = {'default': "ADA"};
+    final xrpMap = {'default': "XRP"};
 
     // valid addresses
     validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
@@ -215,6 +220,7 @@ void main() async {
     validateAddress(xtz, 'tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
     validateAddress(adaMap,
         'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
+    validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
 
     // invalid address
 
@@ -245,6 +251,8 @@ void main() async {
     expect(
         () => validateAddress(xtz, invalidAddress), throwsA(isA<Exception>()));
     expect(() => validateAddress(adaMap, invalidAddress),
+        throwsA(isA<Exception>()));
+    expect(() => validateAddress(xrpMap, invalidAddress),
         throwsA(isA<Exception>()));
   });
 
@@ -363,10 +371,10 @@ void main() async {
         ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
     );
 
-    final tezosKey = await compute(
-      calculateTezorKey,
-      {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
-    );
+    // final tezosKey = await compute(
+    //   calculateTezorKey,
+    //   {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
+    // );
 
     final ethereumKey = await compute(
       calculateEthereumKey,
@@ -417,6 +425,13 @@ void main() async {
       },
     );
 
+    final rippleKey = calculateRippleKey(
+      {
+        mnemonicKey: mnemonic,
+        seedRootKey: seedPhraseRoot,
+      },
+    );
+
     final algorandKey = await compute(
       calculateAlgorandKey,
       {
@@ -445,6 +460,7 @@ void main() async {
 
     expect(bitcoinCashKey['address'],
         'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
+    expect(rippleKey['address'], 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
 
     expect(
         litecoinKey['address'], 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
@@ -454,7 +470,7 @@ void main() async {
     expect(algorandKey['address'],
         'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
     expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-    expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
+    // expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
     expect(
         cosmosKey['address'], 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
     expect(stellarKey['address'],

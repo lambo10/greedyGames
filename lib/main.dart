@@ -16,6 +16,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_js/extensions/fetch.dart';
+import 'package:flutter_js/extensions/xhr.dart';
+import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
@@ -67,6 +70,11 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
+  rippleJsRuntime = getJavascriptRuntime()
+    ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'))
+    ..enableHandlePromises()
+    ..enableXhr();
+  await rippleJsRuntime.enableFetch();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),

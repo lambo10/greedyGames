@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'dart:math';
 import 'package:algorand_dart/algorand_dart.dart' as algoRan;
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cryptowallet/api/notification_api.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/config/colors.dart';
@@ -50,6 +50,7 @@ class _TransferTokenState extends State<TransferToken> {
   bool isCosmos;
   bool isTron;
   bool isTezor;
+  bool isXRP;
   ContractAbi contrAbi;
   List _parameters;
   String mnemonic;
@@ -68,6 +69,7 @@ class _TransferTokenState extends State<TransferToken> {
     isAlgorand = widget.data['default'] == 'ALGO';
     isTron = widget.data['default'] == 'TRX';
     isTezor = widget.data['default'] == 'XTZ';
+    isXRP = widget.data['default'] == 'XRP';
     isNFTTransfer = widget.data['isNFT'] != null;
     getTransactionFee();
     timer = Timer.periodic(
@@ -230,6 +232,16 @@ class _TransferTokenState extends State<TransferToken> {
         transactionFeeMap = {
           'transactionFee': 0,
           'userBalance': tezorBalance,
+        };
+      } else if (isXRP) {
+        final getXRPDetails = await getXRPFromMemnomic(mnemonic);
+        final xrpBalance = await getXRPAddressBalance(
+          getXRPDetails['address'],
+          widget.data['ws'],
+        );
+        transactionFeeMap = {
+          'transactionFee': 0,
+          'userBalance': xrpBalance,
         };
       } else if (isAlgorand) {
         final getAlgorandDetials = await getAlgorandFromMemnomic(
@@ -444,6 +456,9 @@ class _TransferTokenState extends State<TransferToken> {
                         widget.data,
                       );
                       return {'address': getTezorDetails['address']};
+                    } else if (isXRP) {
+                      final getXRPDetails = await getXRPFromMemnomic(mnemonic);
+                      return {'address': getXRPDetails['address']};
                     } else if (isTron) {
                       final getTronDetails = await getTronFromMemnomic(
                         mnemonic,
@@ -737,6 +752,24 @@ class _TransferTokenState extends State<TransferToken> {
 
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
+                                        } else if (isXRP) {
+                                          final getXRPDetails =
+                                              await getXRPFromMemnomic(
+                                            mnemonic,
+                                          );
+                                          Map transaction = await sendXRP(
+                                            ws: widget.data['ws'],
+                                            recipient: widget.data['recipient'],
+                                            amount: widget.data['amount'],
+                                            mnemonic: mnemonic,
+                                          );
+                                          transactionHash = transaction['txid'];
+
+                                          coinDecimals = xrpDecimals;
+                                          userAddress =
+                                              getXRPDetails['address'];
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
                                         } else if (isAlgorand) {
                                           final getAlgorandDetails =
                                               await getAlgorandFromMemnomic(
@@ -756,7 +789,6 @@ class _TransferTokenState extends State<TransferToken> {
                                           coinDecimals = algorandDecimals;
                                           userAddress =
                                               getAlgorandDetails['address'];
-
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
                                         } else if (isSolana) {

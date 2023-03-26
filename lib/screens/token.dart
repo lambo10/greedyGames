@@ -110,6 +110,13 @@ class _TokenState extends State<Token> {
           widget.data['POSNetwork'],
           skipNetworkRequest: skipNetworkRequest,
         );
+      } else if (widget.data['default'] == 'XRP') {
+        final getXrpDetails = await getXRPFromMemnomic(mnemonic);
+        cryptoBalance = await getXRPAddressBalance(
+          getXrpDetails['address'],
+          widget.data['ws'],
+          skipNetworkRequest: skipNetworkRequest,
+        );
       } else if (widget.data['default'] == 'SOL') {
         final getSolanaDetails = await getSolanaFromMemnomic(mnemonic);
         cryptoBalance = await getSolanaAddressBalance(
@@ -214,6 +221,12 @@ class _TokenState extends State<Token> {
         ))['address'];
       } else if (widget.data['default'] == 'SOL') {
         currentAddress = (await getSolanaFromMemnomic(mnemonic))['address']
+            .toString()
+            .toLowerCase();
+      } else if (widget.data['default'] == 'XRP') {
+        currentAddress = (await getXRPFromMemnomic(
+          mnemonic,
+        ))['address']
             .toString()
             .toLowerCase();
       } else if (widget.data['default'] == 'ADA') {

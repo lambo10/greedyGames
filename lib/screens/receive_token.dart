@@ -64,6 +64,9 @@ class _ReceiveTokenState extends State<ReceiveToken> {
         mnemonic,
       );
       return {'address': algorand['address']};
+    } else if (widget.data['default'] == 'XRP') {
+      final xrpDetails = await getXRPFromMemnomic(mnemonic);
+      return {'address': xrpDetails['address']};
     } else if (widget.data['default'] == 'TRX') {
       final tronDetails = await getTronFromMemnomic(
         mnemonic,
