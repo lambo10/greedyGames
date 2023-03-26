@@ -77,7 +77,6 @@ const Duration httpPollingDelay = Duration(seconds: 15);
 
 // extra seedValues.
 SeedPhraseRoot seedPhraseRoot;
-String rippleJs;
 
 // useful ether addresses
 const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -119,6 +118,8 @@ const ensInterface =
 solidityFunctionSig(String methodId) {
   return '0x${sha3(methodId).substring(0, 8)}';
 }
+
+JavascriptRuntime rippleJsRuntime;
 
 enum SolanaClusters {
   mainNet,
@@ -2069,23 +2070,20 @@ calculateTronKey(Map config) {
 }
 
 Map<String, String> calculateRippleKey(Map config) {
-  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
-
+  Map xrpWallet = {};
+  JsEvalResult decode;
   try {
-    javaScriptRuntime.evaluate(rippleJs);
-    final decode = javaScriptRuntime.evaluate(
+    decode = rippleJsRuntime.evaluate(
         '''JSON.stringify(xrpl.Wallet.fromMnemonic('${config[mnemonicKey]}'))''');
-    if (decode.stringResult == 'undefined') return null;
-    Map xrpWallet = json.decode(decode.stringResult);
-    return {
-      'address': xrpWallet['classicAddress'],
-      'privateKey': xrpWallet['privateKey'],
-    };
   } catch (_) {
     rethrow;
-  } finally {
-    javaScriptRuntime.dispose();
   }
+  if (decode.stringResult == 'undefined') return null;
+  xrpWallet = json.decode(decode.stringResult);
+  return {
+    'address': xrpWallet['classicAddress'],
+    'privateKey': xrpWallet['privateKey'],
+  };
 }
 
 Future calculateSolanaKey(Map config) async {
@@ -2140,14 +2138,14 @@ Future<Map> sendXRP({
   String amount,
   String mnemonic,
 }) async {
-  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
-
+  Map accountInfo = {};
   try {
-    javaScriptRuntime.evaluate(rippleJs);
-    javaScriptRuntime
+    rippleJsRuntime
         .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
-    var asyncResult = await javaScriptRuntime.evaluateAsync("""
-    (new xrpl.Client("$ws")).submitAndWait({
+    rippleJsRuntime.evaluate('''const client = new xrpl.Client("$ws")''');
+
+    var asyncResult = await rippleJsRuntime.evaluateAsync("""
+    client.connect().submitAndWait({
       TransactionType: "Payment",
       Account: wallet.address,
       Amount: xrpl.xrpToDrops("$amount"),
@@ -2157,17 +2155,16 @@ Future<Map> sendXRP({
       wallet: wallet,
     });
     """);
-    javaScriptRuntime.executePendingJob();
-    final promiseResolved = await javaScriptRuntime.handlePromise(asyncResult);
-    Map accountInfo = json.decode(promiseResolved.stringResult);
-    return {
-      'txid': accountInfo['result']['meta']['TransactionResult'],
-    };
+
+    rippleJsRuntime.executePendingJob();
+    final promiseResolved = await rippleJsRuntime.handlePromise(asyncResult);
+    accountInfo = json.decode(promiseResolved.stringResult);
   } catch (e) {
     rethrow;
-  } finally {
-    javaScriptRuntime.dispose();
   }
+  return {
+    'txid': accountInfo['result']['meta']['TransactionResult'],
+  };
 }
 
 Future<double> getXRPAddressBalance(
@@ -2177,7 +2174,7 @@ Future<double> getXRPAddressBalance(
 }) async {
   final pref = Hive.box(secureStorageKey);
 
-  final key = 'xrpAddressBalance$address';
+  final key = 'xrpAddressBalance$address$ws';
 
   final storedBalance = pref.get(key);
 
@@ -2188,27 +2185,38 @@ Future<double> getXRPAddressBalance(
   }
 
   if (skipNetworkRequest) return savedBalance;
-  JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
   try {
-    javaScriptRuntime.evaluate(rippleJs);
-    var asyncResult = await javaScriptRuntime.evaluateAsync("""
-    (new xrpl.Client("$ws")).request({
-      command: "account_info",
-      account: "$address",
-    })
-    """);
-    javaScriptRuntime.executePendingJob();
-    final promiseResolved = await javaScriptRuntime.handlePromise(asyncResult);
-    Map accountInfo = json.decode(promiseResolved.stringResult);
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "account_info",
+        "params": [
+          {"account": address}
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map accountInfo = json.decode(request.body);
+
+    if (accountInfo['result']['account_data'] == null) {
+      throw Exception('Account not found');
+    }
+
     final balance = accountInfo['result']['account_data']['Balance'];
-    final userBalance = balance / pow(10, xrpDecimals);
+    final userBalance = double.parse(balance) / pow(10, xrpDecimals);
     await pref.put(key, userBalance);
 
     return userBalance;
   } catch (e) {
     return savedBalance;
-  } finally {
-    javaScriptRuntime.dispose();
   }
 }
 
@@ -3216,23 +3224,19 @@ showDialogWithMessage({
 
 validateAddress(Map data, String recipient) {
   if (data['default'] == 'XRP') {
-    JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
-
+    JsEvalResult decode;
     try {
-      javaScriptRuntime.evaluate(rippleJs);
-      final decode = javaScriptRuntime
+      decode = rippleJsRuntime
           .evaluate('''JSON.stringify(xrpl.isValidAddress('$recipient'))''');
-      if (decode.stringResult == 'undefined') {
-        throw Exception('invalid xrp address');
-      }
-
-      if (!json.decode(decode.stringResult)) {
-        throw Exception('invalid xrp address');
-      }
     } catch (_) {
       rethrow;
-    } finally {
-      javaScriptRuntime.dispose();
+    }
+    if (decode.stringResult == 'undefined') {
+      throw Exception('invalid xrp address');
+    }
+
+    if (!json.decode(decode.stringResult)) {
+      throw Exception('invalid xrp address');
     }
   } else if (data['default'] == 'ALGO') {
     algo_rand.Address.fromAlgorandAddress(
