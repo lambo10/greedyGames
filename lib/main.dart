@@ -72,8 +72,7 @@ void main() async {
   await WebNotificationPermissionDb.loadSavedPermissions();
   rippleJsRuntime = getJavascriptRuntime()
     ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'))
-    ..enableHandlePromises()
-    ..enableXhr();
+    ..enableHandlePromises();
   await rippleJsRuntime.enableFetch();
   runApp(
     MyApp(
