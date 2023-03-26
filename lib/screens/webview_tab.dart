@@ -1228,11 +1228,13 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                 widget.onStateUpdated.call();
               },
               onProgressChanged: (controller, progress) {
-                setState(() {
-                  _progress = progress / 100;
-                });
-                if (progress == 100) {
-                  _pullToRefreshController.endRefreshing();
+                if (mounted) {
+                  setState(() {
+                    _progress = progress / 100;
+                  });
+                  if (progress == 100) {
+                    _pullToRefreshController.endRefreshing();
+                  }
                 }
               },
               onLoadStop: (controller, url) async {
