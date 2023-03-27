@@ -4708,6 +4708,7 @@ Map getAllBlockchains() {
     ...getAlgorandBlockchains(),
     ...getTronBlockchains(),
     ...getTezosBlockchains(),
+    ...getXRPBlockChains(),
   };
 }
 
