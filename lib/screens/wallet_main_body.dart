@@ -767,7 +767,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 builder: ((context, value, child) {
                   if (value == null) {
                     () async {
+                      print(mnemonic);
                       final getXRPDetails = await getXRPFromMemnomic(mnemonic);
+                      print(getXRPDetails);
                       try {
                         notifier.value = await getXRPAddressBalance(
                           getXRPDetails['address'],
