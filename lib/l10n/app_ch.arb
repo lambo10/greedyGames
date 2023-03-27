@@ -225,5 +225,17 @@
   "savedToDownloadFolder": "保存到下载文件夹",
   "alreadySaved": "已保存到下载文件夹",
   "walletCreated": "钱包已创建",
-  "addNetwork": "添加网络"
+  "addNetwork": "添加网络",
+  "addBookMark": "添加书签",
+  "contractAddress": "合约地址",
+  "approve": "批准",
+  "spender": "挥金如土",
+  "insufficientLiquidity": "流动性不足",
+  "contact": "接触",
+  "add_contact": "增加联系人",
+  "add_address": "添加地址",
+  "save": "节省",
+  "games": "游戏",
+  "trending": "趋势",
+  "presale": "预售"
 }

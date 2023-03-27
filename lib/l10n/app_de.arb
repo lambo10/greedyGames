@@ -225,5 +225,17 @@
   "savedToDownloadFolder": "Im Downloads-Ordner gespeichert",
   "sendingToYourself": "Sie senden Ihre Token an sich selbst",
   "trxSent": "Transaktion gesendet",
-  "walletCreated": "Geldbörse erstellt"
+  "walletCreated": "Geldbörse erstellt",
+  "addBookMark": "Lesezeichen hinzufügen",
+  "contractAddress": "Vertragsadresse",
+  "approve": "Genehmigen",
+  "spender": "Spender",
+  "insufficientLiquidity": "Unzureichende Liquidität",
+  "contact": "Kontakt",
+  "add_contact": "Kontakt hinzufügen",
+  "add_address": "Adresse hinzufügen",
+  "save": "Speichern",
+  "games": "Spiele",
+  "trending": "IM TREND",
+  "presale": "Vorverkauf"
 }
