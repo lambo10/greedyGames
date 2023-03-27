@@ -160,7 +160,7 @@
   "signMessage": "Nachricht unterschreiben",
   "signTransaction": "Transaktion unterzeichnen",
   "someErrorOccured": "Es ist ein Fehler aufgetreten",
-  "switchChainIdMessage": "Diese Website fordert Sie auf, zur {symbol} -Kette mit der Ketten-ID: {chainId}zu wechseln. Dadurch wird die Seite neu geladen",
+  "switchChainIdMessage": "Diese Website fordert Sie auf, zur {symbol}-Kette mit der Ketten-ID: {chainId} zu wechseln.",
   "transactionAmount": "TRANSAKTIONSHÖHE",
   "walletName": "Brieftaschenname",
   "@switchChainIdMessage": {

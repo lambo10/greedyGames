@@ -162,7 +162,7 @@
   "sign": "签署",
   "message": "消息",
   "signMessage": "签署消息",
-  "switchChainIdMessage": "此网站要求您切换到链ID为{chainId}的{symbol}链。这将重新加载页面。",
+  "switchChainIdMessage": "此站点要求您切换到链 ID 为 {chainId} 的 {symbol} 链。",
   "@switchChainIdMessage": {
     "placeholders": {
       "symbol": {},
