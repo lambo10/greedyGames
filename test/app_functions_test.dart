@@ -26,8 +26,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  rippleJsRuntime = getJavascriptRuntime()
-    ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'));
+
   setUp(() async {
     await setUpTestHive();
     await Hive.openBox(secureStorageKey);
@@ -425,7 +424,8 @@ void main() async {
       },
     );
 
-    final rippleKey = calculateRippleKey(
+    final rippleKey = await compute(
+      calculateRippleKey,
       {
         mnemonicKey: mnemonic,
         seedRootKey: seedPhraseRoot,

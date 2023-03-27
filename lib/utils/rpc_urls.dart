@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:base_x/base_x.dart';
+import 'package:crypto/crypto.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -16,6 +18,7 @@ import 'package:eth_sig_util/util/utils.dart' hide hexToBytes, bytesToHex;
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'package:hash/hash.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -119,8 +122,6 @@ solidityFunctionSig(String methodId) {
   return '0x${sha3(methodId).substring(0, 8)}';
 }
 
-JavascriptRuntime rippleJsRuntime;
-
 enum SolanaClusters {
   mainNet,
   devNet,
@@ -137,6 +138,8 @@ enum TezosTypes {
   ghostNet,
 }
 
+final xrpBaseCodec =
+    BaseXCodec('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');
 solana.SolanaClient getSolanaClient(SolanaClusters solanaClusterType) {
   solanaClusterType ??= SolanaClusters.mainNet;
 
@@ -2071,20 +2074,29 @@ calculateTronKey(Map config) {
 }
 
 Map<String, String> calculateRippleKey(Map config) {
-  Map xrpWallet = {};
-  JsEvalResult decode;
-  try {
-    decode = rippleJsRuntime.evaluate(
-        '''JSON.stringify(xrpl.Wallet.fromMnemonic('${config[mnemonicKey]}'))''');
-  } catch (_) {
-    rethrow;
-  }
-  if (decode.stringResult == 'undefined') return null;
-  xrpWallet = json.decode(decode.stringResult);
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
+
+  final pubKeyHash = computePublicKeyHash(node.publicKey);
+
+  final t = sha256
+      .convert(sha256.convert([0, ...pubKeyHash]).bytes)
+      .bytes
+      .sublist(0, 4);
+
+  String address =
+      xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
   return {
-    'address': xrpWallet['classicAddress'],
-    'privateKey': xrpWallet['privateKey'],
+    'address': address,
+    'privateKey': HEX.encode(node.privateKey),
   };
+}
+
+Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
+  final hash256 = sha256.convert(publicKeyBytes).bytes;
+  final hash160 = RIPEMD160().update(hash256).digest();
+
+  return Uint8List.fromList(hash160);
 }
 
 Future calculateSolanaKey(Map config) async {
@@ -2140,32 +2152,34 @@ Future<Map> sendXRP({
   String mnemonic,
 }) async {
   Map accountInfo = {};
+  //FIXME:
   try {
-    rippleJsRuntime
-        .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
-    rippleJsRuntime.evaluate('''const client = new xrpl.Client("$ws")''');
+    // rippleJsRuntime
+    //     .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
+    // rippleJsRuntime.evaluate('''const client = new xrpl.Client("$ws")''');
 
-    var asyncResult = await rippleJsRuntime.evaluateAsync("""
-    client.connect().submitAndWait({
-      TransactionType: "Payment",
-      Account: wallet.address,
-      Amount: xrpl.xrpToDrops("$amount"),
-      Destination: "$recipient",
-    }, {
-      autofill: true,
-      wallet: wallet,
-    });
-    """);
+    // var asyncResult = await rippleJsRuntime.evaluateAsync("""
+    // client.connect().submitAndWait({
+    //   TransactionType: "Payment",
+    //   Account: wallet.address,
+    //   Amount: xrpl.xrpToDrops("$amount"),
+    //   Destination: "$recipient",
+    // }, {
+    //   autofill: true,
+    //   wallet: wallet,
+    // });
+    // """);
 
-    rippleJsRuntime.executePendingJob();
-    final promiseResolved = await rippleJsRuntime.handlePromise(asyncResult);
-    accountInfo = json.decode(promiseResolved.stringResult);
+    // rippleJsRuntime.executePendingJob();
+    // final promiseResolved = await rippleJsRuntime.handlePromise(asyncResult);
+    // accountInfo = json.decode(promiseResolved.stringResult);
   } catch (e) {
     rethrow;
   }
-  return {
-    'txid': accountInfo['result']['meta']['TransactionResult'],
-  };
+  // return {
+  //   'txid': accountInfo['result']['meta']['TransactionResult'],
+  // };
+  return {};
 }
 
 Future<double> getXRPAddressBalance(
@@ -3240,21 +3254,30 @@ showDialogWithMessage({
   ).show();
 }
 
+bool seqEqual(Uint8List a, Uint8List b) {
+  if (a.length != b.length) {
+    return false;
+  }
+  for (int i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 validateAddress(Map data, String recipient) {
   if (data['default'] == 'XRP') {
-    JsEvalResult decode;
-    try {
-      decode = rippleJsRuntime
-          .evaluate('''JSON.stringify(xrpl.isValidAddress('$recipient'))''');
-    } catch (_) {
-      rethrow;
-    }
-    if (decode.stringResult == 'undefined') {
-      throw Exception('invalid xrp address');
-    }
+    final bytes = xrpBaseCodec.decode(recipient);
 
-    if (!json.decode(decode.stringResult)) {
-      throw Exception('invalid xrp address');
+    final computedCheckSum = sha256
+        .convert(sha256.convert(bytes.sublist(0, bytes.length - 4)).bytes)
+        .bytes
+        .sublist(0, 4);
+    final expectedCheckSum = bytes.sublist(bytes.length - 4);
+
+    if (!seqEqual(computedCheckSum, expectedCheckSum)) {
+      throw Exception('Invalid XRP address');
     }
   } else if (data['default'] == 'ALGO') {
     algo_rand.Address.fromAlgorandAddress(
