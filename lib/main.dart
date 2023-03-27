@@ -70,10 +70,7 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
-  rippleJsRuntime = getJavascriptRuntime()
-    ..evaluate(await rootBundle.loadString('js/xrpl-latest-min.js'))
-    ..enableHandlePromises();
-  await rippleJsRuntime.enableFetch();
+
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),
