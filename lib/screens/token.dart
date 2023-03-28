@@ -208,6 +208,7 @@ class _TokenState extends State<Token> {
 
   String rampName;
   String currentAddress;
+  String rampCurrentAddress;
   Future getTokenTransactions() async {
     try {
       final pref = Hive.box(secureStorageKey);
@@ -220,69 +221,62 @@ class _TokenState extends State<Token> {
           widget.data,
         ))['address'];
       } else if (widget.data['default'] == 'SOL') {
-        currentAddress = (await getSolanaFromMemnomic(mnemonic))['address']
-            .toString()
-            .toLowerCase();
+        currentAddress =
+            (await getSolanaFromMemnomic(mnemonic))['address'].toString();
       } else if (widget.data['default'] == 'XRP') {
         currentAddress = (await getXRPFromMemnomic(
           mnemonic,
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'ADA') {
         currentAddress = (await getCardanoFromMemnomic(
           mnemonic,
           widget.data['cardano_network'],
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'ALGO') {
         currentAddress = (await getAlgorandFromMemnomic(
           mnemonic,
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'TRX') {
         currentAddress = (await getTronFromMemnomic(
           mnemonic,
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'XTZ') {
         currentAddress = (await getTezorFromMemnomic(
           mnemonic,
           widget.data,
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'FIL') {
         currentAddress = (await getFileCoinFromMemnomic(
           mnemonic,
           widget.data['prefix'],
         ))['address']
-            .toString()
-            .toLowerCase();
+            .toString();
       } else if (widget.data['default'] == 'XLM') {
-        currentAddress = (await getStellarFromMemnomic(mnemonic))['address']
-            .toString()
-            .toLowerCase();
+        currentAddress =
+            (await getStellarFromMemnomic(mnemonic))['address'].toString();
       } else if (widget.data['default'] == 'ATOM') {
         final getCosmosDetails = await getCosmosFromMemnomic(
           mnemonic,
           widget.data['bech32Hrp'],
           widget.data['lcdUrl'],
         );
-        currentAddress = getCosmosDetails['address'].toString().toLowerCase();
+        currentAddress = getCosmosDetails['address'].toString();
       } else {
         final response = await getEthereumFromMemnomic(
           mnemonic,
           widget.data['coinType'],
         );
-        currentAddress =
-            response['eth_wallet_address'].toString().toLowerCase();
+        currentAddress = response['eth_wallet_address'].toString();
       }
 
       rampName = rampSwap[widget.data['symbol']];
+      rampCurrentAddress = currentAddress;
+      currentAddress = currentAddress.toLowerCase();
       String contractAddrLookUpkey;
       String evmAddrLookUpkey;
 
@@ -465,7 +459,7 @@ class _TokenState extends State<Token> {
             IconButton(
               onPressed: widget.data['default'] != null
                   ? () async {
-                      final buyLink = getRampLink(rampName, currentAddress);
+                      final buyLink = getRampLink(rampName, rampCurrentAddress);
                       await navigateToDappBrowser(context, buyLink);
                     }
                   : null,
