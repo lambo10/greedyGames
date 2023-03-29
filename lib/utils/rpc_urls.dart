@@ -2283,7 +2283,7 @@ Future<double> getTronAddressBalance(
 }) async {
   final pref = Hive.box(secureStorageKey);
 
-  final key = 'tronAddressBalance$address';
+  final key = 'tronAddressBalance$address$tronGridApi';
 
   final storedBalance = pref.get(key);
 
@@ -2308,11 +2308,11 @@ Future<double> getTronAddressBalance(
       throw Exception('Request failed');
     }
     Map decodedData = jsonDecode(request.body);
-    final String balance = decodedData['data']['balance'];
+
+    final int balance = decodedData['data'][0]['balance'];
 
     final balanceInTron =
-        (BigInt.parse(balance) / BigInt.from(pow(10, cardanoDecimals)))
-            .toDouble();
+        (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals))).toDouble();
     await pref.put(key, balanceInTron);
 
     return balanceInTron;
