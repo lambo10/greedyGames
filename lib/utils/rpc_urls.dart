@@ -64,6 +64,7 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 const etherDecimals = 18;
 const bitCoinDecimals = 8;
 const cardanoDecimals = 6;
+const tronDecimals = 6;
 const cosmosDecimals = 6;
 const xrpDecimals = 6;
 const fileCoinDecimals = 18;
@@ -2281,6 +2282,7 @@ enum TronNetwork { mainNet, shaSha }
 
 Future<double> getTronAddressBalance(
   String address,
+  String tronGridApi,
   TronNetwork tronNetwork, {
   bool skipNetworkRequest = false,
 }) async {
@@ -2299,13 +2301,26 @@ Future<double> getTronAddressBalance(
   if (skipNetworkRequest) return savedBalance;
 
   try {
-    // FIXME:
-    // final userBalanceMicro = await getAlgorandClient(type).getBalance(address);
-    // final userBalance = userBalanceMicro / pow(10, algorandDecimals);
-    // await pref.put(key, userBalance);
+    final request = await get(
+      Uri.parse('$tronGridApi/v1/accounts/$address'),
+      headers: {
+        'TRON-PRO-API-KEY': tronGridApiKey,
+        'Content-Type': 'application/json'
+      },
+    );
 
-    // return userBalance;
-    return savedBalance;
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception('Request failed');
+    }
+    Map decodedData = jsonDecode(request.body);
+    final String balance = decodedData['data']['balance'];
+
+    final balanceInTron =
+        (BigInt.parse(balance) / BigInt.from(pow(10, cardanoDecimals)))
+            .toDouble();
+    await pref.put(key, balanceInTron);
+
+    return balanceInTron;
   } catch (e) {
     return savedBalance;
   }
@@ -3070,6 +3085,7 @@ Future<double> totalCryptoBalance({
 
     final tronBalance = await getTronAddressBalance(
       getTronDetails['address'],
+      tronBlockchains['api'],
       tronBlockchains['network'],
       skipNetworkRequest: skipNetworkRequest,
     );

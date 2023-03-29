@@ -638,6 +638,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                       try {
                         notifier.value = await getTronAddressBalance(
                           getTronDetails['address'],
+                          tronBlockchain['api'],
                           tronBlockchain['network'],
                           skipNetworkRequest: notifier.value == null,
                         );
@@ -648,6 +649,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                           try {
                             notifier.value = await getTronAddressBalance(
                               getTronDetails['address'],
+                              tronBlockchain['api'],
                               tronBlockchain['network'],
                               skipNetworkRequest: notifier.value == null,
                             );

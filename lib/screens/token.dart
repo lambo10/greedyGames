@@ -143,6 +143,7 @@ class _TokenState extends State<Token> {
         final getTronDetails = await getTronFromMemnomic(mnemonic);
         cryptoBalance = await getTronAddressBalance(
           getTronDetails['address'],
+          widget.data['api'],
           widget.data['network'],
           skipNetworkRequest: skipNetworkRequest,
         );
