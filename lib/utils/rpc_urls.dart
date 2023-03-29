@@ -64,6 +64,7 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 const etherDecimals = 18;
 const bitCoinDecimals = 8;
 const cardanoDecimals = 6;
+const tronDecimals = 6;
 const cosmosDecimals = 6;
 const xrpDecimals = 6;
 const fileCoinDecimals = 18;
@@ -738,26 +739,26 @@ Map getBitCoinPOSBlockchains() {
       'P2WPKH': true,
       'derivationPath': "m/84'/2'/0'/0/0"
     },
-    // 'Dash': {
-    //   'symbol': 'DASH',
-    //   'default': 'DASH',
-    //   'blockExplorer':
-    //       'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
-    //   'image': 'assets/dash.png',
-    //   'POSNetwork': dash,
-    //   'P2WPKH': false,
-    //   'derivationPath': "m/44'/5'/0'/0/0"
-    // },
-    // 'ZCash': {
-    //   'symbol': 'ZEC',
-    //   'default': 'ZEC',
-    //   'blockExplorer':
-    //       'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
-    //   'image': 'assets/zcash.png',
-    //   'POSNetwork': zcash,
-    //   'P2WPKH': false,
-    //   'derivationPath': "m/44'/133'/0'/0/0"
-    // },
+    'Dash': {
+      'symbol': 'DASH',
+      'default': 'DASH',
+      'blockExplorer':
+          'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
+      'image': 'assets/dash.png',
+      'POSNetwork': dash,
+      'P2WPKH': false,
+      'derivationPath': "m/44'/5'/0'/0/0"
+    },
+    'ZCash': {
+      'symbol': 'ZEC',
+      'default': 'ZEC',
+      'blockExplorer':
+          'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
+      'image': 'assets/zcash.png',
+      'POSNetwork': zcash,
+      'P2WPKH': false,
+      'derivationPath': "m/44'/133'/0'/0/0"
+    },
     'Dogecoin': {
       'symbol': 'DOGE',
       'default': 'DOGE',
@@ -787,7 +788,6 @@ Map getBitCoinPOSBlockchains() {
 }
 
 Map getCosmosBlockChains() {
-  return {};
   Map blockChains = {
     'Cosmos': {
       'blockExplorer':
@@ -830,7 +830,6 @@ final List<String> months = [
 ];
 
 Map getTronBlockchains() {
-  return {};
   Map blockChains = {
     'Tron': {
       'blockExplorer':
@@ -838,8 +837,20 @@ Map getTronBlockchains() {
       'symbol': 'TRX',
       'default': 'TRX',
       'image': 'assets/tron.png',
+      'api': 'https://api.trongrid.io',
     }
   };
+
+  if (enableTestNet) {
+    blockChains['Tron(Testnet)'] = {
+      'blockExplorer':
+          'https://shasta.tronscan.org/#/transaction/$transactionhashTemplateKey',
+      'symbol': 'TRX',
+      'default': 'TRX',
+      'image': 'assets/tron.png',
+      'api': 'https://api.shasta.trongrid.io',
+    };
+  }
 
   return blockChains;
 }
@@ -2266,12 +2277,13 @@ Future<double> getAlgorandAddressBalance(
 }
 
 Future<double> getTronAddressBalance(
-  String address, {
+  String address,
+  String tronGridApi, {
   bool skipNetworkRequest = false,
 }) async {
   final pref = Hive.box(secureStorageKey);
 
-  final key = 'tronAddressBalance$address';
+  final key = 'tronAddressBalance$address$tronGridApi';
 
   final storedBalance = pref.get(key);
 
@@ -2284,13 +2296,26 @@ Future<double> getTronAddressBalance(
   if (skipNetworkRequest) return savedBalance;
 
   try {
-    // FIXME:
-    // final userBalanceMicro = await getAlgorandClient(type).getBalance(address);
-    // final userBalance = userBalanceMicro / pow(10, algorandDecimals);
-    // await pref.put(key, userBalance);
+    final request = await get(
+      Uri.parse('$tronGridApi/v1/accounts/$address'),
+      headers: {
+        'TRON-PRO-API-KEY': tronGridApiKey,
+        'Content-Type': 'application/json'
+      },
+    );
 
-    // return userBalance;
-    return savedBalance;
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception('Request failed');
+    }
+    Map decodedData = jsonDecode(request.body);
+
+    final int balance = decodedData['data'][0]['balance'];
+
+    final balanceInTron =
+        (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals))).toDouble();
+    await pref.put(key, balanceInTron);
+
+    return balanceInTron;
   } catch (e) {
     return savedBalance;
   }
@@ -3055,6 +3080,7 @@ Future<double> totalCryptoBalance({
 
     final tronBalance = await getTronAddressBalance(
       getTronDetails['address'],
+      tronBlockchains['api'],
       skipNetworkRequest: skipNetworkRequest,
     );
 
