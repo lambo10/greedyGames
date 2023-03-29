@@ -836,7 +836,8 @@ Map getTronBlockchains() {
       'symbol': 'TRX',
       'default': 'TRX',
       'image': 'assets/tron.png',
-      'api': 'https://api.trongrid.io'
+      'api': 'https://api.trongrid.io',
+      'network': TronNetwork.mainNet
     }
   };
 
@@ -847,7 +848,8 @@ Map getTronBlockchains() {
       'symbol': 'TRX',
       'default': 'TRX',
       'image': 'assets/tron.png',
-      'api': 'https://api.shasta.trongrid.io'
+      'api': 'https://api.shasta.trongrid.io',
+      'network': TronNetwork.shaSha
     };
   }
 
@@ -2275,8 +2277,11 @@ Future<double> getAlgorandAddressBalance(
   }
 }
 
+enum TronNetwork { mainNet, shaSha }
+
 Future<double> getTronAddressBalance(
-  String address, {
+  String address,
+  TronNetwork tronNetwork, {
   bool skipNetworkRequest = false,
 }) async {
   final pref = Hive.box(secureStorageKey);
@@ -3065,6 +3070,7 @@ Future<double> totalCryptoBalance({
 
     final tronBalance = await getTronAddressBalance(
       getTronDetails['address'],
+      tronBlockchains['network'],
       skipNetworkRequest: skipNetworkRequest,
     );
 
