@@ -738,26 +738,26 @@ Map getBitCoinPOSBlockchains() {
       'P2WPKH': true,
       'derivationPath': "m/84'/2'/0'/0/0"
     },
-    // 'Dash': {
-    //   'symbol': 'DASH',
-    //   'default': 'DASH',
-    //   'blockExplorer':
-    //       'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
-    //   'image': 'assets/dash.png',
-    //   'POSNetwork': dash,
-    //   'P2WPKH': false,
-    //   'derivationPath': "m/44'/5'/0'/0/0"
-    // },
-    // 'ZCash': {
-    //   'symbol': 'ZEC',
-    //   'default': 'ZEC',
-    //   'blockExplorer':
-    //       'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
-    //   'image': 'assets/zcash.png',
-    //   'POSNetwork': zcash,
-    //   'P2WPKH': false,
-    //   'derivationPath': "m/44'/133'/0'/0/0"
-    // },
+    'Dash': {
+      'symbol': 'DASH',
+      'default': 'DASH',
+      'blockExplorer':
+          'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
+      'image': 'assets/dash.png',
+      'POSNetwork': dash,
+      'P2WPKH': false,
+      'derivationPath': "m/44'/5'/0'/0/0"
+    },
+    'ZCash': {
+      'symbol': 'ZEC',
+      'default': 'ZEC',
+      'blockExplorer':
+          'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
+      'image': 'assets/zcash.png',
+      'POSNetwork': zcash,
+      'P2WPKH': false,
+      'derivationPath': "m/44'/133'/0'/0/0"
+    },
     'Dogecoin': {
       'symbol': 'DOGE',
       'default': 'DOGE',
@@ -787,7 +787,6 @@ Map getBitCoinPOSBlockchains() {
 }
 
 Map getCosmosBlockChains() {
-  return {};
   Map blockChains = {
     'Cosmos': {
       'blockExplorer':
@@ -830,7 +829,6 @@ final List<String> months = [
 ];
 
 Map getTronBlockchains() {
-  return {};
   Map blockChains = {
     'Tron': {
       'blockExplorer':
@@ -838,8 +836,20 @@ Map getTronBlockchains() {
       'symbol': 'TRX',
       'default': 'TRX',
       'image': 'assets/tron.png',
+      'api': 'https://api.trongrid.io'
     }
   };
+
+  if (enableTestNet) {
+    blockChains['Tron(Testnet)'] = {
+      'blockExplorer':
+          'https://shasta.tronscan.org/#/transaction/$transactionhashTemplateKey',
+      'symbol': 'TRX',
+      'default': 'TRX',
+      'image': 'assets/tron.png',
+      'api': 'https://api.shasta.trongrid.io'
+    };
+  }
 
   return blockChains;
 }
