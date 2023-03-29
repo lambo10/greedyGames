@@ -144,7 +144,6 @@ class _TokenState extends State<Token> {
         cryptoBalance = await getTronAddressBalance(
           getTronDetails['address'],
           widget.data['api'],
-          widget.data['network'],
           skipNetworkRequest: skipNetworkRequest,
         );
       } else if (widget.data['default'] == 'ADA') {
