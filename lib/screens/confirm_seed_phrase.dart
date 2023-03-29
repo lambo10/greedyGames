@@ -1,7 +1,4 @@
-// ignore_for_file: prefer__ructors, prefer_const_constructors
-
 import 'dart:convert';
-
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/foundation.dart';
@@ -85,7 +82,7 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
         backgroundColor: Colors.red,
         content: Text(
           AppLocalizations.of(context).invalidmnemonic,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
     );
@@ -129,7 +126,7 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
     for (int index = 0; index < row; index++) {
       seedPhraseWidget.addAll(
         [
-          SizedBox(
+          const SizedBox(
             height: 15,
           ),
           Row(
@@ -183,12 +180,12 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 if (!finished)
@@ -248,7 +245,7 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
                                     padding: const EdgeInsets.all(10),
                                     child: Text(
                                       firstThree[2].toString(),
-                                      style: TextStyle(color: null),
+                                      style: const TextStyle(color: null),
                                     ),
                                   ),
                                 ),
@@ -322,7 +319,8 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
 
                               await Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (ctx) => Wallet()),
+                                MaterialPageRoute(
+                                    builder: (ctx) => const Wallet()),
                                 (r) => false,
                               );
                             } catch (e) {
@@ -334,7 +332,7 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
                                   backgroundColor: Colors.red,
                                   content: Text(
                                     AppLocalizations.of(context).errorTryAgain,
-                                    style: TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               );
@@ -348,10 +346,10 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
                     child: Padding(
                       padding: const EdgeInsets.all(15),
                       child: isLoading
-                          ? Loader(color: white)
+                          ? const Loader(color: white)
                           : Text(
                               AppLocalizations.of(context).continue_,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),

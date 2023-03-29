@@ -23,6 +23,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import '../config/colors.dart';
 import '../utils/app_config.dart';
 import '../utils/get_blockchain_widget.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -820,8 +821,8 @@ class _WalletMainBodyState extends State<WalletMainBody>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                color:
-                    Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+                //color:Colors.red,
+                //Theme.of(context).bottomNavigationBarTheme.backgroundColor,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
@@ -874,7 +875,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
                     Text(
                       AppLocalizations.of(context).assets,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          color: white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                     //
                     GestureDetector(

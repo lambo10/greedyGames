@@ -20,6 +20,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path/path.dart';
+import 'config/theme.dart';
 import 'screens/main_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -129,11 +130,12 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: NavigationService.navigatorKey, // set property
           debugShowCheckedModeBanner: false,
           locale: _locale,
-          theme: lightTheme,
+          // theme: lightTheme,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          darkTheme: darkTheme,
-          themeMode: currentMode,
+         // darkTheme: darkTheme,
+         // themeMode: currentMode,
+          theme: greedyTheme,
           home: const MyHomePage(),
         );
       },

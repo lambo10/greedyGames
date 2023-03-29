@@ -3,6 +3,8 @@ import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+import '../config/colors.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class DappUI extends StatefulWidget {
   const DappUI({Key key}) : super(key: key);
@@ -38,8 +40,11 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                   children: [
                     const Text(
                       'DApps',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        color: white,
+                      ),
                     ),
                     IconButton(
                       onPressed: () async {
@@ -48,6 +53,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                       icon: const Icon(
                         Icons.search,
                         size: 30,
+                        color: white,
                       ),
                     )
                   ],
@@ -55,7 +61,51 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                 const SizedBox(
                   height: 20,
                 ),
-                Image.asset('assets/header_dapp.png'),
+                Stack(
+                  children: [
+                    Image.asset('assets/header_dappp.png'),
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: 50, left: 15, right: 15,),
+                      child: SizedBox(
+                        width: 250.0,
+                        child: DefaultTextStyle(
+                          style: const TextStyle(
+                            fontSize: 30.0,
+                            fontFamily: 'Agne',
+                          ),
+                          child: AnimatedTextKit(
+                            animatedTexts: [
+                              TypewriterAnimatedText(
+                                'Explore a world of',
+                                textStyle: const TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+
+                                speed: const Duration(milliseconds: 500),
+                              ),
+                              TypewriterAnimatedText(
+                                'functional DApps',
+                                textStyle: const TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                  speed: const Duration(milliseconds: 500),
+                              ),
+                            
+                            ],
+                            totalRepeatCount: 50,
+                            pause: const Duration(milliseconds: 500),
+                            onTap: () {
+                              //print("Tap Event");
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -64,7 +114,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                   child: Text(
                     AppLocalizations.of(context).favourites,
                     style: const TextStyle(
-                        color: Colors.grey, fontSize: 16, letterSpacing: 3),
+                        color: Colors.white, fontSize: 16, letterSpacing: 3),
                   ),
                 ),
                 // search field with search icon
@@ -84,6 +134,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                           );
                         },
                         child: Card(
+                          color: Colors.amber.shade600,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           child: Padding(
@@ -106,6 +157,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                               context, stakeDexProviderUrl);
                         },
                         child: Card(
+                          color: Colors.red.shade600,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           child: Padding(
@@ -134,6 +186,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                               context, fiatDexProviderUrl);
                         },
                         child: Card(
+                          color: Colors.blue.shade600,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           child: Padding(
@@ -156,6 +209,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                               context, browserDexProviderUrl);
                         },
                         child: Card(
+                          color: Colors.green.shade600,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           child: Padding(
@@ -181,7 +235,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                   child: Text(
                     AppLocalizations.of(context).all,
                     style: const TextStyle(
-                      color: Colors.grey,
+                      color: Colors.white,
                       fontSize: 16,
                       letterSpacing: 3,
                     ),
@@ -227,6 +281,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                         AppLocalizations.of(context)
                                             .nftMarketPlace,
                                         style: const TextStyle(
+                                          color: Colors.white,
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -243,7 +298,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                      color: Colors.white60,
                                     ),
                                     overflow: TextOverflow.fade,
                                   ),
@@ -286,6 +341,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                         AppLocalizations.of(context)
                                             .virtualReality,
                                         style: const TextStyle(
+                                          color: Colors.white,
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -302,7 +358,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                      color: Colors.white60,
                                     ),
                                   ),
                                 ],
@@ -343,6 +399,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                       Text(
                                         AppLocalizations.of(context).eCommerce,
                                         style: const TextStyle(
+                                          color: Colors.white,
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -359,7 +416,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                      color: Colors.white60,
                                     ),
                                   ),
                                 ],
@@ -398,6 +455,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                   Text(
                                     AppLocalizations.of(context).blog,
                                     style: const TextStyle(
+                                      color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -408,7 +466,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                      color: Colors.white60,
                                     ),
                                   ),
                                 ],

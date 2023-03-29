@@ -14,7 +14,7 @@ import '../components/loader.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
 import '../utils/app_config.dart';
-import '../utils/slide_up_panel.dart';
+
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -260,7 +260,9 @@ class _ExchangeTokenState extends State<ExchangeToken>
                 Text(
                   AppLocalizations.of(context).swap,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 24),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24),
                 ),
                 const SizedBox(
                   height: 20,
@@ -271,6 +273,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                     Text(
                       AppLocalizations.of(context).network,
                       style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 20,
                       ),
                     ),
@@ -345,9 +348,25 @@ class _ExchangeTokenState extends State<ExchangeToken>
                             child: SizedBox(
                               height: 150,
                               width: MediaQuery.of(context).size.width * .9,
-                              child: Card(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20)),
+                              child: Container(
+                                  margin: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        greedyblendpurple,
+                                        Color.fromARGB(255, 110, 34, 197),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomCenter,
+                                      stops: [
+                                        0.1,
+                                        0.9,
+                                      ],
+                                    ),
+                                  ),
+                                  // shape: RoundedRectangleBorder(
+                                  //     borderRadius: BorderRadius.circular(20)),
                                   child: Center(
                                     child: Padding(
                                       padding: const EdgeInsets.only(
@@ -365,10 +384,13 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                 padding: const EdgeInsets.only(
                                                     left: 10),
                                                 child: Text(
-                                                    AppLocalizations.of(context)
-                                                        .from,
-                                                    style:
-                                                        s12_18_agSemiboldGrey),
+                                                  AppLocalizations.of(context)
+                                                      .from,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -488,7 +510,12 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                                     'symbol'] ??
                                                                 'ETH',
                                                           ),
-                                                          style: m_agRegular,
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                         ),
                                                         const SizedBox(
                                                           width: 5,
@@ -510,8 +537,12 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                 child: Row(
                                                   children: [
                                                     Text(
-                                                      '${AppLocalizations.of(context).balance}: ',
-                                                      style: m_agRegular_grey,
+                                                      '${AppLocalizations.of(context).balance} : ',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                        //fontSize: 20,
+                                                      ),
                                                     ),
                                                     if (payDetails != null)
                                                       UserBalance(
@@ -541,9 +572,26 @@ class _ExchangeTokenState extends State<ExchangeToken>
                             child: SizedBox(
                               height: 150,
                               width: MediaQuery.of(context).size.width * .9,
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
+                              child: Container(
+                                margin: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(255, 110, 34, 197),
+                                      greedyblendpurple,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    stops: [
+                                      0.1,
+                                      0.9,
+                                    ],
+                                  ),
+                                ),
+
+                                // shape: RoundedRectangleBorder(
+                                //     borderRadius: BorderRadius.circular(20)),
                                 child: Center(
                                   child: Padding(
                                     padding: const EdgeInsets.only(
@@ -561,9 +609,12 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                               padding: const EdgeInsets.only(
                                                   left: 10),
                                               child: Text(
-                                                  AppLocalizations.of(context)
-                                                      .to,
-                                                  style: s12_18_agSemiboldGrey),
+                                                AppLocalizations.of(context).to,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
                                             const Padding(
                                               padding:
@@ -696,7 +747,12 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                 children: [
                                                   Text(
                                                     '${AppLocalizations.of(context).balance}: ',
-                                                    style: m_agRegular_grey,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                   if (getDetails != null)
                                                     UserBalance(

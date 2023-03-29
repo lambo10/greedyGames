@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 
+import '../config/colors.dart';
+
 class GetBlockChainWidget extends StatefulWidget {
   final AssetImage image;
   final String name;
@@ -102,99 +104,146 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Expanded(
-        child: Row(
-          children: [
-            widget.image != null
-                ? CircleAvatar(
-                    backgroundImage: widget.image,
-                    backgroundColor: Theme.of(context).backgroundColor,
-                  )
-                : CircleAvatar(
-                    child: Text(
-                      ellipsify(str: widget.symbol, maxLength: 3),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 24,
+            spreadRadius: 16,
+            color: Colors.black.withOpacity(0.2),
+          )
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.0),
+        //child:
+        // BackdropFilter(
+        //   filter: ImageFilter.blur(
+        //     sigmaX: 40.0,
+        //     sigmaY: 40.0,
+        //   ),
+        child: Container(
+          height: 65,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10.0),
+            // border: Border.all(
+            //   width: 1.5,
+            //   color: Colors.white.withOpacity(0.2),
+            // ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        widget.image != null
+                            ? CircleAvatar(
+                                backgroundImage: widget.image,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.background,
+                              )
+                            : CircleAvatar(
+                                child: Text(
+                                  ellipsify(str: widget.symbol, maxLength: 3),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Flexible(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      widget.name,
+                                      style: const TextStyle(
+                                          color: white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500),
+                                      overflow: TextOverflow.fade,
+                                    ),
+                                    widget.cryptoAmount
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                        child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        if (blockchainPrice != null)
+                                          Row(
+                                            children: [
+                                              Text(
+                                                blockchainPrice['price'],
+                                                style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: widget.hasPrice
+                                                        ? null
+                                                        : white),
+                                              ),
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              widget.hasPrice
+                                                  ? Text(
+                                                      (blockchainPrice[
+                                                                      'change'] >
+                                                                  0
+                                                              ? '+'
+                                                              : '') +
+                                                          formatMoney(
+                                                              blockchainPrice[
+                                                                  'change']) +
+                                                          '%',
+                                                      style: widget.hasPrice
+                                                          ? TextStyle(
+                                                              fontSize: 12,
+                                                              color: (blockchainPrice[
+                                                                          'change'] <
+                                                                      0)
+                                                                  ? red
+                                                                  : green,
+                                                            )
+                                                          : const TextStyle(
+                                                              fontSize: 12,
+                                                              color: white),
+                                                    )
+                                                  : Container()
+                                            ],
+                                          )
+                                      ],
+                                    )),
+                                  ],
+                                ),
+                              ]),
+                        )
+                      ],
                     ),
                   ),
-            const SizedBox(
-              width: 10,
-            ),
-            Flexible(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          widget.name,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w500),
-                          overflow: TextOverflow.fade,
-                        ),
-                        widget.cryptoAmount
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            if (blockchainPrice != null)
-                              Row(
-                                children: [
-                                  Text(
-                                    blockchainPrice['price'],
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        color: widget.hasPrice
-                                            ? null
-                                            : const Color(0x00ffffff)),
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  widget.hasPrice
-                                      ? Text(
-                                          (blockchainPrice['change'] > 0
-                                                  ? '+'
-                                                  : '') +
-                                              formatMoney(
-                                                  blockchainPrice['change']) +
-                                              '%',
-                                          style: widget.hasPrice
-                                              ? TextStyle(
-                                                  fontSize: 12,
-                                                  color: (blockchainPrice[
-                                                              'change'] <
-                                                          0)
-                                                      ? red
-                                                      : green,
-                                                )
-                                              : const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0x00ffffff)),
-                                        )
-                                      : Container()
-                                ],
-                              )
-                          ],
-                        )),
-                      ],
-                    ),
-                  ]),
-            )
-          ],
+                ]),
+          ),
         ),
+
+        //),
       ),
-    ]);
+    );
   }
 }

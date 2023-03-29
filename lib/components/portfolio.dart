@@ -94,21 +94,33 @@ class _PortfolioState extends State<Portfolio> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 // color: portfolioCardColor,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? null
-                    : primaryMaterialColor,
-                gradient: Theme.of(context).brightness == Brightness.light
-                    ? null
-                    : const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          portfolioCardColor,
-                          portfolioCardColorLowerSection
-                        ],
-                      ),
+                // color: Theme.of(context).brightness == Brightness.dark
+                //     ? null
+                //     : primaryMaterialColor,
+                // gradient: Theme.of(context).brightness == Brightness.light
+                //     ? null
+                //     : const LinearGradient(
+                //         begin: Alignment.topCenter,
+                //         end: Alignment.bottomCenter,
+                //         colors: [
+                //           portfolioCardColor,
+                //           portfolioCardColorLowerSection
+                //         ],
+                //       ),
+                gradient: LinearGradient(
+                  colors: [
+                    greedyblendpurple,
+                    greedyblendblue,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  stops: [
+                    0.1,
+                    0.9,
+                  ],
+                ),
                 borderRadius: BorderRadius.all(Radius.circular(20)),
               ),
               width: double.infinity,
@@ -126,7 +138,7 @@ class _PortfolioState extends State<Portfolio> {
                       AppLocalizations.of(context).portfolio,
                       style: const TextStyle(
                         fontSize: 16,
-                        color: Color.fromRGBO(255, 255, 255, .6),
+                        color: white,
                         letterSpacing: 3,
                       ),
                     ),
@@ -174,173 +186,290 @@ class _PortfolioState extends State<Portfolio> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Expanded(
+                        //   child: SizedBox(
+                        //     height: 45,
+                        //     child: ElevatedButton(
+                        //       style: ButtonStyle(
+                        //         backgroundColor:
+                        //             MaterialStateProperty.resolveWith(
+                        //           (states) => const Color.fromRGBO(
+                        //             255,
+                        //             255,
+                        //             255,
+                        //             .38,
+                        //           ),
+                        //         ),
+                        //         shape: MaterialStateProperty.resolveWith(
+                        //           (states) => RoundedRectangleBorder(
+                        //             borderRadius: BorderRadius.circular(10),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       onPressed: () async {
+                        //         final blockchains = <Widget>[];
+                        //         final acceptedCurrencies = [
+                        //           {
+                        //             'name': 'BNB',
+                        //             'asset': 'assets/smartchain.png'
+                        //           },
+                        //           {'name': 'BUSD', 'asset': 'assets/busd.png'},
+                        //         ];
+                        //         for (int i = 0;
+                        //             i < acceptedCurrencies.length;
+                        //             i++) {
+                        //           blockchains.add(
+                        //             InkWell(
+                        //               onTap: () async {
+                        //                 Navigator.pop(context);
+                        //                 if (acceptedCurrencies[i]['name'] ==
+                        //                     'BUSD') {
+                        //                   await Navigator.push(
+                        //                     context,
+                        //                     PageTransition(
+                        //                       type: PageTransitionType
+                        //                           .rightToLeft,
+                        //                       child: const PrivateSaleBusd(),
+                        //                     ),
+                        //                   );
+                        //                 } else {
+                        //                   await Navigator.push(
+                        //                     context,
+                        //                     PageTransition(
+                        //                       type: PageTransitionType
+                        //                           .rightToLeft,
+                        //                       child: const PrivateSale(),
+                        //                     ),
+                        //                   );
+                        //                 }
+                        //               },
+                        //               child: buildRow(
+                        //                 acceptedCurrencies[i]['asset'],
+                        //                 acceptedCurrencies[i]['name'],
+                        //                 isSelected: false,
+                        //               ),
+                        //             ),
+                        //           );
+                        //         }
+                        //         slideUpPanel(
+                        //           context,
+                        //           Container(
+                        //             color: Colors.transparent,
+                        //             child: ListView(
+                        //               shrinkWrap: true,
+                        //               children: <Widget>[
+                        //                 const SizedBox(height: 20),
+                        //                 Row(
+                        //                   mainAxisAlignment:
+                        //                       MainAxisAlignment.spaceBetween,
+                        //                   children: [
+                        //                     const Align(
+                        //                       alignment: Alignment.centerRight,
+                        //                       child: IconButton(
+                        //                         onPressed: null,
+                        //                         icon: Icon(
+                        //                           Icons.close,
+                        //                           color: Colors.transparent,
+                        //                         ),
+                        //                       ),
+                        //                     ),
+                        //                     Text(
+                        //                       AppLocalizations.of(context)
+                        //                           .currency,
+                        //                       style: const TextStyle(
+                        //                         fontWeight: FontWeight.bold,
+                        //                         fontSize: 20.0,
+                        //                       ),
+                        //                     ),
+                        //                     Align(
+                        //                       alignment: Alignment.centerRight,
+                        //                       child: IconButton(
+                        //                         onPressed: () {
+                        //                           if (Navigator.canPop(
+                        //                               context)) {
+                        //                             Navigator.pop(context);
+                        //                           }
+                        //                         },
+                        //                         icon: const Icon(Icons.close),
+                        //                       ),
+                        //                     ),
+                        //                   ],
+                        //                 ),
+                        //                 const SizedBox(height: 20),
+                        //                 ...blockchains,
+                        //                 const SizedBox(height: 20),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //           canDismiss: false,
+                        //         );
+                        //       },
+                        //       child: Text(
+                        //         AppLocalizations.of(context).presale,
+                        //         style: const TextStyle(
+                        //           color: Colors.white,
+                        //           fontWeight: FontWeight.bold,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        // const SizedBox(
+                        //   width: 20,
+                        // ),
+                        // Expanded(
+                        //   child: SizedBox(
+                        //     height: 45,
+                        //     child: ElevatedButton(
+                        //       style: ButtonStyle(
+                        //         backgroundColor:
+                        //             MaterialStateProperty.resolveWith(
+                        //                 (states) => const Color.fromRGBO(
+                        //                     255, 255, 255, .38)),
+                        //         shape: MaterialStateProperty.resolveWith(
+                        //           (states) => RoundedRectangleBorder(
+                        //             borderRadius: BorderRadius.circular(10),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       onPressed: () async {
+                        //         await Navigator.push(
+                        //           context,
+                        //           PageTransition(
+                        //             type: PageTransitionType.rightToLeft,
+                        //             child: const ClaimAirdrop(),
+                        //           ),
+                        //         );
+                        //       },
+                        //       child: Text(
+                        //         AppLocalizations.of(context).airDrop,
+                        //         style: const TextStyle(
+                        //           color: Colors.white,
+                        //           fontWeight: FontWeight.bold,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         Expanded(
-                          child: SizedBox(
-                            height: 45,
-                            child: ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.resolveWith(
-                                  (states) => const Color.fromRGBO(
-                                    255,
-                                    255,
-                                    255,
-                                    .38,
-                                  ),
-                                ),
-                                shape: MaterialStateProperty.resolveWith(
-                                  (states) => RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                              onPressed: () async {
-                                final blockchains = <Widget>[];
-                                final acceptedCurrencies = [
-                                  {
-                                    'name': 'BNB',
-                                    'asset': 'assets/smartchain.png'
-                                  },
-                                  {'name': 'BUSD', 'asset': 'assets/busd.png'},
-                                ];
+                          child: PortButton(
+                            btnName: "Presale",
+                            onTap: () async {
+                              final blockchains = <Widget>[];
+                              final acceptedCurrencies = [
+                                {
+                                  'name': 'BNB',
+                                  'asset': 'assets/smartchain.png'
+                                },
+                                {'name': 'BUSD', 'asset': 'assets/busd.png'},
+                              ];
 
-                                for (int i = 0;
-                                    i < acceptedCurrencies.length;
-                                    i++) {
-                                  blockchains.add(
-                                    InkWell(
-                                      onTap: () async {
-                                        Navigator.pop(context);
-                                        if (acceptedCurrencies[i]['name'] ==
-                                            'BUSD') {
-                                          await Navigator.push(
-                                            context,
-                                            PageTransition(
-                                              type: PageTransitionType
-                                                  .rightToLeft,
-                                              child: const PrivateSaleBusd(),
+                              for (int i = 0;
+                                  i < acceptedCurrencies.length;
+                                  i++) {
+                                blockchains.add(
+                                  InkWell(
+                                    onTap: () async {
+                                      Navigator.pop(context);
+                                      if (acceptedCurrencies[i]['name'] ==
+                                          'BUSD') {
+                                        await Navigator.push(
+                                          context,
+                                          PageTransition(
+                                            type:
+                                                PageTransitionType.rightToLeft,
+                                            child: const PrivateSaleBusd(),
+                                          ),
+                                        );
+                                      } else {
+                                        await Navigator.push(
+                                          context,
+                                          PageTransition(
+                                            type:
+                                                PageTransitionType.rightToLeft,
+                                            child: const PrivateSale(),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: buildRow(
+                                      acceptedCurrencies[i]['asset'],
+                                      acceptedCurrencies[i]['name'],
+                                      isSelected: false,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              slideUpPanel(
+                                context,
+                                Container(
+                                  color: Colors.transparent,
+                                  child: ListView(
+                                    shrinkWrap: true,
+                                    children: <Widget>[
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Align(
+                                            alignment: Alignment.centerRight,
+                                            child: IconButton(
+                                              onPressed: null,
+                                              icon: Icon(
+                                                Icons.close,
+                                                color: Colors.transparent,
+                                              ),
                                             ),
-                                          );
-                                        } else {
-                                          await Navigator.push(
-                                            context,
-                                            PageTransition(
-                                              type: PageTransitionType
-                                                  .rightToLeft,
-                                              child: const PrivateSale(),
+                                          ),
+                                          Text(
+                                            AppLocalizations.of(context)
+                                                .currency,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20.0,
                                             ),
-                                          );
-                                        }
-                                      },
-                                      child: buildRow(
-                                        acceptedCurrencies[i]['asset'],
-                                        acceptedCurrencies[i]['name'],
-                                        isSelected: false,
+                                          ),
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: IconButton(
+                                              onPressed: () {
+                                                if (Navigator.canPop(context)) {
+                                                  Navigator.pop(context);
+                                                }
+                                              },
+                                              icon: const Icon(Icons.close),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  );
-                                }
-
-                                slideUpPanel(
-                                  context,
-                                  Container(
-                                    color: Colors.transparent,
-                                    child: ListView(
-                                      shrinkWrap: true,
-                                      children: <Widget>[
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Align(
-                                              alignment: Alignment.centerRight,
-                                              child: IconButton(
-                                                onPressed: null,
-                                                icon: Icon(
-                                                  Icons.close,
-                                                  color: Colors.transparent,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              AppLocalizations.of(context)
-                                                  .currency,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20.0,
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.centerRight,
-                                              child: IconButton(
-                                                onPressed: () {
-                                                  if (Navigator.canPop(
-                                                      context)) {
-                                                    Navigator.pop(context);
-                                                  }
-                                                },
-                                                icon: const Icon(Icons.close),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        ...blockchains,
-                                        const SizedBox(height: 20),
-                                      ],
-                                    ),
+                                      const SizedBox(height: 20),
+                                      ...blockchains,
+                                      const SizedBox(height: 20),
+                                    ],
                                   ),
-                                  canDismiss: false,
-                                );
-                              },
-                              child: Text(
-                                AppLocalizations.of(context).presale,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                            ),
+                                canDismiss: false,
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(
-                          width: 20,
-                        ),
+                        const SizedBox(width: 20),
                         Expanded(
-                          child: SizedBox(
-                            height: 45,
-                            child: ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.resolveWith(
-                                        (states) => const Color.fromRGBO(
-                                            255, 255, 255, .38)),
-                                shape: MaterialStateProperty.resolveWith(
-                                  (states) => RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
+                          child: PortButton(
+                            btnName: "AirDrop",
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                PageTransition(
+                                  type: PageTransitionType.rightToLeft,
+                                  child: const ClaimAirdrop(),
                                 ),
-                              ),
-                              onPressed: () async {
-                                await Navigator.push(
-                                  context,
-                                  PageTransition(
-                                    type: PageTransitionType.rightToLeft,
-                                    child: const ClaimAirdrop(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                AppLocalizations.of(context).airDrop,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ],
@@ -349,6 +478,55 @@ class _PortfolioState extends State<Portfolio> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PortButton extends StatelessWidget {
+  final String btnName;
+  final VoidCallback onTap;
+
+  const PortButton({Key key, this.btnName, this.onTap}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        width: 150,
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 5,
+              spreadRadius: 3,
+              color: Colors.black.withOpacity(0.2),
+            )
+          ],
+          borderRadius: BorderRadius.circular(15),
+          gradient: const LinearGradient(
+            colors: [
+              greedyBackground,
+              greedytransparentBotNav,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomCenter,
+            stops: [
+              0.1,
+              0.9,
+            ],
+          ),
+        ),
+        child: Center(
+          child: Text(
+            btnName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }

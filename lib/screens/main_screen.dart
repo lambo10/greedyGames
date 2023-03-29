@@ -30,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Center(
+                  const Center(
                     child: Image(
                       image: AssetImage('assets/logo.png'),
                       width: 200,

@@ -1,13 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/add_contact.dart';
-import 'package:cryptowallet/screens/set_currency.dart';
-import 'package:cryptowallet/utils/language_locale.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import 'package:flutter_svg/svg.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 

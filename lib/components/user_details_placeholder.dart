@@ -127,7 +127,11 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
         ),
         Text(
           '${(widget.showHi ?? false) ? AppLocalizations.of(context).hi : ''} ${ellipsify(str: userDetails_['name'])}',
-          style: TextStyle(fontSize: widget.textSize),
+          style: TextStyle(
+            fontSize: widget.textSize,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         )
       ],
     );

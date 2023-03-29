@@ -1,16 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/screens/video_player.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import 'package:jovial_svg/jovial_svg.dart';
 
 import '../utils/app_config.dart';
 
@@ -67,25 +58,25 @@ class _NFTImageWebviewState extends State<NFTImageWebview> {
       },
       fit: BoxFit.cover,
     );
-    return ScalableImageWidget.fromSISource(
-      fit: BoxFit.cover,
-      onLoading: (context) => Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: Loader(
-              color: appPrimaryColor,
-            ),
-          )
-        ],
-      ),
-      onError: (p0) {},
-      si: ScalableImageSource.fromSvgHttpUrl(
-        Uri.parse(widget.imageUrl),
-      ),
-    );
+    // return ScalableImageWidget.fromSISource(
+    //   fit: BoxFit.cover,
+    //   onLoading: (context) => Column(
+    //     mainAxisAlignment: MainAxisAlignment.center,
+    //     mainAxisSize: MainAxisSize.min,
+    //     children: const [
+    //       SizedBox(
+    //         width: 20,
+    //         height: 20,
+    //         child: Loader(
+    //           color: appPrimaryColor,
+    //         ),
+    //       )
+    //     ],
+    //   ),
+    //   onError: (p0) {},
+    //   si: ScalableImageSource.fromSvgHttpUrl(
+    //     Uri.parse(widget.imageUrl),
+    //   ),
+    // );
   }
 }

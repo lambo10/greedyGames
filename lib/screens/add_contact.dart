@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:cryptowallet/screens/enter_contact_address.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:hive/hive.dart';
 
@@ -156,7 +156,7 @@ class _AddContactState extends State<AddContact> {
                                           addressDataMap[key]['image'],
                                         ),
                                         backgroundColor:
-                                            Theme.of(context).backgroundColor,
+                                            Theme.of(context).colorScheme.background,
                                       ),
                                       const SizedBox(
                                         width: 20,

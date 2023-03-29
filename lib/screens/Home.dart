@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cryptowallet/screens/trandingGames.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 class Home extends StatefulWidget {
@@ -105,13 +101,13 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                     children: [
                       Text(
                         AppLocalizations.of(context).games,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 25),
                       ),
                       const SizedBox(
                         height: 20,
                       ),
-                      Container(
+                      SizedBox(
                           height: 210.0,
                           child: trandingGames(
                               responseItems: trandingGamesList,
@@ -209,7 +205,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       //     height: 5,
                       //   ),
                       // ],
-                      Container(
+                      SizedBox(
                           height: 200.0,
                           child: trandingGames(
                               responseItems: trandingGamesList,

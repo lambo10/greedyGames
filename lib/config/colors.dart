@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 
+
+
+const greedyBackground = Color(0xFF130042);
+const greedyblendpurple = Color(0xFFbd4df3);
+const greedyblendblue = Color(0xFF6857e2);
+const greedytransparent = Color(0xFF281b53);
+const greedytransparentBotNav = Color(0xFF2b1963);
+
+
 const primaryColor = Color(0xFF45C2DA);
 // final background = Color(0xFF191B2A);
 const background = Color(0xFF0F233D);

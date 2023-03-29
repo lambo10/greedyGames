@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
