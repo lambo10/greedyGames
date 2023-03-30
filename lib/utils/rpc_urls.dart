@@ -2822,7 +2822,7 @@ Future<Map> getXRPFromMemnomic(
     }
   }
 
-  final keys = calculateRippleKey({
+  final keys = await compute(calculateRippleKey, {
     mnemonicKey: mnemonic,
     seedRootKey: seedPhraseRoot,
   });
