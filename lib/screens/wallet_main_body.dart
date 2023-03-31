@@ -8,7 +8,6 @@ import 'package:cryptowallet/screens/user_added_tokens.dart';
 import 'package:cryptowallet/screens/add_custom_token.dart';
 import 'package:cryptowallet/screens/settings.dart';
 import 'package:cryptowallet/screens/token.dart';
-import 'package:cryptowallet/screens/wallet_connect.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
@@ -16,8 +15,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_js/flutter_js.dart';
 
 import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
@@ -891,24 +888,34 @@ class _WalletMainBodyState extends State<WalletMainBody>
                         );
                       },
                       child: Container(
-                        color: Colors.transparent,
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  AppLocalizations.of(context).addToken,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                  ),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              greedyblendblue,
+                              greedyblendpurple,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                AppLocalizations.of(context).addToken,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
                                 ),
-                                const Icon(
-                                  Icons.add,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
+                              ),
+                              const Icon(
+                                Icons.add,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
                         ),
                       ),

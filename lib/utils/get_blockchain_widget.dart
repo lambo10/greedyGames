@@ -126,8 +126,8 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
           height: 65,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10.0),
+            color: Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(8.0),
             // border: Border.all(
             //   width: 1.5,
             //   color: Colors.white.withOpacity(0.2),
@@ -152,7 +152,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                   ellipsify(str: widget.symbol, maxLength: 3),
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
@@ -170,9 +170,9 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                     Text(
                                       widget.name,
                                       style: const TextStyle(
-                                          color: white,
+                                          color: black,
                                           fontSize: 15,
-                                          fontWeight: FontWeight.w500),
+                                          fontWeight: FontWeight.bold),
                                       overflow: TextOverflow.fade,
                                     ),
                                     widget.cryptoAmount
@@ -195,9 +195,10 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                                 blockchainPrice['price'],
                                                 style: TextStyle(
                                                     fontSize: 15,
+                                                    fontWeight: FontWeight.w800,
                                                     color: widget.hasPrice
                                                         ? null
-                                                        : white),
+                                                        : black),
                                               ),
                                               const SizedBox(
                                                 width: 5,
@@ -215,6 +216,9 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                                           '%',
                                                       style: widget.hasPrice
                                                           ? TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                               fontSize: 12,
                                                               color: (blockchainPrice[
                                                                           'change'] <
@@ -224,7 +228,10 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                                             )
                                                           : const TextStyle(
                                                               fontSize: 12,
-                                                              color: white),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: black),
                                                     )
                                                   : Container()
                                             ],

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../config/colors.dart';
 import '../utils/app_config.dart';
 import '../utils/qr_scan_view.dart';
 
@@ -90,9 +91,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                   children: [
                     Text(
                       AppLocalizations.of(context).network,
-                      style: const TextStyle(
-                        fontSize: 20,
-                      ),
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -279,156 +278,166 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                 const SizedBox(
                   height: 40,
                 ),
-                Container(
-                  color: Colors.transparent,
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith(
-                          (states) => appBackgroundblue),
-                      shape: MaterialStateProperty.resolveWith(
-                        (states) => RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                InkWell(
+                  onTap: () async {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    final pref = Hive.box(secureStorageKey);
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    final contractAddr = contractAddressController.text.trim();
+                    final contractName = nameAddressController.text.trim();
+                    final contractSymbol = symbolAddressController.text.trim();
+                    final contractDecimals =
+                        decimalsAddressController.text.trim();
+
+                    if (contractName.isEmpty ||
+                        contractSymbol.isEmpty ||
+                        contractDecimals.isEmpty) {
+                      await autoFillNameDecimalSymbol(contractAddr);
+                    }
+
+                    if (contractAddr.toLowerCase() ==
+                        tokenContractAddress.toLowerCase()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            AppLocalizations.of(context).tokenImportedAlready,
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      textStyle: MaterialStateProperty.resolveWith(
-                        (states) => const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context).done,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    onPressed: () async {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      final pref = Hive.box(secureStorageKey);
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      final contractAddr =
-                          contractAddressController.text.trim();
-                      final contractName = nameAddressController.text.trim();
-                      final contractSymbol =
-                          symbolAddressController.text.trim();
-                      final contractDecimals =
-                          decimalsAddressController.text.trim();
+                      );
+                      return;
+                    }
 
-                      if (contractName.isEmpty ||
-                          contractSymbol.isEmpty ||
-                          contractDecimals.isEmpty) {
-                        await autoFillNameDecimalSymbol(contractAddr);
-                      }
-
-                      if (contractAddr.toLowerCase() ==
-                          tokenContractAddress.toLowerCase()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text(
-                              AppLocalizations.of(context).tokenImportedAlready,
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
+                    if (double.tryParse(contractDecimals) == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            AppLocalizations.of(context)
+                                .invalidContractAddressOrNetworkTimeout,
+                            style: const TextStyle(
+                              color: Colors.white,
                             ),
                           ),
-                        );
-                        return;
-                      }
+                        ),
+                      );
+                      return;
+                    }
 
-                      if (double.tryParse(contractDecimals) == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text(
-                              AppLocalizations.of(context)
-                                  .invalidContractAddressOrNetworkTimeout,
-                              style: const TextStyle(
-                                color: Colors.white,
+                    if (contractAddr.isEmpty ||
+                        contractName.isEmpty ||
+                        contractSymbol.isEmpty ||
+                        contractDecimals.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            AppLocalizations.of(context).enterContractAddress,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final userTokenListKey = await getAddTokenKey();
+
+                    final Map customTokenDetails = {
+                      'contractAddress': contractAddr,
+                      'name': contractName,
+                      'symbol': contractSymbol,
+                      'decimals': contractDecimals,
+                      'network': network,
+                      'chainId': getEVMBlockchains()[network]['chainId'],
+                      'rpc': getEVMBlockchains()[network]['rpc'],
+                      'blockExplorer': getEVMBlockchains()[network]
+                          ['blockExplorer'],
+                      'coinType': getEVMBlockchains()[network]['coinType'],
+                    };
+
+                    List userTokenList = [];
+                    final savedJsonImports = pref.get(userTokenListKey);
+
+                    if (savedJsonImports != null) {
+                      userTokenList = jsonDecode(savedJsonImports) as List;
+                      for (int i = 0; i < userTokenList.length; i++) {
+                        String contractAddress =
+                            userTokenList[i]['contractAddress'];
+                        String contractNetwork = userTokenList[i]['network'];
+
+                        bool sameContractAddress =
+                            contractAddress.toLowerCase() ==
+                                contractAddr.toLowerCase();
+                        bool sameNetwork = contractNetwork == network;
+
+                        if (sameNetwork && sameContractAddress) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: Colors.red,
+                              content: Text(
+                                'Token Imported Already',
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (contractAddr.isEmpty ||
-                          contractName.isEmpty ||
-                          contractSymbol.isEmpty ||
-                          contractDecimals.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text(
-                              AppLocalizations.of(context).enterContractAddress,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      final userTokenListKey = await getAddTokenKey();
-
-                      final Map customTokenDetails = {
-                        'contractAddress': contractAddr,
-                        'name': contractName,
-                        'symbol': contractSymbol,
-                        'decimals': contractDecimals,
-                        'network': network,
-                        'chainId': getEVMBlockchains()[network]['chainId'],
-                        'rpc': getEVMBlockchains()[network]['rpc'],
-                        'blockExplorer': getEVMBlockchains()[network]
-                            ['blockExplorer'],
-                        'coinType': getEVMBlockchains()[network]['coinType'],
-                      };
-
-                      List userTokenList = [];
-                      final savedJsonImports = pref.get(userTokenListKey);
-
-                      if (savedJsonImports != null) {
-                        userTokenList = jsonDecode(savedJsonImports) as List;
-                        for (int i = 0; i < userTokenList.length; i++) {
-                          String contractAddress =
-                              userTokenList[i]['contractAddress'];
-                          String contractNetwork = userTokenList[i]['network'];
-
-                          bool sameContractAddress =
-                              contractAddress.toLowerCase() ==
-                                  contractAddr.toLowerCase();
-                          bool sameNetwork = contractNetwork == network;
-
-                          if (sameNetwork && sameContractAddress) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                  'Token Imported Already',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            );
-                            return;
-                          }
+                          );
+                          return;
                         }
                       }
+                    }
 
-                      userTokenList.add(customTokenDetails);
+                    userTokenList.add(customTokenDetails);
 
-                      await pref.put(
-                        userTokenListKey,
-                        jsonEncode(userTokenList),
-                      );
+                    await pref.put(
+                      userTokenListKey,
+                      jsonEncode(userTokenList),
+                    );
 
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (ctx) => const Wallet(),
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => const Wallet(),
+                      ),
+                      (r) => false,
+                    );
+                  },
+                  child: Container(
+                    
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: const LinearGradient(
+                        colors: [greedytransparentBotNav, greedyblendblue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    // child:
+                    // ElevatedButton(
+                    //   style: ButtonStyle(
+                    //     backgroundColor: MaterialStateProperty.resolveWith(
+                    //         (states) => appBackgroundblue),
+                    //     shape: MaterialStateProperty.resolveWith(
+                    //       (states) => RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(10),
+                    //       ),
+                    //     ),
+                    //     textStyle: MaterialStateProperty.resolveWith(
+                    //       (states) => const TextStyle(color: Colors.white),
+                    //     ),
+                    //   ),
+                    child: Center(
+                      child: Text(
+                        AppLocalizations.of(context).done,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        (r) => false,
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
               ],

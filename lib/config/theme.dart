@@ -21,9 +21,14 @@ final Map<int, Color> color = {
 MaterialColor colorCustom = MaterialColor(0xFF000f26, color);
 
 ThemeData greedyTheme = ThemeData(
+     inputDecorationTheme: const InputDecorationTheme(
+        filled: true, //<-- SEE HERE
+        fillColor: grey2, //<-- SEE HERE
+        ),
     colorScheme: ColorScheme.fromSwatch(primarySwatch: colorCustom).copyWith(
       secondary: accent,
       primary: primary,
+      
     ),
     // fontFamily: "Montserrat",
     scaffoldBackgroundColor: primary);

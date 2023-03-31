@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cryptowallet/eip/eip681.dart';
@@ -196,10 +197,12 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                       Text.rich(
                           TextSpan(children: [
                             TextSpan(
-                              text: AppLocalizations.of(context).sendOnly(
-                                '${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['name']) : widget.data['name']} (${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']})',
-                              ),
-                            ),
+                                text: AppLocalizations.of(context).sendOnly(
+                                  '${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['name']) : widget.data['name']} (${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']})',
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                )),
                           ]),
                           textAlign: TextAlign.center),
                       const SizedBox(
@@ -211,210 +214,300 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                           Column(
                             children: [
                               GestureDetector(
-                                  onTap: () async {
-                                    // copy to clipboard
-                                    await Clipboard.setData(ClipboardData(
-                                      text: (snapshot.data as Map)['address'],
-                                    ));
+                                onTap: () async {
+                                  // copy to clipboard
+                                  await Clipboard.setData(ClipboardData(
+                                    text: (snapshot.data as Map)['address'],
+                                  ));
 
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(AppLocalizations.of(context)
+                                          .copiedToClipboard),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 40.0,
+                                      sigmaY: 40.0,
+                                    ),
+                                    child: Container(
+                                      height: 50,
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(10),
+                                        // border: Border.all(
+                                        //   width: 1.5,
+                                        //   color:
+                                        //       Colors.white.withOpacity(0.2),
+                                        // ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.copy,
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Container(
+                                //     width: 40,
+                                //     height: 40,
+                                //     decoration: const BoxDecoration(
+                                //       shape: BoxShape.circle,
+                                //       color: Color(0xff0C66F1),
+                                //     ),
+                                //     child: const Icon(Icons.copy,
+                                //         color: Colors.white)),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                AppLocalizations.of(context).copy,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  await Share.share(
+                                      '${AppLocalizations.of(context).publicAddressToReceive} ${widget.data['symbol']} ${(snapshot.data as Map)['address']}');
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 40.0,
+                                      sigmaY: 40.0,
+                                    ),
+                                    child: Container(
+                                      height: 50,
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(10),
+                                        // border: Border.all(
+                                        //   width: 1.5,
+                                        //   color:
+                                        //       Colors.white.withOpacity(0.2),
+                                        // ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.share,
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Container(
+                                //     width: 40,
+                                //     height: 40,
+                                //     decoration: const BoxDecoration(
+                                //       shape: BoxShape.circle,
+                                //       color: Color(0xff0C66F1),
+                                //     ),
+                                //     child: const Icon(Icons.share,
+                                //         color: Colors.white)),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                AppLocalizations.of(context).share,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  AwesomeDialog(
+                                    showCloseIcon: true,
+                                    context: context,
+                                    closeIcon: const Icon(
+                                      Icons.close,
+                                    ),
+                                    animType: AnimType.SCALE,
+                                    dialogType: DialogType.INFO,
+                                    keyboardAware: true,
+                                    body: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text(
                                             AppLocalizations.of(context)
-                                                .copiedToClipboard),
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xff0C66F1),
-                                      ),
-                                      child: const Icon(Icons.copy,
-                                          color: Colors.white))),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Text(AppLocalizations.of(context).copy),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              GestureDetector(
-                                  onTap: () async {
-                                    await Share.share(
-                                        '${AppLocalizations.of(context).publicAddressToReceive} ${widget.data['symbol']} ${(snapshot.data as Map)['address']}');
-                                  },
-                                  child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xff0C66F1),
-                                      ),
-                                      child: const Icon(Icons.share,
-                                          color: Colors.white))),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Text(AppLocalizations.of(context).share),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              GestureDetector(
-                                  onTap: () {
-                                    AwesomeDialog(
-                                      showCloseIcon: true,
-                                      context: context,
-                                      closeIcon: const Icon(
-                                        Icons.close,
-                                      ),
-                                      animType: AnimType.SCALE,
-                                      dialogType: DialogType.INFO,
-                                      keyboardAware: true,
-                                      body: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          children: <Widget>[
-                                            Text(
-                                              AppLocalizations.of(context)
-                                                  .requestPayment,
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Material(
-                                              elevation: 0,
-                                              color:
-                                                  Colors.blueGrey.withAlpha(40),
-                                              child: TextFormField(
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                controller: amountField,
-                                                autofocus: true,
-                                                minLines: 1,
-                                                decoration: InputDecoration(
-                                                  border: InputBorder.none,
-                                                  labelText:
-                                                      AppLocalizations.of(
-                                                              context)
-                                                          .amount,
-                                                  prefixIcon: const Icon(
-                                                      Icons.text_fields),
-                                                ),
+                                                .requestPayment,
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Material(
+                                            elevation: 0,
+                                            color:
+                                                Colors.blueGrey.withAlpha(40),
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              controller: amountField,
+                                              autofocus: true,
+                                              minLines: 1,
+                                              decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                labelText:
+                                                    AppLocalizations.of(context)
+                                                        .amount,
+                                                prefixIcon: const Icon(
+                                                    Icons.text_fields),
                                               ),
                                             ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            AnimatedButton(
-                                              isFixedHeight: false,
-                                              text: AppLocalizations.of(context)
-                                                  .ok,
-                                              pressEvent: () {
-                                                if (Navigator.canPop(context)) {
-                                                  Navigator.pop(context);
-                                                }
-                                                Map blockchainData =
-                                                    snapshot.data as Map;
-                                                FocusManager
-                                                    .instance.primaryFocus
-                                                    ?.unfocus();
-                                                String requestUrl;
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          AnimatedButton(
+                                            isFixedHeight: false,
+                                            text:
+                                                AppLocalizations.of(context).ok,
+                                            pressEvent: () {
+                                              if (Navigator.canPop(context)) {
+                                                Navigator.pop(context);
+                                              }
+                                              Map blockchainData =
+                                                  snapshot.data as Map;
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                              String requestUrl;
 
-                                                if (amountField.text != null &&
-                                                    double.tryParse(amountField
-                                                            .text
-                                                            .trim()) !=
-                                                        null) {
-                                                  Decimal amountEntered =
-                                                      Decimal.parse(amountField
+                                              if (amountField.text != null &&
+                                                  double.tryParse(amountField
                                                           .text
-                                                          .trim());
-                                                  try {
-                                                    if (widget
-                                                            .data['default'] !=
-                                                        null) {
-                                                      requestUrl = CoinPay(
-                                                        coinScheme:
-                                                            requestPaymentScheme[
-                                                                widget.data[
-                                                                    'symbol']],
-                                                        amount: amountEntered
-                                                            .toDouble(),
-                                                        recipient:
-                                                            blockchainData[
-                                                                'address'],
-                                                      ).toUri();
-                                                    } else {
-                                                      requestUrl = EIP681.build(
-                                                          targetAddress: widget
-                                                                  .data[
-                                                              'contractAddress'],
-                                                          chainId: widget
-                                                              .data['chainId']
+                                                          .trim()) !=
+                                                      null) {
+                                                Decimal amountEntered =
+                                                    Decimal.parse(amountField
+                                                        .text
+                                                        .trim());
+                                                try {
+                                                  if (widget.data['default'] !=
+                                                      null) {
+                                                    requestUrl = CoinPay(
+                                                      coinScheme:
+                                                          requestPaymentScheme[
+                                                              widget.data[
+                                                                  'symbol']],
+                                                      amount: amountEntered
+                                                          .toDouble(),
+                                                      recipient: blockchainData[
+                                                          'address'],
+                                                    ).toUri();
+                                                  } else {
+                                                    requestUrl = EIP681.build(
+                                                        targetAddress: widget
+                                                                .data[
+                                                            'contractAddress'],
+                                                        chainId: widget
+                                                            .data['chainId']
+                                                            .toString(),
+                                                        functionName:
+                                                            'transfer',
+                                                        parameters: {
+                                                          'uint256': (amountEntered *
+                                                                  Decimal.parse(pow(
+                                                                          10,
+                                                                          double.parse(
+                                                                              widget.data['decimals']))
+                                                                      .toString()))
                                                               .toString(),
-                                                          functionName:
-                                                              'transfer',
-                                                          parameters: {
-                                                            'uint256': (amountEntered *
-                                                                    Decimal.parse(pow(
-                                                                            10,
-                                                                            double.parse(widget.data['decimals']))
-                                                                        .toString()))
-                                                                .toString(),
-                                                            'address':
-                                                                (snapshot.data
-                                                                        as Map)[
-                                                                    'address']
-                                                          });
-                                                    }
-                                                  } catch (e) {
-                                                    if (kDebugMode) {
-                                                      print(e);
-                                                    }
+                                                          'address': (snapshot
+                                                                  .data
+                                                              as Map)['address']
+                                                        });
                                                   }
-
+                                                } catch (e) {
                                                   if (kDebugMode) {
-                                                    print(requestUrl);
+                                                    print(e);
                                                   }
                                                 }
 
-                                                setState(() {
-                                                  isRequestingPayment = true;
-                                                  amountRequested = requestUrl !=
-                                                          null
-                                                      ? "+${amountField.text.trim()} ${widget.data['symbol']}"
-                                                      : null;
-                                                  amountField.text = '';
-                                                  userAddress = requestUrl ??
-                                                      (snapshot.data
-                                                          as Map)['address'];
-                                                });
-                                              },
-                                            )
-                                          ],
+                                                if (kDebugMode) {
+                                                  print(requestUrl);
+                                                }
+                                              }
+
+                                              setState(() {
+                                                isRequestingPayment = true;
+                                                amountRequested = requestUrl !=
+                                                        null
+                                                    ? "+${amountField.text.trim()} ${widget.data['symbol']}"
+                                                    : null;
+                                                amountField.text = '';
+                                                userAddress = requestUrl ??
+                                                    (snapshot.data
+                                                        as Map)['address'];
+                                              });
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ).show();
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 40.0,
+                                      sigmaY: 40.0,
+                                    ),
+                                    child: Container(
+                                      height: 50,
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          width: 1.5,
+                                          color: Colors.black.withOpacity(0.2),
                                         ),
                                       ),
-                                    ).show();
-                                  },
-                                  child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.black,
+                                      child: const Center(
+                                        child: Icon(Icons.add,
+                                            color: Colors.white),
                                       ),
-                                      child: const Icon(Icons.add,
-                                          color: Colors.white))),
+                                    ),
+                                  ),
+                                ),
+                                // Container(
+                                //     width: 40,
+                                //     height: 40,
+                                //     decoration: const BoxDecoration(
+                                //       shape: BoxShape.circle,
+                                //       color: Colors.black,
+                                //     ),
+                                //     child: const Icon(Icons.add,
+                                //         color: Colors.white)),
+                              ),
                               const SizedBox(
                                 height: 5,
                               ),
-                              Text(AppLocalizations.of(context).request),
+                              Text(
+                                AppLocalizations.of(context).request,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
                             ],
                           ),
                         ],

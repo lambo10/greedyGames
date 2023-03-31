@@ -63,7 +63,7 @@ class _DappUIState extends State<DappUI> with AutomaticKeepAliveClientMixin {
                 ),
                 Stack(
                   children: [
-                    Image.asset('assets/header_dappp.png'),
+                    Image.asset('assets/header_dappp.png',),
                     Padding(
                       padding:
                           const EdgeInsets.only(top: 50, left: 15, right: 15,),

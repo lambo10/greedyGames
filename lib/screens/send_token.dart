@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:bech32/bech32.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/screens/contact.dart';
@@ -19,17 +17,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
-import 'package:validators/validators.dart';
-import 'package:web3dart/crypto.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar
     hide Row;
 import 'package:web3dart/web3dart.dart' as web3;
-import 'package:bs58check/bs58check.dart' as bs58check;
-import 'package:bitbox/bitbox.dart' as bitbox;
 
 // import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
-import 'package:solana/solana.dart' as solana;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+
+import '../config/colors.dart';
 
 class SendToken extends StatefulWidget {
   final Map data;
@@ -414,55 +409,18 @@ class _SendTokenState extends State<SendToken> {
                 const SizedBox(
                   height: 30,
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith(
-                          (states) => appBackgroundblue),
-                      shape: MaterialStateProperty.resolveWith(
-                        (states) => RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      textStyle: MaterialStateProperty.resolveWith(
-                        (states) => const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    child: isLoading
-                        ? const Loader()
-                        : Text(
-                            AppLocalizations.of(context).continue_,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                    onPressed: () async {
-                      if (isLoading) return;
-                      // hide snackbar if it is showing
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      if (tokenType == 'ERC721') {
-                        amount.text = '1';
-                      }
-                      if (tokenType == 'ERC1155') {
-                        if (int.tryParse(amount.text.trim()) == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: Colors.red,
-                              content: Text(
-                                AppLocalizations.of(context).pleaseEnterAmount,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-                      }
-
-                      if (double.tryParse(amount.text.trim()) == null) {
+                InkWell(
+                  splashColor: greedyblendblue,
+                  onTap: () async {
+                    if (isLoading) return;
+                    // hide snackbar if it is showing
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    if (tokenType == 'ERC721') {
+                      amount.text = '1';
+                    }
+                    if (tokenType == 'ERC1155') {
+                      if (int.tryParse(amount.text.trim()) == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             backgroundColor: Colors.red,
@@ -474,94 +432,146 @@ class _SendTokenState extends State<SendToken> {
                         );
                         return;
                       }
+                    }
 
-                      String recipient = recipientAddressController.text.trim();
-                      String cryptoDomain;
-                      bool iscryptoDomain = recipient.contains('.');
-
-                      try {
-                        setState(() {
-                          isLoading = true;
-                        });
-                        if (widget.data['default'] == 'XLM' && iscryptoDomain) {
-                          try {
-                            stellar.FederationResponse response =
-                                await stellar.Federation.resolveStellarAddress(
-                                    recipient);
-                            cryptoDomain = recipient;
-                            recipient = response.accountId;
-                          } catch (_) {}
-                        } else if (iscryptoDomain) {
-                          Map ensAddress = await ensToAddress(
-                            cryptoDomainName: recipient,
-                          );
-
-                          if (ensAddress['success']) {
-                            cryptoDomain = recipient;
-                            recipient = ensAddress['msg'];
-                          } else {
-                            Map unstoppableDomainAddr =
-                                await unstoppableDomainENS(
-                              cryptoDomainName: recipient,
-                              currency: widget.data['rpc'] == null
-                                  ? widget.data['default']
-                                  : null,
-                            );
-                            cryptoDomain = unstoppableDomainAddr['success']
-                                ? recipient
-                                : null;
-                            recipient = unstoppableDomainAddr['success']
-                                ? unstoppableDomainAddr['msg']
-                                : recipient;
-                          }
-                        }
-
-                        setState(() {
-                          isLoading = false;
-                        });
-
-                        validateAddress(widget.data, recipient);
-                      } catch (e) {
-                        setState(() {
-                          isLoading = false;
-                        });
-                        if (kDebugMode) {
-                          print(e);
-                        }
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text(
-                              AppLocalizations.of(context).invalidAddress,
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-                      if (amount.text.trim() == "" || recipient == "") {
-                        return;
-                      }
-                      final data = {
-                        ...widget.data,
-                        'amount': Decimal.parse(amount.text).toString(),
-                        'recipient': recipient
-                      };
-
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      await reInstianteSeedRoot();
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (ctx) => TransferToken(
-                            data: data,
-                            cryptoDomain: cryptoDomain,
+                    if (double.tryParse(amount.text.trim()) == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            AppLocalizations.of(context).pleaseEnterAmount,
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       );
-                    },
+                      return;
+                    }
+
+                    String recipient = recipientAddressController.text.trim();
+                    String cryptoDomain;
+                    bool iscryptoDomain = recipient.contains('.');
+
+                    try {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      if (widget.data['default'] == 'XLM' && iscryptoDomain) {
+                        try {
+                          stellar.FederationResponse response =
+                              await stellar.Federation.resolveStellarAddress(
+                                  recipient);
+                          cryptoDomain = recipient;
+                          recipient = response.accountId;
+                        } catch (_) {}
+                      } else if (iscryptoDomain) {
+                        Map ensAddress = await ensToAddress(
+                          cryptoDomainName: recipient,
+                        );
+
+                        if (ensAddress['success']) {
+                          cryptoDomain = recipient;
+                          recipient = ensAddress['msg'];
+                        } else {
+                          Map unstoppableDomainAddr =
+                              await unstoppableDomainENS(
+                            cryptoDomainName: recipient,
+                            currency: widget.data['rpc'] == null
+                                ? widget.data['default']
+                                : null,
+                          );
+                          cryptoDomain = unstoppableDomainAddr['success']
+                              ? recipient
+                              : null;
+                          recipient = unstoppableDomainAddr['success']
+                              ? unstoppableDomainAddr['msg']
+                              : recipient;
+                        }
+                      }
+
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      validateAddress(widget.data, recipient);
+                    } catch (e) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      if (kDebugMode) {
+                        print(e);
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            AppLocalizations.of(context).invalidAddress,
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    if (amount.text.trim() == "" || recipient == "") {
+                      return;
+                    }
+                    final data = {
+                      ...widget.data,
+                      'amount': Decimal.parse(amount.text).toString(),
+                      'recipient': recipient
+                    };
+
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    await reInstianteSeedRoot();
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => TransferToken(
+                          data: data,
+                          cryptoDomain: cryptoDomain,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: const LinearGradient(
+                        colors: [
+                          greedytransparentBotNav,
+                          greedyblendblue,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    width: double.infinity,
+                    height: 50,
+                    // child: ElevatedButton(
+                    //   style: ButtonStyle(
+                    //     // backgroundColor: MaterialStateProperty.resolveWith(
+                    //     //     (states) => appBackgroundblue),
+                    //     shape: MaterialStateProperty.resolveWith(
+                    //       (states) => RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(10),
+                    //       ),
+                    //     ),
+                    //     textStyle: MaterialStateProperty.resolveWith(
+                    //       (states) => const TextStyle(color: Colors.white),
+                    //     ),
+                    //   ),
+                    child: Center(
+                      child: isLoading
+                          ? const Loader()
+                          : Text(
+                              AppLocalizations.of(context).continue_,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
               ],

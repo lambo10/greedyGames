@@ -59,6 +59,7 @@ class _UserBalanceState extends State<UserBalance> {
                 const TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
+                  //color: Colors.white,
                   overflow: TextOverflow.fade,
                 ),
           ),

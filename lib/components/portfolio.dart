@@ -109,17 +109,24 @@ class _PortfolioState extends State<Portfolio> {
                 //           portfolioCardColorLowerSection
                 //         ],
                 //       ),
-                gradient: LinearGradient(
+                gradient: RadialGradient(
                   colors: [
                     greedyblendpurple,
                     greedyblendblue,
+                    greedyblendpurple,
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  stops: [
-                    0.1,
-                    0.9,
-                  ],
+                  center: Alignment(
+                    1,
+                    -1,
+                  ),
+                  // begin: Alignment.topLeft,
+                  // end: Alignment.bottomCenter,
+                  // tileMode: TileMode.mirror,
+                  // stops: [
+                  //   0.1,
+                  //   0.9,
+                  // ],
+                  radius: 3.0,
                 ),
                 borderRadius: BorderRadius.all(Radius.circular(20)),
               ),

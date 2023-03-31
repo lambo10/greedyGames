@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:ui';
 
+import '../config/colors.dart';
+
 class Wallet extends StatefulWidget {
   const Wallet({Key key}) : super(key: key);
 
@@ -87,7 +89,7 @@ class _WalletState extends State<Wallet> {
       body: SafeArea(child: currentPage),
       bottomNavigationBar: Container(
         //margin: const EdgeInsets.all(20),
-        height: 70,
+        height: 65,
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.2),
           borderRadius: const BorderRadius.only(
@@ -119,7 +121,7 @@ class _WalletState extends State<Wallet> {
               sigmaY: 40.0,
             ),
             child: Container(
-              height: 70,
+              height: 60,
               width: 500,
               decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
@@ -154,32 +156,44 @@ class _WalletState extends State<Wallet> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: 5,
+                            width: 45,
+                            decoration: BoxDecoration(
+                                color: index == currentIndex
+                                    ? greedyblendpurple
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(15)),
+                          ),
+                        ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 1500),
                           curve: Curves.fastLinearToSlowEaseIn,
                           margin: EdgeInsets.only(
                             bottom:
-                                index == currentIndex ? 0 : size.width * .029,
+                                index == currentIndex ? 0 : size.width * .001,
                             right: size.width * .0422,
                             left: size.width * .1,
                           ),
                           width: size.width * .0999,
-                          height: index == currentIndex ? size.width * .014 : 0,
+                          height: index == currentIndex ? size.width * .012 : 0,
                         ),
                         Icon(
                           iconTypes[index],
-                          size: 25,
+                          size: 18.5,
                           color: index == currentIndex
                               ? Colors.white
-                              : Colors.white70,
+                              : Colors.white70.withOpacity(0.5),
                         ),
                         Text(
                           iconName[index],
                           style: TextStyle(
-                            color: index == currentIndex
-                                ? Colors.white
-                                : Colors.white70,
-                          ),
+                              color: index == currentIndex
+                                  ? Colors.white
+                                  : Colors.white70,
+                              fontSize: 17),
                         ),
                         SizedBox(height: size.width * .03),
                       ],

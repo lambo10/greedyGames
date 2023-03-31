@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/crypto_charts/crypto_chart.dart';
@@ -13,10 +14,11 @@ import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:intl/intl.dart';
+
+import '../config/colors.dart';
 
 class Token extends StatefulWidget {
   final Map data;
@@ -483,12 +485,40 @@ class _TokenState extends State<Token> {
                         SizedBox(
                           width: double.infinity,
                           height: 300,
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: const RadialGradient(
+                                colors: [
+                                  greedyblendblue,
+                                  Color.fromARGB(255, 162, 57, 248),
+                                  greedyblendpurple,
+                                  greedyblendblue,
+                                  greedyblendpurple,
+                                  greedyblendblue,
+                                  greedyblendpurple,
+                                ],
+                                center: Alignment(
+                                  1,
+                                  -1,
+                                ),
+                                // begin: Alignment.topLeft,
+                                // end: Alignment.bottomCenter,
+                                // tileMode: TileMode.mirror,
+                                // stops: const [
+                                //   0.1,
+                                //   0.7,
+                                //   0.8,
+                                // ],
+                                radius: 3.5,
+                              ),
+                            ),
                             child: Padding(
                               padding: const EdgeInsets.only(
-                                  left: 10, right: 10, top: 20),
+                                left: 10,
+                                right: 10,
+                                top: 20,
+                              ),
                               child: Column(
                                 children: [
                                   Row(
@@ -500,7 +530,10 @@ class _TokenState extends State<Token> {
                                             ? widget.data['network']
                                             : AppLocalizations.of(context).coin,
                                         style: const TextStyle(
-                                            fontSize: 16, color: Colors.grey),
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       widget.data['noPrice'] != null
                                           ? Text(
@@ -510,7 +543,7 @@ class _TokenState extends State<Token> {
                                                   color: widget.data[
                                                               'contractAddress'] !=
                                                           null
-                                                      ? const Color(0x00ffffff)
+                                                      ? Colors.white
                                                       : null),
                                             )
                                           : Container(),
@@ -520,7 +553,8 @@ class _TokenState extends State<Token> {
                                                 Text(
                                                   '${widget.data['contractAddress'] != null ? ellipsify(str: blockchainPrice['symbol']) : (blockchainPrice)['symbol']}${formatMoney((blockchainPrice)['price'])}',
                                                   style: const TextStyle(
-                                                      fontSize: 16),
+                                                      fontSize: 16,
+                                                      color: Colors.white),
                                                 ),
                                                 const SizedBox(
                                                   width: 5,
@@ -560,8 +594,9 @@ class _TokenState extends State<Token> {
                                           backgroundImage: AssetImage(
                                             widget.data['image'],
                                           ),
-                                          backgroundColor:
-                                              Theme.of(context).backgroundColor,
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .background,
                                         )
                                       : CircleAvatar(
                                           radius: 30,
@@ -583,6 +618,7 @@ class _TokenState extends State<Token> {
                                       iconSize: 20,
                                       textStyle: const TextStyle(
                                           fontSize: 20,
+                                          //color: Colors.white,
                                           fontWeight: FontWeight.bold),
                                       balance: cryptoBalance,
                                       symbol:
@@ -623,23 +659,57 @@ class _TokenState extends State<Token> {
                                                       ),
                                                     ));
                                               },
-                                              child: Container(
-                                                width: 40,
-                                                height: 40,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: appBackgroundblue,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(16.0),
+                                                child: BackdropFilter(
+                                                  filter: ImageFilter.blur(
+                                                    sigmaX: 40.0,
+                                                    sigmaY: 40.0,
+                                                  ),
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.white
+                                                            .withOpacity(0.5),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        border: Border.all(
+                                                          width: 1.5,
+                                                          color: Colors.white
+                                                              .withOpacity(0.2),
+                                                        )),
+                                                    child: const Center(
+                                                      child: Icon(
+                                                          Icons.arrow_upward,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
                                                 ),
-                                                child: const Icon(
-                                                    Icons.arrow_upward,
-                                                    color: Colors.black),
                                               ),
+                                              //  Container(
+                                              //   width: 40,
+                                              //   height: 40,
+                                              //   decoration: const BoxDecoration(
+                                              //     shape: BoxShape.circle,
+                                              //     color: appBackgroundblue,
+                                              //   ),
+                                              //   child: const Icon(
+                                              //       Icons.arrow_upward,
+                                              //       color: Colors.black),
+                                              // ),
                                             ),
                                             const SizedBox(
                                               height: 5,
                                             ),
-                                            Text(AppLocalizations.of(context)
-                                                .send),
+                                            Text(
+                                              AppLocalizations.of(context).send,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                         const SizedBox(
@@ -664,23 +734,57 @@ class _TokenState extends State<Token> {
                                                   ),
                                                 );
                                               },
-                                              child: Container(
-                                                width: 40,
-                                                height: 40,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: appBackgroundblue,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(16.0),
+                                                child: BackdropFilter(
+                                                  filter: ImageFilter.blur(
+                                                    sigmaX: 40.0,
+                                                    sigmaY: 40.0,
+                                                  ),
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.white
+                                                            .withOpacity(0.5),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        border: Border.all(
+                                                          width: 1.5,
+                                                          color: Colors.white
+                                                              .withOpacity(0.2),
+                                                        )),
+                                                    child: const Center(
+                                                      child: Icon(
+                                                          Icons.arrow_downward,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
                                                 ),
-                                                child: const Icon(
-                                                    Icons.arrow_downward,
-                                                    color: Colors.black),
                                               ),
+                                              // Container(
+                                              //   width: 40,
+                                              //   height: 40,
+                                              //   decoration: const BoxDecoration(
+                                              //     shape: BoxShape.circle,
+                                              //     color: appBackgroundblue,
+                                              //   ),
+                                              //   child: const Icon(
+                                              //       Icons.arrow_downward,
+                                              //       color: Colors.black),
+                                              // ),
                                             ),
                                             const SizedBox(
                                               height: 5,
                                             ),
-                                            Text(AppLocalizations.of(context)
-                                                .receive),
+                                            Text(
+                                                AppLocalizations.of(context)
+                                                    .receive,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                )),
                                           ],
                                         ),
                                       ]),
@@ -704,10 +808,18 @@ class _TokenState extends State<Token> {
                                     onTap: () {
                                       trxOpen.value = !trxOpen.value;
                                     },
-                                    child: Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30)),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            greedytransparentBotNav,
+                                            greedyblendblue
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(15.0),
                                         child: Row(
@@ -718,6 +830,7 @@ class _TokenState extends State<Token> {
                                               "Transactions",
                                               style: TextStyle(
                                                 fontSize: 18,
+                                                color: Colors.white,
                                               ),
                                             ),
                                             const SizedBox(
@@ -727,6 +840,7 @@ class _TokenState extends State<Token> {
                                               child: const Icon(
                                                 Icons.arrow_back_ios_new,
                                                 size: 15,
+                                                color: Colors.white,
                                               ),
                                               angle: trxOpen_
                                                   ? 90 * pi / 180

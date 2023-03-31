@@ -540,7 +540,8 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                       '${AppLocalizations.of(context).balance} : ',
                                                       style: const TextStyle(
                                                         color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         //fontSize: 20,
                                                       ),
                                                     ),
@@ -749,7 +750,6 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                                     '${AppLocalizations.of(context).balance}: ',
                                                     style: const TextStyle(
                                                       color: Colors.white,
-                                                      
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
@@ -853,345 +853,352 @@ class _ExchangeTokenState extends State<ExchangeToken>
                     const SizedBox(
                       height: 20,
                     ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                              (states) => appBackgroundblue),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                        onPressed: () async {
-                          if (isLoading) return;
-                          FocusManager.instance.primaryFocus?.unfocus();
+                    InkWell(
+                      splashColor: greedytransparent,
+                      onTap: () async {
+                        if (isLoading) return;
+                        FocusManager.instance.primaryFocus?.unfocus();
 
-                          try {
-                            setState(() {
-                              isLoading = true;
-                            });
+                        try {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            final mnemonic = Hive.box(secureStorageKey)
-                                .get(currentMmenomicKey);
-                            final response = await getEthereumFromMemnomic(
-                              mnemonic,
-                              getEVMBlockchains()[network]['coinType'],
-                            );
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          final mnemonic = Hive.box(secureStorageKey)
+                              .get(currentMmenomicKey);
+                          final response = await getEthereumFromMemnomic(
+                            mnemonic,
+                            getEVMBlockchains()[network]['coinType'],
+                          );
 
-                            Map evmDetails = getEVMBlockchains()[network];
+                          Map evmDetails = getEVMBlockchains()[network];
 
-                            if (selectedItemPay.values.isEmpty) {
-                              tokenList = await get1InchUrlList(1);
-                              selectedItemPay =
-                                  selectedItemGet = tokenList[nativeTokenLCase];
-                            }
-                            if (selectedItemGet.values.isEmpty) {
-                              tokenList = await get1InchUrlList(1);
-                              selectedItemGet =
-                                  selectedItemGet = tokenList[nativeTokenLCase];
-                            }
+                          if (selectedItemPay.values.isEmpty) {
+                            tokenList = await get1InchUrlList(1);
+                            selectedItemPay =
+                                selectedItemGet = tokenList[nativeTokenLCase];
+                          }
+                          if (selectedItemGet.values.isEmpty) {
+                            tokenList = await get1InchUrlList(1);
+                            selectedItemGet =
+                                selectedItemGet = tokenList[nativeTokenLCase];
+                          }
 
-                            double amountToPay =
-                                double.tryParse(amountPay.text);
+                          double amountToPay = double.tryParse(amountPay.text);
 
-                            if (amountToPay == null || amountToPay == 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: Colors.red,
-                                  content: Text(
-                                    AppLocalizations.of(context)
-                                        .pleaseEnterAmount,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              );
-                              setState(() {
-                                isLoading = false;
-                              });
-                              return;
-                            }
-
-                            String payingContract = selectedItemPay['address'];
-                            payingContract = payingContract.toLowerCase();
-
-                            String getContract = selectedItemGet['address'];
-                            getContract = getContract.toLowerCase();
-
-                            if (payingContract == getContract) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: Colors.red,
-                                  content: Text(
-                                    AppLocalizations.of(context)
-                                        .pleaseSelectDifferentTokens,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              );
-                              setState(() {
-                                isLoading = false;
-                              });
-                              return;
-                            }
-
-                            double amountInWei_ = amountToPay *
-                                pow(10, selectedItemPay['decimals']);
-
-                            Map swapOneInch = await oneInchSwapUrlResponse(
-                              fromTokenAddress: payingContract,
-                              toTokenAddress: getContract,
-                              amountInWei: amountInWei_,
-                              fromAddress: response['eth_wallet_address'],
-                              slippage: 0.1,
-                              chainId: evmDetails['chainId'],
-                            );
-
-                            if (swapOneInch == null) {
-                              throw Exception(
-                                AppLocalizations.of(context)
-                                    .insufficientLiquidity,
-                              );
-                            }
-
-                            if (payingContract != nativeTokenLCase) {
-                              BigInt allowance = await getErc20Allowance(
-                                owner: response['eth_wallet_address'],
-                                rpc: evmDetails['rpc'],
-                                contractAddress: payingContract,
-                                spender: swapOneInch['tx']['to'],
-                              );
-
-                              if (allowance < BigInt.from(amountInWei_)) {
-                                Map approve1inch = await approveTokenFor1inch(
-                                  evmDetails['chainId'],
-                                  amountInWei_,
-                                  payingContract,
-                                );
-
-                                await signTransaction(
-                                  gasPriceInWei_: approve1inch['gasPrice'],
-                                  to: approve1inch['to'],
-                                  from: response['eth_wallet_address'],
-                                  txData: approve1inch['data'],
-                                  valueInWei_: approve1inch['value'],
-                                  gasInWei_: null,
-                                  networkIcon: null,
-                                  context: context,
-                                  blockChainCurrencySymbol:
-                                      evmDetails['symbol'],
-                                  name: '',
-                                  onConfirm: () async {
-                                    try {
-                                      final client = web3.Web3Client(
-                                        getEVMBlockchains()[network]['rpc'],
-                                        Client(),
-                                      );
-
-                                      final credentials =
-                                          web3.EthPrivateKey.fromHex(
-                                        response['eth_wallet_privateKey'],
-                                      );
-                                      final approveTrx =
-                                          await client.signTransaction(
-                                        credentials,
-                                        web3.Transaction(
-                                          from: web3.EthereumAddress.fromHex(
-                                            response['eth_wallet_address'],
-                                          ),
-                                          to: web3.EthereumAddress.fromHex(
-                                            approve1inch['to'],
-                                          ),
-                                          value: web3.EtherAmount.inWei(
-                                            BigInt.parse(
-                                              approve1inch['value'],
-                                            ),
-                                          ),
-                                          gasPrice: web3.EtherAmount.inWei(
-                                            BigInt.parse(
-                                              approve1inch['gasPrice'],
-                                            ),
-                                          ),
-                                          data: txDataToUintList(
-                                            approve1inch['data'],
-                                          ),
-                                        ),
-                                        chainId: evmDetails['chainId'],
-                                      );
-
-                                      await client
-                                          .sendRawTransaction(approveTrx);
-
-                                      await client.dispose();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            AppLocalizations.of(context)
-                                                .trxSent,
-                                          ),
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          backgroundColor: Colors.red,
-                                          content: Text(
-                                            e.toString(),
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                      );
-                                    } finally {
-                                      if (Navigator.canPop(context)) {
-                                        Navigator.pop(context);
-                                      }
-                                    }
-                                  },
-                                  onReject: () async {
-                                    if (Navigator.canPop(context)) {
-                                      Navigator.pop(context);
-                                    }
-                                  },
-                                  title: 'Sign Transaction',
-                                  chainId: evmDetails['chainId'],
-                                );
-
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                return;
-                              }
-                            }
-
-                            await signTransaction(
-                              gasPriceInWei_: swapOneInch['tx']['gasPrice'],
-                              to: swapOneInch['tx']['to'],
-                              from: swapOneInch['tx']['from'],
-                              txData: swapOneInch['tx']['data'],
-                              valueInWei_: swapOneInch['tx']['value'],
-                              gasInWei_: null,
-                              networkIcon: null,
-                              context: context,
-                              blockChainCurrencySymbol: evmDetails['symbol'],
-                              name: '',
-                              onConfirm: () async {
-                                try {
-                                  final client = web3.Web3Client(
-                                    evmDetails['rpc'],
-                                    Client(),
-                                  );
-
-                                  final credentials =
-                                      web3.EthPrivateKey.fromHex(
-                                    response['eth_wallet_privateKey'],
-                                  );
-                                  final swapTrx = await client.signTransaction(
-                                    credentials,
-                                    web3.Transaction(
-                                      from: web3.EthereumAddress.fromHex(
-                                        swapOneInch['tx']['from'],
-                                      ),
-                                      to: web3.EthereumAddress.fromHex(
-                                          swapOneInch['tx']['to']),
-                                      value: web3.EtherAmount.inWei(
-                                        BigInt.parse(
-                                            swapOneInch['tx']['value']),
-                                      ),
-                                      gasPrice: web3.EtherAmount.inWei(
-                                        BigInt.parse(
-                                          swapOneInch['tx']['gasPrice'],
-                                        ),
-                                      ),
-                                      data: txDataToUintList(
-                                        swapOneInch['tx']['data'],
-                                      ),
-                                    ),
-                                    chainId: evmDetails['chainId'],
-                                  );
-
-                                  await client.sendRawTransaction(swapTrx);
-
-                                  await client.dispose();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        AppLocalizations.of(context).trxSent,
-                                      ),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: Colors.red,
-                                      content: Text(
-                                        e.toString(),
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      ),
-                                    ),
-                                  );
-                                } finally {
-                                  if (Navigator.canPop(context)) {
-                                    Navigator.pop(context);
-                                  }
-                                }
-                              },
-                              onReject: () async {
-                                if (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              title: 'Sign Transaction',
-                              chainId: evmDetails['chainId'],
-                            );
-
-                            setState(() {
-                              isLoading = false;
-                            });
-                          } catch (e) {
-                            if (kDebugMode) {
-                              print(e);
-                            }
+                          if (amountToPay == null || amountToPay == 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 backgroundColor: Colors.red,
                                 content: Text(
-                                  e.toString(),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            );
-
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                        },
-                        child: isLoading
-                            ? const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Loader(color: white),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: Text(
-                                  AppLocalizations.of(context).swap,
+                                  AppLocalizations.of(context)
+                                      .pleaseEnterAmount,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            return;
+                          }
+
+                          String payingContract = selectedItemPay['address'];
+                          payingContract = payingContract.toLowerCase();
+
+                          String getContract = selectedItemGet['address'];
+                          getContract = getContract.toLowerCase();
+
+                          if (payingContract == getContract) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: Colors.red,
+                                content: Text(
+                                  AppLocalizations.of(context)
+                                      .pleaseSelectDifferentTokens,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            return;
+                          }
+
+                          double amountInWei_ = amountToPay *
+                              pow(10, selectedItemPay['decimals']);
+
+                          Map swapOneInch = await oneInchSwapUrlResponse(
+                            fromTokenAddress: payingContract,
+                            toTokenAddress: getContract,
+                            amountInWei: amountInWei_,
+                            fromAddress: response['eth_wallet_address'],
+                            slippage: 0.1,
+                            chainId: evmDetails['chainId'],
+                          );
+
+                          if (swapOneInch == null) {
+                            throw Exception(
+                              AppLocalizations.of(context)
+                                  .insufficientLiquidity,
+                            );
+                          }
+
+                          if (payingContract != nativeTokenLCase) {
+                            BigInt allowance = await getErc20Allowance(
+                              owner: response['eth_wallet_address'],
+                              rpc: evmDetails['rpc'],
+                              contractAddress: payingContract,
+                              spender: swapOneInch['tx']['to'],
+                            );
+
+                            if (allowance < BigInt.from(amountInWei_)) {
+                              Map approve1inch = await approveTokenFor1inch(
+                                evmDetails['chainId'],
+                                amountInWei_,
+                                payingContract,
+                              );
+
+                              await signTransaction(
+                                gasPriceInWei_: approve1inch['gasPrice'],
+                                to: approve1inch['to'],
+                                from: response['eth_wallet_address'],
+                                txData: approve1inch['data'],
+                                valueInWei_: approve1inch['value'],
+                                gasInWei_: null,
+                                networkIcon: null,
+                                context: context,
+                                blockChainCurrencySymbol: evmDetails['symbol'],
+                                name: '',
+                                onConfirm: () async {
+                                  try {
+                                    final client = web3.Web3Client(
+                                      getEVMBlockchains()[network]['rpc'],
+                                      Client(),
+                                    );
+
+                                    final credentials =
+                                        web3.EthPrivateKey.fromHex(
+                                      response['eth_wallet_privateKey'],
+                                    );
+                                    final approveTrx =
+                                        await client.signTransaction(
+                                      credentials,
+                                      web3.Transaction(
+                                        from: web3.EthereumAddress.fromHex(
+                                          response['eth_wallet_address'],
+                                        ),
+                                        to: web3.EthereumAddress.fromHex(
+                                          approve1inch['to'],
+                                        ),
+                                        value: web3.EtherAmount.inWei(
+                                          BigInt.parse(
+                                            approve1inch['value'],
+                                          ),
+                                        ),
+                                        gasPrice: web3.EtherAmount.inWei(
+                                          BigInt.parse(
+                                            approve1inch['gasPrice'],
+                                          ),
+                                        ),
+                                        data: txDataToUintList(
+                                          approve1inch['data'],
+                                        ),
+                                      ),
+                                      chainId: evmDetails['chainId'],
+                                    );
+
+                                    await client.sendRawTransaction(approveTrx);
+
+                                    await client.dispose();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          AppLocalizations.of(context).trxSent,
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: Colors.red,
+                                        content: Text(
+                                          e.toString(),
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    );
+                                  } finally {
+                                    if (Navigator.canPop(context)) {
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                },
+                                onReject: () async {
+                                  if (Navigator.canPop(context)) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                title: 'Sign Transaction',
+                                chainId: evmDetails['chainId'],
+                              );
+
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+                          }
+
+                          await signTransaction(
+                            gasPriceInWei_: swapOneInch['tx']['gasPrice'],
+                            to: swapOneInch['tx']['to'],
+                            from: swapOneInch['tx']['from'],
+                            txData: swapOneInch['tx']['data'],
+                            valueInWei_: swapOneInch['tx']['value'],
+                            gasInWei_: null,
+                            networkIcon: null,
+                            context: context,
+                            blockChainCurrencySymbol: evmDetails['symbol'],
+                            name: '',
+                            onConfirm: () async {
+                              try {
+                                final client = web3.Web3Client(
+                                  evmDetails['rpc'],
+                                  Client(),
+                                );
+
+                                final credentials = web3.EthPrivateKey.fromHex(
+                                  response['eth_wallet_privateKey'],
+                                );
+                                final swapTrx = await client.signTransaction(
+                                  credentials,
+                                  web3.Transaction(
+                                    from: web3.EthereumAddress.fromHex(
+                                      swapOneInch['tx']['from'],
+                                    ),
+                                    to: web3.EthereumAddress.fromHex(
+                                        swapOneInch['tx']['to']),
+                                    value: web3.EtherAmount.inWei(
+                                      BigInt.parse(swapOneInch['tx']['value']),
+                                    ),
+                                    gasPrice: web3.EtherAmount.inWei(
+                                      BigInt.parse(
+                                        swapOneInch['tx']['gasPrice'],
+                                      ),
+                                    ),
+                                    data: txDataToUintList(
+                                      swapOneInch['tx']['data'],
+                                    ),
+                                  ),
+                                  chainId: evmDetails['chainId'],
+                                );
+
+                                await client.sendRawTransaction(swapTrx);
+
+                                await client.dispose();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(context).trxSent,
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: Colors.red,
+                                    content: Text(
+                                      e.toString(),
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              } finally {
+                                if (Navigator.canPop(context)) {
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                            onReject: () async {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            title: 'Sign Transaction',
+                            chainId: evmDetails['chainId'],
+                          );
+
+                          setState(() {
+                            isLoading = false;
+                          });
+                        } catch (e) {
+                          if (kDebugMode) {
+                            print(e);
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: Colors.red,
+                              content: Text(
+                                e.toString(),
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: const LinearGradient(
+                            colors: [greedytransparentBotNav, greedyblendblue],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        // child:
+                        // ElevatedButton(
+                        //   style: ButtonStyle(
+                        //     backgroundColor: MaterialStateProperty.resolveWith(
+                        //         (states) => appBackgroundblue),
+                        //     shape: MaterialStateProperty.resolveWith(
+                        //       (states) => RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(10),
+                        //       ),
+                        //     ),
+                        //   ),
+
+                        child: Center(
+                          child: isLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Loader(color: white),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(15),
+                                  child: Text(
+                                    AppLocalizations.of(context).swap,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
                   ],
