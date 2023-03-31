@@ -105,7 +105,7 @@ class _WalletState extends State<Wallet> {
             BoxShadow(
               blurRadius: 24,
               spreadRadius: 16,
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.purple.withOpacity(0.2),
             )
           ],
           //borderRadius: BorderRadius.circular(50),
@@ -124,15 +124,16 @@ class _WalletState extends State<Wallet> {
               height: 60,
               width: 500,
               decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(20.0),
-                  ),
-                  border: Border.all(
-                    width: 1.5,
-                    color: Colors.white.withOpacity(0.2),
-                  )),
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10.0),
+                  topRight: Radius.circular(10.0),
+                ),
+                // border: Border.all(
+                //   width: 1.5,
+                //   color: Colors.white.withOpacity(0.2),
+                // ),
+              ),
               child: Center(
                 child: ListView.builder(
                   itemCount: iconTypes.length,

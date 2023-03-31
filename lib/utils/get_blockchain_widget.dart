@@ -123,10 +123,10 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
         //     sigmaY: 40.0,
         //   ),
         child: Container(
-          height: 65,
+          height: 80,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.0),
             // border: Border.all(
             //   width: 1.5,
@@ -142,17 +142,27 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                     child: Row(
                       children: [
                         widget.image != null
-                            ? CircleAvatar(
-                                backgroundImage: widget.image,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.background,
-                              )
+                            ? Container(
+                                height: 55,
+                                width: 55,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  color: Colors.white,
+                                ),
+                                child: Center(
+                                  child: CircleAvatar(
+                                    backgroundImage: widget.image,
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .background,
+                                  ),
+                                ))
                             : CircleAvatar(
                                 child: Text(
                                   ellipsify(str: widget.symbol, maxLength: 3),
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Colors.black,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -170,7 +180,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                     Text(
                                       widget.name,
                                       style: const TextStyle(
-                                          color: black,
+                                          color: white,
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold),
                                       overflow: TextOverflow.fade,
@@ -196,9 +206,11 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                                 style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w800,
-                                                    color: widget.hasPrice
-                                                        ? null
-                                                        : black),
+                                                    color: widget.hasPrice ==
+                                                            null
+                                                        ? Colors.transparent
+                                                        : white
+                                                            .withOpacity(0.5)),
                                               ),
                                               const SizedBox(
                                                 width: 5,
@@ -231,7 +243,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
-                                                              color: black),
+                                                              color: white),
                                                     )
                                                   : Container()
                                             ],

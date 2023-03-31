@@ -165,6 +165,7 @@ class _PortfolioState extends State<Portfolio> {
                         child: SizedBox(
                           height: 35,
                           child: UserBalance(
+                            check: '1',
                             symbol: userBalance['symbol'],
                             balance: userBalance['balance'],
                             reversed: true,

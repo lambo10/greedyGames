@@ -835,6 +835,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                             style: const TextStyle(color: Colors.grey),
                           ),
                           UserBalance(
+                            check: '1',
                             balance: networkBalanceInfo['balance'],
                             symbol: networkBalanceInfo['symbol'],
                             textStyle: const TextStyle(color: Colors.grey),

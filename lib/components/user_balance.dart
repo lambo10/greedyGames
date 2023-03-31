@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../config/theme.dart';
 import '../utils/app_config.dart';
 import '../utils/format_money.dart';
 import 'hide_balance_widget.dart';
@@ -12,6 +13,7 @@ class UserBalance extends StatefulWidget {
   final Color iconColor;
   final Widget iconDivider;
   final bool reversed;
+  final String check;
   final Widget iconSuffix;
   const UserBalance({
     Key key,
@@ -23,6 +25,7 @@ class UserBalance extends StatefulWidget {
     this.iconSuffix,
     this.iconDivider,
     this.reversed,
+    this.check,
   }) : super(key: key);
 
   @override
@@ -53,15 +56,23 @@ class _UserBalanceState extends State<UserBalance> {
         }
 
         return SizedBox(
-          child: Text(
-            toDisplay,
-            style: widget.textStyle ??
-                const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15,
-                  //color: Colors.white,
-                  overflow: TextOverflow.fade,
+          child: Container(
+            height: 20,
+            color: widget.check == "1" ? Colors.transparent : primary,
+            child: ClipRect(
+              child: Center(
+                child: Text(
+                  toDisplay,
+                  style: widget.textStyle ??
+                      TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        color: Colors.white.withOpacity(0.6),
+                        overflow: TextOverflow.fade,
+                      ),
                 ),
+              ),
+            ),
           ),
         );
       },
