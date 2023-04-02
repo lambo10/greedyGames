@@ -1,9 +1,17 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
+import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:leb128/leb128.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'app_config.dart';
 
@@ -71,6 +79,92 @@ Future<Map<String, dynamic>> _getFileCoinGas(
   } catch (e) {
     return {};
   }
+}
+
+bool validateFilecoinAddress(String address) {
+  try {
+    const checksumHashLength = 4;
+    const fileCoinPrefixs = ['f', 't'];
+    if (!fileCoinPrefixs.contains(address.substring(0, 1))) {
+      return false;
+    }
+    final protocol = address[1];
+    final protocolByte = Leb128.encodeUnsigned(int.parse(protocol));
+    final raw = address.substring(2);
+    if (protocol == '1' || protocol == '2' || protocol == '3') {
+      List<int> payloadCksm = Base32.decode(raw);
+
+      if (payloadCksm.length < checksumHashLength) {
+        throw Exception('Invalid address length');
+      }
+
+      Uint8List payload = payloadCksm.sublist(0, payloadCksm.length - 4);
+
+      Uint8List checksum = payloadCksm.sublist(payload.length);
+
+      List<int> byteList = List.from(protocolByte)..addAll(payload);
+      Uint8List bytes = Uint8List.fromList(byteList);
+
+      if (!_validateChecksum(bytes, checksum)) {
+        throw Exception('Invalid address checksum');
+      }
+
+      return true;
+    } else if (protocol == '0') {
+      const maxInt64StringLength = 19;
+      if (raw.length > maxInt64StringLength) {
+        throw Exception('Invalid ID address length');
+      }
+      final payload = Leb128.encodeUnsigned(int.parse(raw));
+      final bytes = [...protocolByte, ...payload];
+      if (kDebugMode) {
+        print(bytes);
+      }
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
+//  case Protocol.ID => 0: {
+
+// case Protocol.DELEGATED => 4: {
+//   const splitIndex = raw.indexOf('f')
+//   if (splitIndex === -1) throw new Error('Invalid delegated address')
+
+//   const namespaceStr = raw.slice(0, splitIndex)
+//   if (namespaceStr.length > maxInt64StringLength)
+//     throw new Error('Invalid delegated address namespace')
+
+//   const subAddrCksmStr = raw.slice(splitIndex + 1)
+//   const subAddrCksmBytes = base32.decode(subAddrCksmStr)
+//   if (subAddrCksmBytes.length < checksumHashLength)
+//     throw Error('Invalid delegated address length')
+
+//   const subAddrBytes = subAddrCksmBytes.slice(0, -checksumHashLength)
+//   const checksumBytes = subAddrCksmBytes.slice(subAddrBytes.length)
+//   if (subAddrBytes.length > maxSubaddressLen)
+//     throw Error('Invalid delegated address length')
+
+//   const namespaceNumber = Number(namespaceStr)
+//   const namespaceByte = leb.unsigned.encode(namespaceNumber)
+//   const payload = uint8arrays.concat([namespaceByte, subAddrBytes])
+//   const bytes = uint8arrays.concat([protocolByte, payload])
+
+//   if (!validateChecksum(bytes, checksumBytes))
+//     throw Error('Invalid delegated address checksum')
+
+//   return { protocol, payload, bytes, coinType, namespace: namespaceNumber }
+// }
+
+_validateChecksum(Uint8List bytes, Uint8List checksum) {
+  return seqEqual(_getChecksum(bytes), checksum);
+}
+
+Uint8List _getChecksum(Uint8List data) {
+  return blake2bHash(data, digestSize: 4);
 }
 
 Future<Map> sendFilecoin(

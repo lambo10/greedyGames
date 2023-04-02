@@ -57,9 +57,11 @@ dependencies:
     path: ./dartez
   cardano_wallet_sdk:
     path: ./cardano
+  elliptic: ^0.3.8
   percent_indicator: ^3.4.0
   flutter_svg: ^1.1.6
   page_transition: ^2.0.5
+  leb128: ^1.0.1
   hex: ^0.2.0
   ed25519_hd_key: ^2.2.0
   rename: 2.0.1

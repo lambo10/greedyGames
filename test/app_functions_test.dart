@@ -7,6 +7,7 @@
 
 import 'dart:convert';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/utils/alt_ens.dart';
@@ -14,15 +15,18 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:elliptic/elliptic.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_js/flutter_js.dart';
+import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_test/hive_test.dart';
+import 'package:leb128/leb128.dart';
 import 'package:sacco/sacco.dart' as cosmos;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -201,6 +205,7 @@ void main() async {
     final xtz = {'default': "XTZ"};
     final adaMap = {'default': "ADA"};
     final xrpMap = {'default': "XRP"};
+    final filMap = {'default': "FIL"};
 
     // valid addresses
     validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
@@ -220,6 +225,10 @@ void main() async {
     validateAddress(adaMap,
         'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
     validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+    validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
+    validateAddress(filMap, 'f01782');
+    validateAddress(filMap,
+        'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
 
     // invalid address
 
@@ -252,6 +261,8 @@ void main() async {
     expect(() => validateAddress(adaMap, invalidAddress),
         throwsA(isA<Exception>()));
     expect(() => validateAddress(xrpMap, invalidAddress),
+        throwsA(isA<Exception>()));
+    expect(() => validateAddress(filMap, invalidAddress),
         throwsA(isA<Exception>()));
   });
 
@@ -327,6 +338,7 @@ void main() async {
       expect(getCosmosBlockChains()[i]['lcdUrl'], isNotNull);
     }
   });
+
   test('check if seed phrase generates the correct crypto address', () async {
     // WARNING: These accounts, and their private keys, are publicly known.
     // Any funds sent to them on Mainnet or any other live network WILL BE LOST.
@@ -407,7 +419,12 @@ void main() async {
       },
     );
 
-    // final filecoinKey = await compute(calculateFileCoinKey, mnemonic);
+    final filecoinKey = await compute(calculateFileCoinKey, {
+      mnemonicKey: mnemonic,
+      seedRootKey: seedPhraseRoot,
+      'addressPrefix': 'f'
+    });
+    print(filecoinKey);
     final cosmosKey = await compute(calculateCosmosKey, {
       mnemonicKey: mnemonic,
       seedRootKey: seedPhraseRoot,
@@ -483,7 +500,7 @@ void main() async {
       await etherPrivateKeyToAddress(ethereumClassicKey),
       '0x5C4b9839FDD8D5156549bE3eD5a00c933AaA3544',
     );
-    // expect(filecoinKey['ck'], 'eyUZ+e0KK6R2++xl+FWskE0Q97e30yfXRT74Ne6RCYE=');
+    expect(filecoinKey['address'], 'f16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa');
     expect(
       solanaKey['address'],
       '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
