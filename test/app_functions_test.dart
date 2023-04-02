@@ -225,7 +225,10 @@ void main() async {
     validateAddress(adaMap,
         'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
     validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+    validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
     validateAddress(filMap, 'f01782');
+    validateAddress(filMap,
+        'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
 
     // invalid address
 

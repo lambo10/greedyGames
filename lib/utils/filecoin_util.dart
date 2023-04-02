@@ -121,6 +121,33 @@ bool validateFilecoinAddress(String address) {
         print(bytes);
       }
       return true;
+    } else if (protocol == '4') {
+      const splitIndex = raw.indexOf('f');
+      if (splitIndex == -1) throw Exception('Invalid delegated address');
+
+//   const namespaceStr = raw.slice(0, splitIndex)
+//   if (namespaceStr.length > maxInt64StringLength)
+//     throw new Error('Invalid delegated address namespace')
+
+//   const subAddrCksmStr = raw.slice(splitIndex + 1)
+//   const subAddrCksmBytes = base32.decode(subAddrCksmStr)
+//   if (subAddrCksmBytes.length < checksumHashLength)
+//     throw Error('Invalid delegated address length')
+
+//   const subAddrBytes = subAddrCksmBytes.slice(0, -checksumHashLength)
+//   const checksumBytes = subAddrCksmBytes.slice(subAddrBytes.length)
+//   if (subAddrBytes.length > maxSubaddressLen)
+//     throw Error('Invalid delegated address length')
+
+//   const namespaceNumber = Number(namespaceStr)
+//   const namespaceByte = leb.unsigned.encode(namespaceNumber)
+//   const payload = uint8arrays.concat([namespaceByte, subAddrBytes])
+//   const bytes = uint8arrays.concat([protocolByte, payload])
+
+//   if (!validateChecksum(bytes, checksumBytes))
+//     throw Error('Invalid delegated address checksum')
+
+      return true;
     }
     return false;
   } catch (e) {
