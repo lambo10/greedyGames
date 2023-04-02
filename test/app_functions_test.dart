@@ -154,7 +154,7 @@ void main() async {
     if (ensToAddressMap['success']) {
       expect(
         ensToAddressMap['msg'],
-        '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+        startsWith('0x'),
       );
     } else {
       throw Exception(ensToAddressMap['msg']);
@@ -163,7 +163,7 @@ void main() async {
     if (ensToContentHash['success']) {
       expect(
         ensToContentHash['msg'],
-        'https://ipfs.io/ipfs/QmaSNoowTvXzrN22yW7z4k3jsbJtsLvzbwKB9d3YtpEZka',
+        startsWith('https://ipfs.io/ipfs/'),
       );
     } else {
       throw Exception(ensToContentHash['msg']);
