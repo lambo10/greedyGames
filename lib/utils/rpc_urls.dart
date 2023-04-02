@@ -2018,7 +2018,7 @@ Map calculateFileCoinKey(Map config) {
   final rs0 = node.derive(0);
   final ck = base64Encode(rs0.privateKey);
 
-  return {"ck": ck};
+  return {"ck": ck, 'publicKey': rs0.publicKey};
 }
 
 algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {

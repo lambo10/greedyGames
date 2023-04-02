@@ -411,7 +411,11 @@ void main() async {
       },
     );
 
-    // final filecoinKey = await compute(calculateFileCoinKey, mnemonic);
+    final filecoinKey = await compute(calculateFileCoinKey, {
+      mnemonicKey: mnemonic,
+      seedRootKey: seedPhraseRoot,
+    });
+
     final cosmosKey = await compute(calculateCosmosKey, {
       mnemonicKey: mnemonic,
       seedRootKey: seedPhraseRoot,
