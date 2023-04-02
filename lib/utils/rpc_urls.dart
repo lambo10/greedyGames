@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:base_x/base_x.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
+import 'package:elliptic/elliptic.dart';
+import 'package:hash/hash.dart';
 import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:bech32/bech32.dart';
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
-import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/json_viewer.dart';
 import 'package:cryptowallet/validate_tezos.dart';
 import 'package:dartez/dartez.dart';
@@ -19,8 +21,8 @@ import 'package:eth_sig_util/util/utils.dart' hide hexToBytes, bytesToHex;
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
-import 'package:hash/hash.dart';
 import 'package:hive/hive.dart';
+import 'package:leb128/leb128.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sacco/sacco.dart' as cosmos;
@@ -34,6 +36,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' hide Row;
 import 'package:validators/validators.dart';
 import 'package:wallet/wallet.dart' as wallet;
 import 'package:wallet_connect/wallet_connect.dart';
@@ -58,6 +61,7 @@ import '../screens/build_row.dart';
 import '../screens/dapp.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
+import 'filecoin_util.dart';
 import 'pos_networks.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -1222,8 +1226,6 @@ Map getXRPBlockChains() {
 }
 
 Map getFilecoinBlockChains() {
-  return {};
-  // FIXME:
   Map blockChains = {
     'Filecoin': {
       'symbol': 'FIL',
@@ -1942,14 +1944,8 @@ Future<Map> getFileCoinFromMemnomic(
   final keys = await compute(calculateFileCoinKey, {
     mnemonicKey: mnemonic,
     seedRootKey: seedPhraseRoot,
+    'addressPrefix': addressPrefix,
   });
-
-  String address = await fileCoinAddressFromCk(
-    keys['ck'],
-    addressPrefix,
-  );
-
-  keys['address'] = address;
   mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
   await pref.put(keyName, jsonEncode(mmenomicMapping));
   return keys;
@@ -2012,13 +2008,49 @@ Map calculateBitCoinKey(Map config) {
   };
 }
 
+Uint8List hexToU8a(String hex) {
+  RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
+  if (!hexRegex.hasMatch(hex)) {
+    throw ArgumentError('Provided string is not valid hex value');
+  }
+  final value = hex.startsWith('0x') ? hex.substring(2) : hex;
+  final valLength = value.length ~/ 2;
+
+  final bufLength = (valLength).ceil();
+
+  final result = Uint8List(bufLength);
+  final offset = (bufLength - valLength).clamp(0, bufLength);
+  for (var index = 0; index < bufLength; index++) {
+    result[index + offset] =
+        int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
+  }
+  return result;
+}
+
 Map calculateFileCoinKey(Map config) {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
   final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
   final rs0 = node.derive(0);
   final ck = base64Encode(rs0.privateKey);
 
-  return {"ck": ck, 'publicKey': rs0.publicKey};
+  final pk = hexToU8a(HEX.encode(rs0.privateKey));
+  final e = getSecp256k1();
+  final publickEy =
+      e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
+
+  final protocolByte = Leb128.encodeUnsigned(1);
+  final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
+
+  final addressBytes = [...protocolByte, ...payload];
+  final checksum = blake2bHash(addressBytes, digestSize: 4);
+  Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
+  final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
+
+  return {
+    "address": address.toLowerCase(),
+    'ck': ck,
+    'privateKey': HEX.encode(rs0.privateKey),
+  };
 }
 
 algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {

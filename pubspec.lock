@@ -462,6 +462,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  elliptic:
+    dependency: "direct main"
+    description:
+      name: elliptic
+      sha256: "8c7396126c81c574fe970ac4afe9ba919b1ca754da20b509664be2345ffb2845"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.8"
   equatable:
     dependency: "direct overridden"
     description:
