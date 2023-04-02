@@ -10,6 +10,7 @@ import 'package:bech32/bech32.dart';
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
+import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/json_viewer.dart';
 import 'package:cryptowallet/validate_tezos.dart';
 import 'package:dartez/dartez.dart';
@@ -3352,10 +3353,9 @@ validateAddress(Map data, String recipient) {
   } else if (data['default'] == 'XLM') {
     stellar.KeyPair.fromAccountId(recipient);
   } else if (data['default'] == 'FIL') {
-    //FIXME:
-    // if (!await Flotus.validateAddress(recipient)) {
-    //   throw Exception('not a valid filecoin address');
-    // }
+    if (!validateFilecoinAddress(recipient)) {
+      throw Exception('not a valid filecoin address');
+    }
   } else if (data['default'] == 'ATOM') {
     Bech32 sel = bech32.decode(recipient);
     if (sel.hrp != data['bech32Hrp']) {
