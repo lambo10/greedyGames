@@ -64,10 +64,6 @@ void main() async {
     );
   }
 
-  // [238, 242, 24, 215, 93, 181, 75, 24, 23, 85, 141, 86, 173, 65, 143, 65, 39, 74, 122, 196, 186, 48, 72, 164]
-  print(validateFilecoinAddress('f1ojyfm5btrqq63zquewexr4hecynvq6yjyk5xv6q'));
-  print(validateFilecoinAddress('f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui'));
-
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
