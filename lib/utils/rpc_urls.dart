@@ -724,16 +724,16 @@ Map getBitCoinPOSBlockchains() {
       'P2WPKH': true,
       'derivationPath': "m/84'/0'/0'/0/0"
     },
-    // 'BitcoinCash': {
-    //   'symbol': 'BCH',
-    //   'default': 'BCH',
-    //   'blockExplorer':
-    //       'https://www.blockchain.com/explorer/transactions/bch/$transactionhashTemplateKey',
-    //   'image': 'assets/bitcoin_cash.png',
-    //   'POSNetwork': bitcoincash,
-    //   'P2WPKH': false,
-    //   'derivationPath': "m/44'/145'/0'/0/0"
-    // },
+    'BitcoinCash': {
+      'symbol': 'BCH',
+      'default': 'BCH',
+      'blockExplorer':
+          'https://www.blockchain.com/explorer/transactions/bch/$transactionhashTemplateKey',
+      'image': 'assets/bitcoin_cash.png',
+      'POSNetwork': bitcoincash,
+      'P2WPKH': false,
+      'derivationPath': "m/44'/145'/0'/0/0"
+    },
     'Litecoin': {
       'symbol': 'LTC',
       'default': 'LTC',
