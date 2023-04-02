@@ -240,13 +240,15 @@ class _AddContactState extends State<AddContact> {
                             );
 
                             if (addressData == null) return;
-                            addressData.remove('POSNetwork');
-                            addressData.remove('sdk');
-                            addressData.remove('cluster');
-                            addressData.remove('solanaCluster');
-                            addressData.remove('tezorType');
-                            addressData.remove('algoType');
-                            addressData.remove('cardano_network');
+
+                            addressData.removeWhere((key, value) {
+                              try {
+                                json.encode(value);
+                                return false;
+                              } catch (_) {
+                                return true;
+                              }
+                            });
                             addressDataMap.addAll(
                               Map<String, dynamic>.from(
                                 {

@@ -424,7 +424,7 @@ void main() async {
       seedRootKey: seedPhraseRoot,
       'addressPrefix': 'f'
     });
-    print(filecoinKey);
+
     final cosmosKey = await compute(calculateCosmosKey, {
       mnemonicKey: mnemonic,
       seedRootKey: seedPhraseRoot,
