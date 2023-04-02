@@ -7,6 +7,7 @@ import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/app_config.dart';
+import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
@@ -62,6 +63,10 @@ void main() async {
       value: base64UrlEncode(key),
     );
   }
+
+  // [238, 242, 24, 215, 93, 181, 75, 24, 23, 85, 141, 86, 173, 65, 143, 65, 39, 74, 122, 196, 186, 48, 72, 164]
+  print(validateFilecoinAddress('f1ojyfm5btrqq63zquewexr4hecynvq6yjyk5xv6q'));
+  print(validateFilecoinAddress('f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui'));
 
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));

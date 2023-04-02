@@ -1,9 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
+import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:hive/hive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:leb128/leb128.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'app_config.dart';
 
@@ -71,6 +77,56 @@ Future<Map<String, dynamic>> _getFileCoinGas(
   } catch (e) {
     return {};
   }
+}
+
+bool validateFilecoinAddress(String address) {
+  try {
+    const checksumHashLength = 4;
+    const fileCoinPrefixs = ['f1', 't1'];
+    if (!fileCoinPrefixs.contains(address.substring(0, 2))) {
+      return false;
+    }
+    final protocol = address[1];
+
+    final protocolByte = Leb128.encodeUnsigned(int.parse(protocol));
+
+    List<int> payloadCksm = Base32.decode(address.substring(2));
+
+    if (payloadCksm.length < checksumHashLength) {
+      throw Exception('Invalid address length');
+    }
+
+    Uint8List payload = payloadCksm.sublist(0, payloadCksm.length - 4);
+
+    Uint8List checksum = payloadCksm.sublist(payload.length);
+
+    List<int> byteList = List.from(protocolByte)..addAll(payload);
+    Uint8List bytes = Uint8List.fromList(byteList);
+
+    if (!_validateChecksum(bytes, checksum)) {
+      throw Exception('Invalid address checksum');
+    }
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+_validateChecksum(Uint8List bytes, Uint8List checksum) {
+  return seqEqual(_getChecksum(bytes), checksum);
+}
+
+Uint8List _getChecksum(Uint8List data) {
+  return blake2bHash(data, digestSize: 4);
+}
+
+bool uint8listEquals(Uint8List a, Uint8List b) {
+  if (a.length != b.length) return false;
+  for (int i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 Future<Map> sendFilecoin(
