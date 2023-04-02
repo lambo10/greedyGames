@@ -201,6 +201,7 @@ void main() async {
     final xtz = {'default': "XTZ"};
     final adaMap = {'default': "ADA"};
     final xrpMap = {'default': "XRP"};
+    final filMap = {'default': "FIL"};
 
     // valid addresses
     validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
@@ -220,6 +221,7 @@ void main() async {
     validateAddress(adaMap,
         'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
     validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+    validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
 
     // invalid address
 
@@ -252,6 +254,8 @@ void main() async {
     expect(() => validateAddress(adaMap, invalidAddress),
         throwsA(isA<Exception>()));
     expect(() => validateAddress(xrpMap, invalidAddress),
+        throwsA(isA<Exception>()));
+    expect(() => validateAddress(filMap, invalidAddress),
         throwsA(isA<Exception>()));
   });
 
