@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:elliptic/elliptic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
@@ -197,6 +198,8 @@ Future<Map> sendFilecoin(
   };
 
   msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
+  final cid = _messageCid(msg: json.encode(msg));
+
   return {};
   //FIXME:
 
@@ -231,3 +234,14 @@ Future<Map> sendFilecoin(
 
   // return {'txid': jsonDecodedBody['data'].toString()};
 }
+
+const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
+_messageCid({String msg}) {
+  // blake2bHash(stringBytes, digestSize: 32);
+}
+// function getCID(message) {
+//     const blakeCtx = blake.blake2bInit(32);
+//     blake.blake2bUpdate(blakeCtx, message);
+//     const hash = Buffer.from(blake.blake2bFinal(blakeCtx));
+//     return Buffer.concat([CID_PREFIX, hash]);
+// }
