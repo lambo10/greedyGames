@@ -1886,15 +1886,6 @@ Future<Map> getTezorFromMemnomic(
   return keys;
 }
 
-Future<String> fileCoinAddressFromCk(String ck, String addressPrefix) async {
-  // FIXME:
-  return '';
-  // final publickKey = await Flotus.secpPrivateToPublic(ck: ck);
-
-  // String address = await Flotus.genAddress(pk: publickKey, t: 'secp');
-  // return '$addressPrefix${address.substring(1)}';
-}
-
 Future<Map> decodeAbi(String txData) async {
   JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
   try {
