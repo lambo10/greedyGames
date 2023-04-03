@@ -2022,7 +2022,6 @@ Map calculateFileCoinKey(Map config) {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
   final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
   final rs0 = node.derive(0);
-  final ck = base64Encode(rs0.privateKey);
 
   final pk = hexToU8a(HEX.encode(rs0.privateKey));
   final e = getSecp256k1();
@@ -2039,7 +2038,6 @@ Map calculateFileCoinKey(Map config) {
 
   return {
     "address": address.toLowerCase(),
-    'ck': ck,
     'privateKey': HEX.encode(rs0.privateKey),
   };
 }
