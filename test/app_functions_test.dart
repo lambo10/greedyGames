@@ -79,6 +79,10 @@ void main() async {
       genCid(jsonEncode({'hello': 'world'})),
       'bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea',
     );
+    expect(
+      genCid(jsonEncode({'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'})),
+      'bagaaierafwnjryt63d5n7l2c76blfv7jddxgfeuhl4bvcdzuniggxo2eqngq',
+    );
   });
   test('can decode known abis', () {
     expect(solidityFunctionSig('withdraw(uint256)'), '0x2e1a7d4d');

@@ -58,18 +58,7 @@ void main() async {
     );
   };
 
-  const msg = {
-    "Version": 0,
-    "To": "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
-    "From": "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
-    "Nonce": 0,
-    "Value": "10000000000000000000",
-    "GasLimit": 1000000000000,
-    "GasFeeCap": "10000000",
-    "GasPremium": "10000000",
-    "Method": 0,
-    "Params": ""
-  };
+  const msg = {'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'};
   // final cid = await Flotus.messageCid(msg: msg);
   // var sig = await Flotus.secpSign(
   //     ck: "67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=",
