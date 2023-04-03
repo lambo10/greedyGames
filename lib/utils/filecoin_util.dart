@@ -173,6 +173,11 @@ Future<Map> sendFilecoin(
   //FIXME:
 
 
+  // start demo
+  // jHF0ghnCwyl7XNEfgXx1+9sjbg3lJe09gEux/+m5pRFudpQEeFxxt9ZACHNDE//u31r3GBZ4aYixpV8xYp57HgA=
+  // end demo
+
+
 // const bytes = json.encode({ hello: 'world' })
 
 // const hash = await sha256.digest(bytes)
