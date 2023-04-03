@@ -102,6 +102,10 @@ void main() async {
       fromV0ToV1('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n'),
       'bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku',
     );
+    expect(
+      fromV0ToV1('QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR'),
+      'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+    );
   });
   test('can decode known abis', () {
     expect(solidityFunctionSig('withdraw(uint256)'), '0x2e1a7d4d');
