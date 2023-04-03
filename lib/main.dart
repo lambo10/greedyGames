@@ -13,6 +13,8 @@ import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
 import 'package:cryptowallet/validate_tezos.dart';
 import 'package:dartez/dartez.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flotus/flotus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_js/extensions/fetch.dart';
 import 'package:flutter_js/extensions/xhr.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hash/hash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path/path.dart';
@@ -53,6 +56,29 @@ void main() async {
       ),
     );
   };
+
+  final msg = {'hello': 'world'};
+  final code = 512;
+  final version = 1;
+  final bytes = utf8.encode(json.encode(msg));
+  final digest = sha256.convert(bytes);
+
+
+// const bytes = encodeCID(version, code, digest.bytes)
+// const encodeCID = (version, code, multihash) => {
+//   const codeOffset = varint.encodingLength(version)
+//   const hashOffset = codeOffset + varint.encodingLength(code)
+//   const bytes = new Uint8Array(hashOffset + multihash.byteLength)
+//   varint.encodeTo(version, bytes, 0)
+//   varint.encodeTo(code, bytes, codeOffset)
+//   bytes.set(multihash, hashOffset)
+//   return bytes
+// }
+
+  print(hash);
+
+  // final cid = await Flotus.messageCid(msg: json.encode({'hello': 'world'}));
+  // print(cid + ' hree');
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
