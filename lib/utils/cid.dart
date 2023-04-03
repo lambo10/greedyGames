@@ -57,7 +57,8 @@ String genCid(
   version = 1,
 ]) {
   if (version == 0 && code != CIDCodes.rawCode) {
-    throw Exception('Version 0 CID must use dag-pb (code: 112) block encoding');
+    throw Exception(
+        'Version 0 CID must use dag-pb (code: ${CIDCodes.rawCode}) block encoding');
   }
   final bytes = utf8.encode(msg);
   final digest = sha256.convert(bytes);
