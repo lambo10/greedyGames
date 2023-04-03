@@ -10,6 +10,7 @@ import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
+import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
@@ -49,7 +50,65 @@ void main() async {
   const eip681String =
       'ethereum:ethereum-$busdContractAddress@56/transfer?address=$address&uint256=1000000000000000000';
   const unstoppableAddress = 'brad.crypto';
+// const { cid } = await ipfs.add('Hello world')
+// console.info(cid)
+// // QmXXY5ZxbtuYj6DnfApLiGstzPN7fvSyigrRee3hDWPCaf
+  test('can generate filecoin cid', () {
+    expect(
+      genCid(
+        jsonEncode(
+          {
+            "Version": 0,
+            "To": "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
+            "From": "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
+            "Nonce": 0,
+            "Value": "10000000000000000000",
+            "GasLimit": 1000000000000,
+            "GasFeeCap": "10000000",
+            "GasPremium": "10000000",
+            "Method": 0,
+            "Params": ""
+          },
+        ),
+      ),
+      'bagaaieranzmqkatxqfe2unslsoqq5n6mmvn5xjri65m2xkiuq4f2ofmmzf5q',
+    );
+    expect(
+      genCid('OMG!', CIDCodes.dagPBCode),
+      'bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu',
+    );
+    expect(
+      genCid(
+          jsonEncode(
+              '🚀🪐⭐💻😅💪🥳😴🎂👉💧📍🌴😪😮🎈🚩🙈😥😰🔵😡✊🍒🐾🎉😇🎤❌😏🌍🌘🥂✋😹📍🙄'),
+          CIDCodes.dagPBCode,
+          0),
+      'QmW5xcH8ydwYtnS8FsMYxZfjpsN6p4YTVv7n5YbvoooZy4',
+    );
+    expect(
+      genCid(jsonEncode({'hello': 'world'})),
+      'bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea',
+    );
+    expect(
+      genCid(jsonEncode(
+          {'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'})),
+      'bagaaierafwnjryt63d5n7l2c76blfv7jddxgfeuhl4bvcdzuniggxo2eqngq',
+    );
 
+    expect(
+      fromV0ToV1('QmW5xcH8ydwYtnS8FsMYxZfjpsN6p4YTVv7n5YbvoooZy4'),
+      'bafybeidtdic3panzxksm5vva52ru222wlasitwpuio2vxszuhfgizrhlim',
+    );
+
+    expect(
+      fromV0ToV1('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n'),
+      'bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku',
+    );
+    expect(
+      fromV0ToV1('QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR'),
+      'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+    );
+  });
   test('can decode known abis', () {
     expect(solidityFunctionSig('withdraw(uint256)'), '0x2e1a7d4d');
     expect(solidityFunctionSig('ownerOf(uint256)'), '0x6352211e');

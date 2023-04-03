@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:elliptic/elliptic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
@@ -128,37 +129,6 @@ bool validateFilecoinAddress(String address) {
   }
 }
 
-//  case Protocol.ID => 0: {
-
-// case Protocol.DELEGATED => 4: {
-//   const splitIndex = raw.indexOf('f')
-//   if (splitIndex === -1) throw new Error('Invalid delegated address')
-
-//   const namespaceStr = raw.slice(0, splitIndex)
-//   if (namespaceStr.length > maxInt64StringLength)
-//     throw new Error('Invalid delegated address namespace')
-
-//   const subAddrCksmStr = raw.slice(splitIndex + 1)
-//   const subAddrCksmBytes = base32.decode(subAddrCksmStr)
-//   if (subAddrCksmBytes.length < checksumHashLength)
-//     throw Error('Invalid delegated address length')
-
-//   const subAddrBytes = subAddrCksmBytes.slice(0, -checksumHashLength)
-//   const checksumBytes = subAddrCksmBytes.slice(subAddrBytes.length)
-//   if (subAddrBytes.length > maxSubaddressLen)
-//     throw Error('Invalid delegated address length')
-
-//   const namespaceNumber = Number(namespaceStr)
-//   const namespaceByte = leb.unsigned.encode(namespaceNumber)
-//   const payload = uint8arrays.concat([namespaceByte, subAddrBytes])
-//   const bytes = uint8arrays.concat([protocolByte, payload])
-
-//   if (!validateChecksum(bytes, checksumBytes))
-//     throw Error('Invalid delegated address checksum')
-
-//   return { protocol, payload, bytes, coinType, namespace: namespaceNumber }
-// }
-
 _validateChecksum(Uint8List bytes, Uint8List checksum) {
   return seqEqual(_getChecksum(bytes), checksum);
 }
@@ -197,8 +167,23 @@ Future<Map> sendFilecoin(
   };
 
   msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
+  final cid = _messageCid(msg: json.encode(msg));
+
   return {};
   //FIXME:
+
+
+  // start demo
+  // jHF0ghnCwyl7XNEfgXx1+9sjbg3lJe09gEux/+m5pRFudpQEeFxxt9ZACHNDE//u31r3GBZ4aYixpV8xYp57HgA=
+  // end demo
+
+
+// const bytes = json.encode({ hello: 'world' })
+
+// const hash = await sha256.digest(bytes)
+// const cid = CID.create(1, json.code, hash)
+
+//> CID(bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea)
 
   // final cid = await Flotus.messageCid(msg: json.encode(msg));
 
@@ -231,3 +216,14 @@ Future<Map> sendFilecoin(
 
   // return {'txid': jsonDecodedBody['data'].toString()};
 }
+
+const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
+_messageCid({String msg}) {
+  // blake2bHash(stringBytes, digestSize: 32);
+}
+// function getCID(message) {
+//     const blakeCtx = blake.blake2bInit(32);
+//     blake.blake2bUpdate(blakeCtx, message);
+//     const hash = Buffer.from(blake.blake2bFinal(blakeCtx));
+//     return Buffer.concat([CID_PREFIX, hash]);
+// }

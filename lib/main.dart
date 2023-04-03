@@ -6,6 +6,7 @@ import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
+import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -13,6 +14,8 @@ import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
 import 'package:cryptowallet/validate_tezos.dart';
 import 'package:dartez/dartez.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flotus/flotus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +24,7 @@ import 'package:flutter_js/extensions/fetch.dart';
 import 'package:flutter_js/extensions/xhr.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hash/hash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path/path.dart';
@@ -53,6 +57,7 @@ void main() async {
       ),
     );
   };
+
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
