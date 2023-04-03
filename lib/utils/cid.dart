@@ -72,6 +72,15 @@ String genCid(
   }
 }
 
+fromV0ToV1(String v1) {
+  if (v1[0] != 'Q') {
+    throw Exception('only v1 to v2 supported');
+  }
+  final fullBytes = base58.decode(v1);
+  final bytesCode = encodeCid(1, CIDCodes.rawCode, fullBytes);
+  return 'b${Base32.encode(bytesCode).toLowerCase()}';
+}
+
 Uint8List encodeTo(number, Uint8List target, [int offset = 0]) {
   target ??= Uint8List(10);
   const MSB = 0x80;
