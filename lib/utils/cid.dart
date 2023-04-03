@@ -45,13 +45,22 @@ class Varint {
   }
 }
 
-String genCid({msg = const {'hello': 'world'}}) {
-  const code = 512;
-  const version = 1;
-  final bytes = utf8.encode(json.encode(msg));
+enum CIDCodes { jsonCodeCID, stringCodeCID }
+
+String genCid(
+  String msg, [
+  CIDCodes defaultCode = CIDCodes.jsonCodeCID,
+  version = 1,
+]) {
+  int code;
+  if (defaultCode == CIDCodes.jsonCodeCID) {
+    code = 512;
+  } else {
+    code = 112;
+  }
+  final bytes = utf8.encode(msg);
   final digest = sha256.convert(bytes);
   final bytesCode = encodeCid(version, code, digest);
-
   return 'b${Base32.encode(bytesCode).toLowerCase()}';
 }
 
@@ -75,11 +84,6 @@ Uint8List encodeTo(number, Uint8List target, [int offset = 0]) {
   target[offset] = number | 0;
   return target;
 }
-
-// int get bytes => encode.bytes;
-
-// set bytes(int value) => encode.bytes = value;
-// This code uses Uint8List instead of a regular array, which is a typed array optimized for byte-level operations. The encode.bytes property is used to keep track of the number of bytes written to the target array, and is set at the end of the function to be used by the caller.
 
 Uint8List encodeCid(version, code, Digest digest) {
   final codeOffset = Varint.encodingLength(version);

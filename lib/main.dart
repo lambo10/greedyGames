@@ -6,7 +6,7 @@ import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
-import 'package:cryptowallet/sec.dart';
+import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -76,7 +76,7 @@ void main() async {
   //     msg: "AXGg5AIgA7aUiB+WKlJZi77CrBo4OgwytRmXbBXj8ratzAtshGM=");
   // print(cid);
   // print(sig);
-  print(genCid(msg: msg));
+  print(genCid(json.encode(msg)));
 
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
