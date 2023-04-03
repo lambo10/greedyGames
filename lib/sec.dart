@@ -1,48 +1,98 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 import 'dart:convert';
+import 'dart:ffi';
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
-import 'package:pointycastle/signers/ecdsa_signer.dart';
-import 'package:pointycastle/digests/blake2b.dart';
-import 'package:pointycastle/ecc/curves/secp256k1.dart';
-import 'package:pointycastle/random/fortuna_random.dart';
-import 'package:pointycastle/signers/ecdsa_signer.dart';
-import 'package:pointycastle/api.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// func SecpSign(ck string, msg string) string {
-// 	if ck == "" {
-// 		return ""
-// 	}
-// 	if msg == "" {
-// 		return ""
-// 	}
+_length(value) {
+  var N1 = pow(2, 7);
+  var N2 = pow(2, 14);
+  var N3 = pow(2, 21);
+  var N4 = pow(2, 28);
+  var N5 = pow(2, 35);
+  var N6 = pow(2, 42);
+  var N7 = pow(2, 49);
+  var N8 = pow(2, 56);
+  var N9 = pow(2, 63);
+  return (value < N1
+      ? 1
+      : value < N2
+          ? 2
+          : value < N3
+              ? 3
+              : value < N4
+                  ? 4
+                  : value < N5
+                      ? 5
+                      : value < N6
+                          ? 6
+                          : value < N7
+                              ? 7
+                              : value < N8
+                                  ? 8
+                                  : value < N9
+                                      ? 9
+                                      : 10);
+}
 
-// 	ckbytes, err := base64.StdEncoding.DecodeString(ck)
-// 	if err != nil {
-// 		return ""
-// 	}
+class Varint {
+  static encodingLength(nuber) {
+    return _length(nuber);
+  }
+}
 
-// 	msgbytes, err := base64.StdEncoding.DecodeString(msg)
-// 	if err != nil {
-// 		return ""
-// 	}
+String genCid({msg = const {'hello': 'world'}}) {
+  const code = 512;
+  const version = 1;
+  final bytes = utf8.encode(json.encode(msg));
+  final digest = sha256.convert(bytes);
+  final bytesCode = encodeCid(version, code, digest);
 
-// 	b2sum := blake2b.Sum256(msgbytes)
-// 	sig, err := crypto.Sign(ckbytes, b2sum[:])
-// 	if err != nil {
-// 		return ""
-// 	}
+  return 'b${Base32.encode(bytesCode).toLowerCase()}';
+}
 
-// 	return base64.StdEncoding.EncodeToString(sig)
-// }
+Uint8List encodeTo(number, Uint8List target, [int offset = 0]) {
+  target ??= Uint8List(10);
+  const MSB = 0x80;
+  const REST = 0x7F;
+  const MSBALL = ~REST;
+  const INT = 1 << 31;
 
-  // print(Base32.encode(base64.decode(await Flotus.messageCid(msg: msg_))));
+  while (number >= INT) {
+    target[offset++] = (number & 0xFF) | MSB;
+    number /= 128;
+  }
 
-  // final msg = {'hello': 'world'};
-  // final code = 512;
-  // final version = 1;
-  // final bytes = utf8.encode(json.encode(msg));
-  // final digest = sha256.convert(bytes);
+  while ((number & MSBALL) != 0) {
+    target[offset++] = (number & 0xFF) | MSB;
+    number >>= 7;
+  }
+
+  target[offset] = number | 0;
+  return target;
+}
+
+// int get bytes => encode.bytes;
+
+// set bytes(int value) => encode.bytes = value;
+// This code uses Uint8List instead of a regular array, which is a typed array optimized for byte-level operations. The encode.bytes property is used to keep track of the number of bytes written to the target array, and is set at the end of the function to be used by the caller.
+
+Uint8List encodeCid(version, code, Digest digest) {
+  final codeOffset = Varint.encodingLength(version);
+
+  final hashOffset = codeOffset + Varint.encodingLength(code);
+  final fullBytes = [18, 32, ...digest.bytes];
+  var bytes = Uint8List(hashOffset + fullBytes.length);
+  bytes = encodeTo(version, bytes, 0);
+  bytes = encodeTo(code, bytes, codeOffset);
+  bytes.setAll(hashOffset, fullBytes);
+  return bytes;
+}
+
 String SecpSign(String ck, String msg) {
   if (ck == "") {
     return "";

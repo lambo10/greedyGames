@@ -6,6 +6,7 @@ import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
+import 'package:cryptowallet/sec.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -57,26 +58,25 @@ void main() async {
     );
   };
 
-  const msg = """
-      {
-        "Version": 0,
-        "To": "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
-        "From": "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
-        "Nonce": 0,
-        "Value": "10000000000000000000",
-        "GasLimit": 1000000000000,
-        "GasFeeCap": "10000000",
-        "GasPremium": "10000000",
-        "Method": 0,
-        "Params": ""
-      }
-      """;
-  final cid = await Flotus.messageCid(msg: json.encode(msg));
-  var sig = await Flotus.secpSign(
-      ck: "67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=",
-      msg: "AXGg5AIgA7aUiB+WKlJZi77CrBo4OgwytRmXbBXj8ratzAtshGM=");
-  print(cid);
-  print(sig);
+  const msg = {
+    "Version": 0,
+    "To": "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
+    "From": "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
+    "Nonce": 0,
+    "Value": "10000000000000000000",
+    "GasLimit": 1000000000000,
+    "GasFeeCap": "10000000",
+    "GasPremium": "10000000",
+    "Method": 0,
+    "Params": ""
+  };
+  // final cid = await Flotus.messageCid(msg: msg);
+  // var sig = await Flotus.secpSign(
+  //     ck: "67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=",
+  //     msg: "AXGg5AIgA7aUiB+WKlJZi77CrBo4OgwytRmXbBXj8ratzAtshGM=");
+  // print(cid);
+  // print(sig);
+  print(genCid(msg: msg));
 
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
