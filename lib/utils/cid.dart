@@ -49,6 +49,7 @@ class Varint {
 class CIDCodes {
   static const int jsonCode = 512;
   static const int dagPBCode = 112;
+  static const int rawCode = 85;
 }
 
 String genCid(
