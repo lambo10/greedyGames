@@ -57,28 +57,27 @@ void main() async {
     );
   };
 
-  final msg = {'hello': 'world'};
-  final code = 512;
-  final version = 1;
-  final bytes = utf8.encode(json.encode(msg));
-  final digest = sha256.convert(bytes);
+  const msg = """
+      {
+        "Version": 0,
+        "To": "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
+        "From": "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
+        "Nonce": 0,
+        "Value": "10000000000000000000",
+        "GasLimit": 1000000000000,
+        "GasFeeCap": "10000000",
+        "GasPremium": "10000000",
+        "Method": 0,
+        "Params": ""
+      }
+      """;
+  final cid = await Flotus.messageCid(msg: json.encode(msg));
+  var sig = await Flotus.secpSign(
+      ck: "67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=",
+      msg: "AXGg5AIgA7aUiB+WKlJZi77CrBo4OgwytRmXbBXj8ratzAtshGM=");
+  print(cid);
+  print(sig);
 
-
-// const bytes = encodeCID(version, code, digest.bytes)
-// const encodeCID = (version, code, multihash) => {
-//   const codeOffset = varint.encodingLength(version)
-//   const hashOffset = codeOffset + varint.encodingLength(code)
-//   const bytes = new Uint8Array(hashOffset + multihash.byteLength)
-//   varint.encodeTo(version, bytes, 0)
-//   varint.encodeTo(code, bytes, codeOffset)
-//   bytes.set(multihash, hashOffset)
-//   return bytes
-// }
-
-  print(hash);
-
-  // final cid = await Flotus.messageCid(msg: json.encode({'hello': 'world'}));
-  // print(cid + ' hree');
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
