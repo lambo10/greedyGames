@@ -48,7 +48,7 @@ class Varint {
 
 class CIDCodes {
   static const int jsonCode = 512;
-  static const int rawCode = 112;
+  static const int dagPBCode = 112;
 }
 
 String genCid(
@@ -56,9 +56,9 @@ String genCid(
   int code = CIDCodes.jsonCode,
   version = 1,
 ]) {
-  if (version == 0 && code != CIDCodes.rawCode) {
+  if (version == 0 && code != CIDCodes.dagPBCode) {
     throw Exception(
-        'Version 0 CID must use dag-pb (code: ${CIDCodes.rawCode}) block encoding');
+        'Version 0 CID must use dag-pb (code: ${CIDCodes.dagPBCode}) block encoding');
   }
   final bytes = utf8.encode(msg);
   final digest = sha256.convert(bytes);
@@ -77,7 +77,7 @@ fromV0ToV1(String v1) {
     throw Exception('only v1 to v2 supported');
   }
   final fullBytes = base58.decode(v1);
-  final bytesCode = encodeCid(1, CIDCodes.rawCode, fullBytes);
+  final bytesCode = encodeCid(1, CIDCodes.dagPBCode, fullBytes);
   return 'b${Base32.encode(bytesCode).toLowerCase()}';
 }
 

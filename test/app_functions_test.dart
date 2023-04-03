@@ -50,7 +50,9 @@ void main() async {
   const eip681String =
       'ethereum:ethereum-$busdContractAddress@56/transfer?address=$address&uint256=1000000000000000000';
   const unstoppableAddress = 'brad.crypto';
-
+// const { cid } = await ipfs.add('Hello world')
+// console.info(cid)
+// // QmXXY5ZxbtuYj6DnfApLiGstzPN7fvSyigrRee3hDWPCaf
   test('can generate filecoin cid', () {
     expect(
       genCid(
@@ -72,14 +74,14 @@ void main() async {
       'bagaaieranzmqkatxqfe2unslsoqq5n6mmvn5xjri65m2xkiuq4f2ofmmzf5q',
     );
     expect(
-      genCid('OMG!', CIDCodes.rawCode),
+      genCid('OMG!', CIDCodes.dagPBCode),
       'bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu',
     );
     expect(
       genCid(
           jsonEncode(
               '🚀🪐⭐💻😅💪🥳😴🎂👉💧📍🌴😪😮🎈🚩🙈😥😰🔵😡✊🍒🐾🎉😇🎤❌😏🌍🌘🥂✋😹📍🙄'),
-          CIDCodes.rawCode,
+          CIDCodes.dagPBCode,
           0),
       'QmW5xcH8ydwYtnS8FsMYxZfjpsN6p4YTVv7n5YbvoooZy4',
     );
