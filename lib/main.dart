@@ -58,15 +58,6 @@ void main() async {
     );
   };
 
-  const msg = {'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'};
-  // final cid = await Flotus.messageCid(msg: msg);
-  // var sig = await Flotus.secpSign(
-  //     ck: "67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=",
-  //     msg: "AXGg5AIgA7aUiB+WKlJZi77CrBo4OgwytRmXbBXj8ratzAtshGM=");
-  // print(cid);
-  // print(sig);
-  print(genCid(json.encode(msg)));
-
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);

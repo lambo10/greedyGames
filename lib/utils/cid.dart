@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:bs58check/bs58check.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -53,6 +54,9 @@ String genCid(
   version = 1,
 ]) {
   int code;
+  if (version == 0 && defaultCode != CIDCodes.stringCodeCID) {
+    throw Exception('Version 0 CID must use dag-pb (code: 112) block encoding');
+  }
   if (defaultCode == CIDCodes.jsonCodeCID) {
     code = 512;
   } else {
@@ -60,8 +64,14 @@ String genCid(
   }
   final bytes = utf8.encode(msg);
   final digest = sha256.convert(bytes);
-  final bytesCode = encodeCid(version, code, digest);
-  return 'b${Base32.encode(bytesCode).toLowerCase()}';
+  final fullBytes = Uint8List.fromList([18, 32, ...digest.bytes]);
+
+  if (version == 1) {
+    final bytesCode = encodeCid(version, code, fullBytes);
+    return 'b${Base32.encode(bytesCode).toLowerCase()}';
+  } else {
+    return base58.encode(fullBytes);
+  }
 }
 
 Uint8List encodeTo(number, Uint8List target, [int offset = 0]) {
@@ -85,11 +95,11 @@ Uint8List encodeTo(number, Uint8List target, [int offset = 0]) {
   return target;
 }
 
-Uint8List encodeCid(version, code, Digest digest) {
+Uint8List encodeCid(version, code, Uint8List fullBytes) {
   final codeOffset = Varint.encodingLength(version);
 
   final hashOffset = codeOffset + Varint.encodingLength(code);
-  final fullBytes = [18, 32, ...digest.bytes];
+
   var bytes = Uint8List(hashOffset + fullBytes.length);
   bytes = encodeTo(version, bytes, 0);
   bytes = encodeTo(code, bytes, codeOffset);

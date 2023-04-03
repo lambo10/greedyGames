@@ -76,11 +76,20 @@ void main() async {
       'bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu',
     );
     expect(
+      genCid(
+          jsonEncode(
+              '🚀🪐⭐💻😅💪🥳😴🎂👉💧📍🌴😪😮🎈🚩🙈😥😰🔵😡✊🍒🐾🎉😇🎤❌😏🌍🌘🥂✋😹📍🙄'),
+          CIDCodes.stringCodeCID,
+          0),
+      'QmW5xcH8ydwYtnS8FsMYxZfjpsN6p4YTVv7n5YbvoooZy4',
+    );
+    expect(
       genCid(jsonEncode({'hello': 'world'})),
       'bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea',
     );
     expect(
-      genCid(jsonEncode({'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'})),
+      genCid(jsonEncode(
+          {'s39oe93p;;i3i3lL.//dkdkdlaid': 'kskslei3i9aekdkl39zlallk'})),
       'bagaaierafwnjryt63d5n7l2c76blfv7jddxgfeuhl4bvcdzuniggxo2eqngq',
     );
   });
