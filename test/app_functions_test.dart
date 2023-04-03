@@ -72,14 +72,14 @@ void main() async {
       'bagaaieranzmqkatxqfe2unslsoqq5n6mmvn5xjri65m2xkiuq4f2ofmmzf5q',
     );
     expect(
-      genCid('OMG!', CIDCodes.stringCodeCID),
+      genCid('OMG!', CIDCodes.rawCode),
       'bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu',
     );
     expect(
       genCid(
           jsonEncode(
               '🚀🪐⭐💻😅💪🥳😴🎂👉💧📍🌴😪😮🎈🚩🙈😥😰🔵😡✊🍒🐾🎉😇🎤❌😏🌍🌘🥂✋😹📍🙄'),
-          CIDCodes.stringCodeCID,
+          CIDCodes.rawCode,
           0),
       'QmW5xcH8ydwYtnS8FsMYxZfjpsN6p4YTVv7n5YbvoooZy4',
     );

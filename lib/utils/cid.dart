@@ -46,21 +46,18 @@ class Varint {
   }
 }
 
-enum CIDCodes { jsonCodeCID, stringCodeCID }
+class CIDCodes {
+  static const int jsonCode = 512;
+  static const int rawCode = 112;
+}
 
 String genCid(
   String msg, [
-  CIDCodes defaultCode = CIDCodes.jsonCodeCID,
+  int code = CIDCodes.jsonCode,
   version = 1,
 ]) {
-  int code;
-  if (version == 0 && defaultCode != CIDCodes.stringCodeCID) {
+  if (version == 0 && code != CIDCodes.rawCode) {
     throw Exception('Version 0 CID must use dag-pb (code: 112) block encoding');
-  }
-  if (defaultCode == CIDCodes.jsonCodeCID) {
-    code = 512;
-  } else {
-    code = 112;
   }
   final bytes = utf8.encode(msg);
   final digest = sha256.convert(bytes);
