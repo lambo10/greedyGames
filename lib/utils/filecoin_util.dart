@@ -129,37 +129,6 @@ bool validateFilecoinAddress(String address) {
   }
 }
 
-//  case Protocol.ID => 0: {
-
-// case Protocol.DELEGATED => 4: {
-//   const splitIndex = raw.indexOf('f')
-//   if (splitIndex === -1) throw new Error('Invalid delegated address')
-
-//   const namespaceStr = raw.slice(0, splitIndex)
-//   if (namespaceStr.length > maxInt64StringLength)
-//     throw new Error('Invalid delegated address namespace')
-
-//   const subAddrCksmStr = raw.slice(splitIndex + 1)
-//   const subAddrCksmBytes = base32.decode(subAddrCksmStr)
-//   if (subAddrCksmBytes.length < checksumHashLength)
-//     throw Error('Invalid delegated address length')
-
-//   const subAddrBytes = subAddrCksmBytes.slice(0, -checksumHashLength)
-//   const checksumBytes = subAddrCksmBytes.slice(subAddrBytes.length)
-//   if (subAddrBytes.length > maxSubaddressLen)
-//     throw Error('Invalid delegated address length')
-
-//   const namespaceNumber = Number(namespaceStr)
-//   const namespaceByte = leb.unsigned.encode(namespaceNumber)
-//   const payload = uint8arrays.concat([namespaceByte, subAddrBytes])
-//   const bytes = uint8arrays.concat([protocolByte, payload])
-
-//   if (!validateChecksum(bytes, checksumBytes))
-//     throw Error('Invalid delegated address checksum')
-
-//   return { protocol, payload, bytes, coinType, namespace: namespaceNumber }
-// }
-
 _validateChecksum(Uint8List bytes, Uint8List checksum) {
   return seqEqual(_getChecksum(bytes), checksum);
 }
@@ -202,6 +171,14 @@ Future<Map> sendFilecoin(
 
   return {};
   //FIXME:
+
+
+// const bytes = json.encode({ hello: 'world' })
+
+// const hash = await sha256.digest(bytes)
+// const cid = CID.create(1, json.code, hash)
+
+//> CID(bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea)
 
   // final cid = await Flotus.messageCid(msg: json.encode(msg));
 
