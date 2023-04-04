@@ -15,7 +15,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
-import 'package:cryptowallet/addressToBytes.dart';
+import 'package:cryptowallet/utils/addressToBytes.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
