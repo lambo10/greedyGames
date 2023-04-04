@@ -176,6 +176,8 @@ Future<Map> sendFilecoin(
     "Params": ""
   };
 
+  // msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
+
   final to = addressAsBytes(msg['To']);
   final from = addressAsBytes(msg['From']);
   final value = serializeBigNum(msg['Value']);
@@ -213,24 +215,25 @@ Future<Map> sendFilecoin(
   const recid = 0; // FIXME: get recid from signature
   final cid = base64.encode([...sign, recid]);
 
-  msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
-
   const signTypeSecp = 1;
+
+  final rawSign = {
+    "Message": msg,
+    "Signature": {
+      "Type": signTypeSecp,
+      "Data": cid,
+    },
+  };
 
   final response = await http.post(
     Uri.parse('$baseUrl/message'),
     headers: {'Content-Type': 'application/json'},
     body: json.encode({
       'cid': cid,
-      'raw': json.encode({
-        "Message": msg,
-        "Signature": {
-          "Type": signTypeSecp,
-          "Data": sign,
-        },
-      })
+      'raw': json.encode(rawSign),
     }),
   );
+
   final responseBody = response.body;
   if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
     throw Exception(responseBody);
