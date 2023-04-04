@@ -4,30 +4,21 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
-import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:elliptic/elliptic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
-import 'package:crypto/crypto.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:leb128/leb128.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-import 'dart:convert';
 
 import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/addressToBytes.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:hex/hex.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-
-import 'app_config.dart';
+import 'package:web3dart/crypto.dart';
 
 Future<int> _getFileCoinNonce(
   String addressPrefix,
@@ -150,91 +141,6 @@ Uint8List _getChecksum(Uint8List data) {
   return blake2bHash(data, digestSize: 4);
 }
 
-int calculateRecId(
-    Uint8List message, Uint8List signature, Uint8List publicKey) {
-  var r = signature.sublist(0, 32);
-  var s = signature.sublist(32);
-
-  for (var i = 0; i < 4; i++) {
-    var k = recoverPublicKey(message, signature, i);
-    if (k != null && publicKey == k) {
-      return i;
-    }
-  }
-
-  throw Exception("No recid found");
-}
-
-BigInt hashToInt(Uint8List message) {
-  var sha256Hash = sha256.convert(message).bytes;
-
-  var keccakHash = sha3(HEX.encode(sha256Hash));
-
-  var hexString = keccakHash;
-  var bigInt = BigInt.parse(hexString, radix: 16);
-
-  return bigInt;
-}
-
-Uint8List recoverPublicKey(Uint8List message, Uint8List signature, int recid) {
-  final secp256k1 = getSecp256k1();
-  var n = secp256k1.n;
-  var G = secp256k1.G;
-  var x = G.X;
-
-  var r = BigInt.parse(HEX.encode(signature.sublist(0, 32)), radix: 16);
-  var s = BigInt.parse(HEX.encode(signature.sublist(32)), radix: 16);
-  var e = hashToInt(message);
-
-  var i = BigInt.from(recid ~/ 2);
-  var x1 = r + (i * n);
-  if (x1 >= secp256k1.p) return null;
-
-  var R = Point(
-      x1,
-      x1.modPow(BigInt.from(3), secp256k1.p) *
-          secp256k1.b.modPow(BigInt.from(2), secp256k1.p) %
-          secp256k1.p);
-
-  var Q =
-      G * (n + BigInt.from(1) - s) * r.modInverse(n) + R * s * r.modInverse(n);
-
-  if (!Q.isInfinity) {
-    if (Q.x == x) {
-      return encodePublicKey(Q);
-    } else {
-      return encodePublicKey(Point(x, secp256k1.p - Q.y));
-    }
-  }
-
-  return null;
-}
-
-Uint8List encodePublicKey(Point publicKey) {
-  var x = BigInt.from(publicKey.x);
-  var y = BigInt.from(publicKey.y);
-
-  var result = Uint8List(65);
-  result[0] = 0x04;
-  result.setRange(1, 33, padLeftTo32Bytes(x));
-  result.setRange(33, 65, padLeftTo32Bytes(y));
-
-  return result;
-}
-
-Uint8List padLeftTo32Bytes(BigInt n) {
-  var hexStr = n.toRadixString(16);
-  if (hexStr.length % 2 != 0) hexStr = '0$hexStr';
-
-  var bytes = HEX.decode(hexStr);
-  if (bytes.length < 32) {
-    var padding = Uint8List(32 - bytes.length);
-    bytes = padding + bytes;
-  }
-
-  return bytes;
-}
-
 Future<Map> sendFilecoin(
   String destinationAddress,
   int filecoinToSend, {
@@ -299,9 +205,11 @@ Future<Map> sendFilecoin(
   Uint8List privateKey = HEX.decode(fileCoinDetails['privateKey']);
 
   final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-  final sign = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
-  const recid = 0; // FIXME: get recid from signature
-  final cid = base64.encode([...sign, recid]);
+  final signature = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
+
+  final recid = sign(messageDigest, privateKey).v - 27;
+
+  final cid = base64.encode([...signature, recid]);
 
   const signTypeSecp = 1;
 
