@@ -506,11 +506,10 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                 final credentials = EthPrivateKey.fromHex(
                                   response['eth_wallet_privateKey'],
                                 );
-                                final uncheckedSumAddress =
-                                    await credentials.extractAddress();
+
                                 final userAddress =
                                     web3.EthereumAddress.fromHex(
-                                  uncheckedSumAddress.toString(),
+                                  response['eth_wallet_address'],
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
