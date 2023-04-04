@@ -246,5 +246,3 @@ Future<Map> sendFilecoin(
 
   return {'txid': jsonDecodedBody['data'].toString()};
 }
-
-const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
