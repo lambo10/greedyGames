@@ -184,7 +184,7 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
 
 Future<Map> sendFilecoin(
   String destinationAddress,
-  int filecoinToSend, {
+  BigInt filecoinToSend, {
   String baseUrl,
   String addressPrefix,
   List<String> references = const [],
