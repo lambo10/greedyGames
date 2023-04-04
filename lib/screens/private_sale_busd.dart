@@ -710,25 +710,6 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                               ),
                             ),
                             onPressed: () async {
-                              // remove focus
-                              if ((double.tryParse(
-                                          etherAmountController.text.trim()) ??
-                                      0) <
-                                  minimumNetworkTokenForSwap) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: Colors.red,
-                                    content: Text(
-                                      '${AppLocalizations.of(context).minimumAmountIs} $minimumNetworkTokenForSwap ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-
                               setState(() {
                                 isClaiming = true;
                               });
