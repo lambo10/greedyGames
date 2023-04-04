@@ -151,11 +151,12 @@ transactionSignLotus(Map msg, String privateKeyHex) {
   final method = msg['Method'];
   final params = msg['Params'];
   final nonce = msg['Nonce'];
+  int version = msg['Version'];
 
   List<int> bytes = base64.decode(params);
 
   final messageToEncode = [
-    0,
+    version ?? 0,
     to,
     from,
     nonce,

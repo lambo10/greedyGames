@@ -15,6 +15,7 @@ import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
+import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:elliptic/elliptic.dart';
 import 'package:flutter/services.dart';
@@ -50,9 +51,60 @@ void main() async {
   const eip681String =
       'ethereum:ethereum-$busdContractAddress@56/transfer?address=$address&uint256=1000000000000000000';
   const unstoppableAddress = 'brad.crypto';
-// const { cid } = await ipfs.add('Hello world')
-// console.info(cid)
-// // QmXXY5ZxbtuYj6DnfApLiGstzPN7fvSyigrRee3hDWPCaf
+
+  test('can generate transactionSignLotus cid', () {
+    final cid = transactionSignLotus(
+      {
+        'Version': 0,
+        'To': "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
+        'From': "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
+        'Nonce': 0,
+        'Value': "10000000000000000000",
+        'GasLimit': 1000000000000,
+        'GasFeeCap': "10000000",
+        'GasPremium': "10000000",
+        'Method': 0,
+        'Params': "",
+      },
+      'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+    );
+    final cid2 = transactionSignLotus(
+      {
+        'Version': 0,
+        'To': "f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui",
+        'From': "f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja",
+        'Nonce': 0,
+        'Value': "10000000000000000000",
+        'GasLimit': 1000000000000,
+        'GasFeeCap': "10000000",
+        'GasPremium': "10000000",
+        'Method': 0,
+        'Params': "",
+      },
+      'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+    );
+    final cid3 = transactionSignLotus(
+      {
+        'Version': 0,
+        'To': "f1655h66sk2dgp3d7uksbnhgk7n56xjeofpe2lpwq",
+        'From': "f1erk23ics4ecpk3ny2g4orliwejklw7e6goxujji",
+        'Nonce': 0,
+        'Value': "10000000000000000000",
+        'GasLimit': 3229228282,
+        'GasFeeCap': "10000000",
+        'GasPremium': "10000000",
+        'Method': 0,
+        'Params': "",
+      },
+      'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+    );
+    expect(cid,
+        'kx9WoSmQGC3V1Vk24csxAERzZpShXl38HVdQBaST3r0Ia6YtlZVuO6bDvG3YA2ZK6NC8C3z8ap1w5XXil/ryVgE=');
+    expect(cid2,
+        'jHF0ghnCwyl7XNEfgXx1+9sjbg3lJe09gEux/+m5pRFudpQEeFxxt9ZACHNDE//u31r3GBZ4aYixpV8xYp57HgA=');
+    expect(cid3,
+        'yPzGMXOoxqlmjIPlAFU2swX8VcwBaeDJho+RUNMy/PA17wJ5H1Cq86yPVvyQlLIau5tEmQZlavWtqmFwFppdIgE=');
+  });
   test('can generate filecoin cid', () {
     expect(
       genCid(
