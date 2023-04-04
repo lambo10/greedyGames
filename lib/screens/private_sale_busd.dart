@@ -130,6 +130,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
     }
   }
 
+  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
@@ -494,8 +496,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                       ['rpc'],
                                   Client(),
                                 );
-                                final mnemonic = Hive.box(secureStorageKey)
-                                    .get(currentMmenomicKey);
+
                                 final response = await getEthereumFromMemnomic(
                                   mnemonic,
                                   getEVMBlockchains()[tokenSaleContractNetwork]
@@ -504,6 +505,12 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
                                 final credentials = EthPrivateKey.fromHex(
                                   response['eth_wallet_privateKey'],
+                                );
+                                final uncheckedSumAddress =
+                                    await credentials.extractAddress();
+                                final userAddress =
+                                    web3.EthereumAddress.fromHex(
+                                  uncheckedSumAddress.toString(),
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
@@ -519,8 +526,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   spender: tokenSaleContractAddress,
                                 );
 
-                                int nonce = await client.getTransactionCount(
-                                    response['eth_wallet_address']);
+                                int nonce = await client
+                                    .getTransactionCount(userAddress);
                                 if (allowance < amounToSwap) {
                                   final busdContract = web3.DeployedContract(
                                     web3.ContractAbi.fromJson(
@@ -533,8 +540,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   final approveFunction =
                                       busdContract.function('approve');
                                   final _parameters = [
-                                    web3.EthereumAddress.fromHex(
-                                        response['eth_wallet_address']),
+                                    userAddress,
                                     web3.EthereumAddress.fromHex(
                                         tokenSaleContractAddress),
                                     amounToSwap
@@ -738,8 +744,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                       ['rpc'],
                                   Client(),
                                 );
-                                final mnemonic = Hive.box(secureStorageKey)
-                                    .get(currentMmenomicKey);
+
                                 final response = await getEthereumFromMemnomic(
                                   mnemonic,
                                   getEVMBlockchains()[tokenSaleContractNetwork]
@@ -760,14 +765,15 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   'claim',
                                 );
                                 final trans = await client.signTransaction(
-                                    credentials,
-                                    Transaction.callContract(
-                                      contract: tokenSaleContract,
-                                      function: tokenSale,
-                                      parameters: [BigInt.from(1)],
-                                    ),
-                                    chainId: getEVMBlockchains()[
-                                        tokenSaleContractNetwork]['chainId']);
+                                  credentials,
+                                  Transaction.callContract(
+                                    contract: tokenSaleContract,
+                                    function: tokenSale,
+                                    parameters: [BigInt.from(1)],
+                                  ),
+                                  chainId: getEVMBlockchains()[
+                                      tokenSaleContractNetwork]['chainId'],
+                                );
 
                                 transactionHash =
                                     await client.sendRawTransaction(trans);
