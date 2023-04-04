@@ -2025,6 +2025,7 @@ Map calculateFileCoinKey(Map config) {
 
   final pk = hexToU8a(HEX.encode(rs0.privateKey));
   final e = getSecp256k1();
+
   final publickEy =
       e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
 

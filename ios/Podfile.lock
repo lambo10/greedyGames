@@ -5,6 +5,8 @@ PODS:
   - CocoaAsyncSocket (7.6.5)
   - device_info_plus (0.0.1):
     - Flutter
+  - flotus (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_downloader (0.0.1):
     - Flutter
@@ -74,6 +76,7 @@ PODS:
 DEPENDENCIES:
   - cached_video_player (from `.symlinks/plugins/cached_video_player/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - flotus (from `.symlinks/plugins/flotus/ios`)
   - Flutter (from `Flutter`)
   - flutter_downloader (from `.symlinks/plugins/flutter_downloader/ios`)
   - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
@@ -113,6 +116,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/cached_video_player/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
+  flotus:
+    :path: ".symlinks/plugins/flotus/ios"
   Flutter:
     :path: Flutter
   flutter_downloader:
@@ -164,6 +169,7 @@ SPEC CHECKSUMS:
   cached_video_player: 9f225ed1c46bda0fe287b8288742329d441e2cc5
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
+  flotus: 8b8041a6daa21fb878b099fdd0979d29e0fd2d75
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_downloader: b7301ae057deadd4b1650dc7c05375f10ff12c39
   flutter_inappwebview: 4fe74e5e65809c3d363febfd9e2b21aa79bb0f1c

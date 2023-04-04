@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/addressToBytes.dart';
+import 'package:sacco/utils/ecc_secp256k1.dart';
 import 'package:secp256k1/secp256k1.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
@@ -11,7 +13,7 @@ import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:cryptowallet/utils/filecoin_util.dart';
+import 'package:wallet/wallet.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
@@ -62,6 +64,7 @@ void main() async {
     );
   };
 
+  
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
@@ -111,7 +114,9 @@ void main() async {
       base64.decode('67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=');
 
   final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+  final sign = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
 
+  print(base64.encode([...sign, 0]));
   print(messageDigest);
 
   await reInstianteSeedRoot();
