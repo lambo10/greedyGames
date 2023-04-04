@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cbor/cbor.dart' as cbor;
+import 'package:cryptowallet/addressToBytes.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
@@ -73,7 +75,37 @@ void main() async {
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
       encryptionCipher: HiveAesCipher(encryptionKey));
+  final to = (addressAsBytes('f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui'));
+  final from = (addressAsBytes('f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja'));
+  final value = (serializeBigNum('10000000000000000000'));
+  final gasfeecap = (serializeBigNum('10000000'));
+  final gaspremium = (serializeBigNum('10000000'));
+  final gaslimit = 1000000000000;
+  final nonce = 0;
+  final method = 0;
+  final params = '';
 
+  List<int> bytes = base64.decode(params);
+  const privateKey = '67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=';
+  final message_to_encode = [
+    0,
+    to,
+    from,
+    nonce,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method,
+    bytes
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(message_to_encode);
+  print(output.getDataAsList());
+  print(base64.decode(privateKey));
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
 

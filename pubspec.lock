@@ -248,7 +248,7 @@ packages:
     source: path
     version: "0.1.0-alpha.12"
   cbor:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: cbor
       sha256: "1e0094d5f034c9dfc23f46cf8f8550da1d537c6f5c4ca196a7e02de80d7bbd55"

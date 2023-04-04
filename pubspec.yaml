@@ -118,6 +118,7 @@ dependencies:
   hash: ^1.0.4
   base_x: ^2.0.0
   flotus: ^2.1.0
+  cbor: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
