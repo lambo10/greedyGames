@@ -5,13 +5,13 @@ import 'package:base32/base32.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
 
-Uint8List getCID(Uint8List message) {
+Uint8List _getCID(Uint8List message) {
   final hash = Uint8List.fromList(blake2bHash(message, digestSize: 32));
   return Uint8List.fromList([...CID_PREFIX, ...hash]);
 }
 
 Uint8List getDigest(Uint8List message) {
-  return Uint8List.fromList(blake2bHash(getCID(message), digestSize: 32));
+  return Uint8List.fromList(blake2bHash(_getCID(message), digestSize: 32));
 }
 
 const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
@@ -21,7 +21,7 @@ Uint8List addressAsBytes(String address) {
 
   switch (protocolIndicator) {
     case ProtocolIndicator.ID:
-      final encoded = lebEncode(int.parse(address.substring(2)));
+      final encoded = _lebEncode(int.parse(address.substring(2)));
       return Uint8List.fromList([protocolIndicator] + encoded);
     case ProtocolIndicator.SECP256K1:
     case ProtocolIndicator.ACTOR:
@@ -32,7 +32,7 @@ Uint8List addressAsBytes(String address) {
         throw Exception('InvalidPayloadLength');
       }
       final bytesAddress = Uint8List.fromList([protocolIndicator] + payload);
-      final calculatedChecksum = getChecksum(bytesAddress);
+      final calculatedChecksum = _getChecksum(bytesAddress);
       // if (!seqEqual(calculatedChecksum, checksum)) {
       //   throw Exception('InvalidChecksumAddress');
       // }
@@ -52,7 +52,7 @@ Uint8List serializeBigNum(String gasprice) {
   return Uint8List.fromList([0, ...gaspriceBigInt.toUint8List()]);
 }
 
-List<int> lebEncode(int value) {
+List<int> _lebEncode(int value) {
   final bytes = <int>[];
   do {
     var byte = value & 0x7f;
@@ -65,7 +65,7 @@ List<int> lebEncode(int value) {
   return bytes;
 }
 
-Uint8List getChecksum(Uint8List bytes) {
+Uint8List _getChecksum(Uint8List bytes) {
   final sha = sha256.convert(bytes);
   final sha2 = sha256.convert(sha.bytes);
   return sha2.bytes.sublist(0, 4);
