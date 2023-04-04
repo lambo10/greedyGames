@@ -539,7 +539,6 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   final approveFunction =
                                       busdContract.function('approve');
                                   final _parameters = [
-                                    userAddress,
                                     web3.EthereumAddress.fromHex(
                                         tokenSaleContractAddress),
                                     amounToSwap
