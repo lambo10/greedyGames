@@ -148,24 +148,22 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   final gasfeecap = serializeBigNum(msg['GasFeeCap']);
   final gaspremium = serializeBigNum(msg['GasPremium']);
   final gaslimit = msg['GasLimit'];
-  final method = msg['Method'];
+  int method = msg['Method'];
   final params = msg['Params'];
-  final nonce = msg['Nonce'];
+  int nonce = msg['Nonce'];
   int version = msg['Version'];
-
-  List<int> bytes = base64.decode(params);
 
   final messageToEncode = [
     version ?? 0,
     to,
     from,
-    nonce,
+    nonce ?? 0,
     value,
     gaslimit,
     gasfeecap,
     gaspremium,
-    method,
-    bytes
+    method ?? 0,
+    base64.decode(params ?? '')
   ];
   cbor.init();
   final output = cbor.OutputStandard();
