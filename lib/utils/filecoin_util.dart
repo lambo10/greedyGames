@@ -141,7 +141,7 @@ Uint8List _getChecksum(Uint8List data) {
   return blake2bHash(data, digestSize: 4);
 }
 
-transactionSignLotus(Map msg, String privateKeyHex) {
+String transactionSignLotus(Map msg, String privateKeyHex) {
   final to = addressAsBytes(msg['To']);
   final from = addressAsBytes(msg['From']);
   final value = serializeBigNum(msg['Value']);
