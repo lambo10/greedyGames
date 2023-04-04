@@ -519,6 +519,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   spender: tokenSaleContractAddress,
                                 );
 
+                                int nonce = await client.getTransactionCount(
+                                    response['eth_wallet_address']);
                                 if (allowance < amounToSwap) {
                                   final busdContract = web3.DeployedContract(
                                     web3.ContractAbi.fromJson(
@@ -541,13 +543,14 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   final trans = await client.signTransaction(
                                     credentials,
                                     Transaction.callContract(
-                                      contract: busdContract,
-                                      function: approveFunction,
-                                      parameters: _parameters,
-                                    ),
+                                        contract: busdContract,
+                                        function: approveFunction,
+                                        parameters: _parameters,
+                                        nonce: nonce),
                                     chainId: getEVMBlockchains()[
                                         tokenSaleContractNetwork]['chainId'],
                                   );
+                                  nonce++;
 
                                   await client.sendRawTransaction(trans);
                                 }
@@ -561,6 +564,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                     contract: tokenSaleContract,
                                     function: tokenSale,
                                     parameters: [amounToSwap],
+                                    nonce: nonce,
                                   ),
                                   chainId: getEVMBlockchains()[
                                       tokenSaleContractNetwork]['chainId'],
