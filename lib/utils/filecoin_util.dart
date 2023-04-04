@@ -141,6 +141,48 @@ Uint8List _getChecksum(Uint8List data) {
   return blake2bHash(data, digestSize: 4);
 }
 
+transactionSignLotus(Map msg, String privateKeyHex) {
+  final to = addressAsBytes(msg['To']);
+  final from = addressAsBytes(msg['From']);
+  final value = serializeBigNum(msg['Value']);
+  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
+  final gaspremium = serializeBigNum(msg['GasPremium']);
+  final gaslimit = msg['GasLimit'];
+  final method = msg['Method'];
+  final params = msg['Params'];
+  final nonce = msg['Nonce'];
+
+  List<int> bytes = base64.decode(params);
+
+  final messageToEncode = [
+    0,
+    to,
+    from,
+    nonce,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method,
+    bytes
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(messageToEncode);
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey = HEX.decode(privateKeyHex);
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+  final signature = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
+
+  final recid = sign(messageDigest, privateKey).v - 27;
+
+  final cid = base64.encode([...signature, recid]);
+  return cid;
+}
+
 Future<Map> sendFilecoin(
   String destinationAddress,
   int filecoinToSend, {
@@ -169,48 +211,7 @@ Future<Map> sendFilecoin(
     "Method": 0,
     "Params": ""
   };
-
-  // msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
-
-  final to = addressAsBytes(msg['To']);
-  final from = addressAsBytes(msg['From']);
-  final value = serializeBigNum(msg['Value']);
-  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
-  final gaspremium = serializeBigNum(msg['GasPremium']);
-  final gaslimit = msg['GasLimit'];
-
-  final method = msg['Method'];
-  final params = msg['Params'];
-
-  List<int> bytes = base64.decode(params);
-
-  final messageToEncode = [
-    0,
-    to,
-    from,
-    nonce,
-    value,
-    gaslimit,
-    gasfeecap,
-    gaspremium,
-    method,
-    bytes
-  ];
-  cbor.init();
-  final output = cbor.OutputStandard();
-  final encoder = cbor.Encoder(output);
-  output.clear();
-  encoder.writeArray(messageToEncode);
-  final unsignedMessage = output.getDataAsList();
-  Uint8List privateKey = HEX.decode(fileCoinDetails['privateKey']);
-
-  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-  final signature = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
-
-  final recid = sign(messageDigest, privateKey).v - 27;
-
-  final cid = base64.encode([...signature, recid]);
-
+  final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
   final rawSign = {
