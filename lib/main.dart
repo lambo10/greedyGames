@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/addressToBytes.dart';
+import 'package:secp256k1/secp256k1.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_js/extensions/xhr.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hash/hash.dart';
+import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path/path.dart';
@@ -86,7 +88,7 @@ void main() async {
   final params = '';
 
   List<int> bytes = base64.decode(params);
-  const privateKey = '67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=';
+
   final message_to_encode = [
     0,
     to,
@@ -104,8 +106,14 @@ void main() async {
   final encoder = cbor.Encoder(output);
   output.clear();
   encoder.writeArray(message_to_encode);
-  print(output.getDataAsList());
-  print(base64.decode(privateKey));
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey =
+      base64.decode('67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=');
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+
+  print(messageDigest);
+
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
 
