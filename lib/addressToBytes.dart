@@ -1,31 +1,9 @@
-import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:algorand_dart/algorand_dart.dart';
 import 'package:base32/base32.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart';
-import 'dart:typed_data';
-import 'package:crypto/crypto.dart';
-import 'package:bs58check/bs58check.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart';
-import 'package:hex/hex.dart';
-
-import 'package:secp256k1/secp256k1.dart';
-
-Uint8List transactionRaw(Uint8List unsignedMessage, Uint8List privateKey) {
-  // final messageDigest = getDigest(unsignedMessage);
-
-  // final pk2 = PrivateKey.fromHex(HEX.encode(privateKey));
-  // Signature sg = pk2.signature(HEX.encode(unsignedMessage));
-
-  // final signature = Signer(privateKey: privateKey).sign(messageDigest);
-
-  // return Uint8List.fromList([
-  //   ...signature.signature.toList(),
-  //   signature.recid,
-  // ]);
-}
 
 Uint8List getCID(Uint8List message) {
   final hash = Uint8List.fromList(blake2bHash(message, digestSize: 32));

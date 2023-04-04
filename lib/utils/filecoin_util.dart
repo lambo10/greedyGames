@@ -1,55 +1,28 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
-import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:elliptic/elliptic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:leb128/leb128.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
 
-import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/addressToBytes.dart';
-import 'package:sacco/utils/ecc_secp256k1.dart';
-import 'package:secp256k1/secp256k1.dart';
-import 'package:cryptowallet/model/seed_phrase_root.dart';
-import 'package:cryptowallet/screens/navigator_service.dart';
-import 'package:cryptowallet/screens/open_app_pin_failed.dart';
-import 'package:cryptowallet/screens/security.dart';
-import 'package:cryptowallet/screens/wallet.dart';
-import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:wallet/wallet.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:cryptowallet/utils/wc_connector.dart';
-import 'package:cryptowallet/utils/web_notifications.dart';
-import 'package:cryptowallet/validate_tezos.dart';
-import 'package:dartez/dartez.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flotus/flotus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:flutter_js/extensions/fetch.dart';
-import 'package:flutter_js/extensions/xhr.dart';
-import 'package:flutter_js/flutter_js.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hash/hash.dart';
 import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:path/path.dart';
-import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 import 'app_config.dart';
 
@@ -272,12 +245,3 @@ Future<Map> sendFilecoin(
 }
 
 const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
-_messageCid({String msg}) {
-  // blake2bHash(stringBytes, digestSize: 32);
-}
-// function getCID(message) {
-//     const blakeCtx = blake.blake2bInit(32);
-//     blake.blake2bUpdate(blakeCtx, message);
-//     const hash = Buffer.from(blake.blake2bFinal(blakeCtx));
-//     return Buffer.concat([CID_PREFIX, hash]);
-// }

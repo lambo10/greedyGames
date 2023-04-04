@@ -299,14 +299,14 @@ class _TransferTokenState extends State<TransferToken> {
           baseUrl: widget.data['baseUrl'],
         );
 
-        final fees = await getFileCoinTransactionFee(
-          widget.data['prefix'],
-          widget.data['baseUrl'],
-        );
+        // final fees = await getFileCoinTransactionFee(
+        //   widget.data['prefix'],
+        //   widget.data['baseUrl'],
+        // );
 
         transactionFeeMap = {
-          'transactionFee': fees,
-          'userBalance': fileCoinBalance,
+          'transactionFee': 0,
+          'userBalance': 3,
         };
       } else if (isStellar) {
         final getStellarDetails = await getStellarFromMemnomic(mnemonic);
