@@ -144,8 +144,9 @@ class _TransferTokenState extends State<TransferToken> {
           _parameters = [
             web3.EthereumAddress.fromHex(widget.data['recipient']),
             BigInt.from(
-              double.parse(widget.data['amount']) * pow(10, decimals.toInt()),
-            )
+                  double.parse(widget.data['amount']),
+                ) *
+                BigInt.from(pow(10, decimals.toInt()))
           ];
         } else if (widget.data['tokenType'] == 'ERC721') {
           _parameters = [
@@ -862,9 +863,11 @@ class _TransferTokenState extends State<TransferToken> {
                                             widget.data['amount'],
                                           );
 
-                                          int amounToSend = (amount *
-                                                  pow(10, fileCoinDecimals))
-                                              .toInt();
+                                          BigInt amounToSend = BigInt.from(
+                                                amount,
+                                              ) *
+                                              BigInt.from(
+                                                  pow(10, fileCoinDecimals));
 
                                           final transaction =
                                               await sendFilecoin(
@@ -960,9 +963,10 @@ class _TransferTokenState extends State<TransferToken> {
                                                   widget.data['recipient']),
                                               value: web3.EtherAmount.inWei(
                                                   BigInt.from(double.parse(
-                                                          widget
-                                                              .data['amount']) *
-                                                      pow(10, etherDecimals))),
+                                                          widget.data[
+                                                              'amount'])) *
+                                                      BigInt.from(pow(
+                                                          10, etherDecimals))),
                                               gasPrice: gasPrice,
                                             ),
                                             chainId: widget.data['chainId'],

@@ -1,35 +1,25 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
-import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
-import 'package:cryptowallet/validate_tezos.dart';
-import 'package:dartez/dartez.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flotus/flotus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:flutter_js/extensions/fetch.dart';
-import 'package:flutter_js/extensions/xhr.dart';
-import 'package:flutter_js/flutter_js.dart';
+import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hash/hash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:path/path.dart';
+
 import 'screens/main_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

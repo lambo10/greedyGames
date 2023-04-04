@@ -1,20 +1,24 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
-import 'package:cryptowallet/config/illustrations.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:elliptic/elliptic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:leb128/leb128.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-import 'app_config.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
+import 'package:cbor/cbor.dart' as cbor;
+import 'package:cryptowallet/utils/addressToBytes.dart';
+import 'package:cryptowallet/utils/app_config.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/crypto.dart';
 
 Future<int> _getFileCoinNonce(
   String addressPrefix,
@@ -137,9 +141,50 @@ Uint8List _getChecksum(Uint8List data) {
   return blake2bHash(data, digestSize: 4);
 }
 
+String transactionSignLotus(Map msg, String privateKeyHex) {
+  final to = addressAsBytes(msg['To']);
+  final from = addressAsBytes(msg['From']);
+  final value = serializeBigNum(msg['Value']);
+  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
+  final gaspremium = serializeBigNum(msg['GasPremium']);
+  final gaslimit = msg['GasLimit'];
+  int method = msg['Method'];
+  final params = msg['Params'];
+  int nonce = msg['Nonce'];
+  int version = msg['Version'];
+
+  final messageToEncode = [
+    version ?? 0,
+    to,
+    from,
+    nonce ?? 0,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method ?? 0,
+    base64.decode(params ?? '')
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(messageToEncode);
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey = HEX.decode(privateKeyHex);
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+  final signature = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
+
+  final recid = sign(messageDigest, privateKey).v - 27;
+
+  final cid = base64.encode([...signature, recid]);
+  return cid;
+}
+
 Future<Map> sendFilecoin(
   String destinationAddress,
-  int filecoinToSend, {
+  BigInt filecoinToSend, {
   String baseUrl,
   String addressPrefix,
   List<String> references = const [],
@@ -165,65 +210,35 @@ Future<Map> sendFilecoin(
     "Method": 0,
     "Params": ""
   };
+  final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
+  const signTypeSecp = 1;
 
-  msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
-  final cid = _messageCid(msg: json.encode(msg));
+  final rawSign = {
+    "Message": msg,
+    "Signature": {
+      "Type": signTypeSecp,
+      "Data": cid,
+    },
+  };
 
-  return {};
-  //FIXME:
+  final response = await http.post(
+    Uri.parse('$baseUrl/message'),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({
+      'cid': cid,
+      'raw': json.encode(rawSign),
+    }),
+  );
 
+  final responseBody = response.body;
+  if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
+    throw Exception(responseBody);
+  }
 
-  // start demo
-  // jHF0ghnCwyl7XNEfgXx1+9sjbg3lJe09gEux/+m5pRFudpQEeFxxt9ZACHNDE//u31r3GBZ4aYixpV8xYp57HgA=
-  // end demo
+  Map jsonDecodedBody = json.decode(responseBody) as Map;
+  if (jsonDecodedBody['code'] ~/ 100 != 2) {
+    throw Exception(jsonDecodedBody['detail']);
+  }
 
-
-// const bytes = json.encode({ hello: 'world' })
-
-// const hash = await sha256.digest(bytes)
-// const cid = CID.create(1, json.code, hash)
-
-//> CID(bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea)
-
-  // final cid = await Flotus.messageCid(msg: json.encode(msg));
-
-  // String sign = await Flotus.secpSign(ck: fileCoinDetails['ck'], msg: cid);
-  // const signTypeSecp = 1;
-
-  // final response = await http.post(
-  //   Uri.parse('$baseUrl/message'),
-  //   headers: {'Content-Type': 'application/json'},
-  //   body: json.encode({
-  //     'cid': cid,
-  //     'raw': json.encode({
-  //       "Message": msg,
-  //       "Signature": {
-  //         "Type": signTypeSecp,
-  //         "Data": sign,
-  //       },
-  //     })
-  //   }),
-  // );
-  // final responseBody = response.body;
-  // if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
-  //   throw Exception(responseBody);
-  // }
-
-  // Map jsonDecodedBody = json.decode(responseBody) as Map;
-  // if (jsonDecodedBody['code'] ~/ 100 != 2) {
-  //   throw Exception(jsonDecodedBody['detail']);
-  // }
-
-  // return {'txid': jsonDecodedBody['data'].toString()};
+  return {'txid': jsonDecodedBody['data'].toString()};
 }
-
-const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
-_messageCid({String msg}) {
-  // blake2bHash(stringBytes, digestSize: 32);
-}
-// function getCID(message) {
-//     const blakeCtx = blake.blake2bInit(32);
-//     blake.blake2bUpdate(blakeCtx, message);
-//     const hash = Buffer.from(blake.blake2bFinal(blakeCtx));
-//     return Buffer.concat([CID_PREFIX, hash]);
-// }
