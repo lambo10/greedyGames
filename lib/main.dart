@@ -64,7 +64,6 @@ void main() async {
     );
   };
 
-  
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
@@ -80,44 +79,6 @@ void main() async {
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
       encryptionCipher: HiveAesCipher(encryptionKey));
-  final to = (addressAsBytes('f125p5nhte6kwrigoxrcaxftwpinlgspfnqd2zaui'));
-  final from = (addressAsBytes('f153zbrv25wvfrqf2vrvlk2qmpietuu6wexiyerja'));
-  final value = (serializeBigNum('10000000000000000000'));
-  final gasfeecap = (serializeBigNum('10000000'));
-  final gaspremium = (serializeBigNum('10000000'));
-  final gaslimit = 1000000000000;
-  final nonce = 0;
-  final method = 0;
-  final params = '';
-
-  List<int> bytes = base64.decode(params);
-
-  final message_to_encode = [
-    0,
-    to,
-    from,
-    nonce,
-    value,
-    gaslimit,
-    gasfeecap,
-    gaspremium,
-    method,
-    bytes
-  ];
-  cbor.init();
-  final output = cbor.OutputStandard();
-  final encoder = cbor.Encoder(output);
-  output.clear();
-  encoder.writeArray(message_to_encode);
-  final unsignedMessage = output.getDataAsList();
-  Uint8List privateKey =
-      base64.decode('67WMRDA2ldmfcQ87DSHCy+ppKs3iSyNjxfBD7dR68Qw=');
-
-  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-  final sign = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
-
-  print(base64.encode([...sign, 0]));
-  print(messageDigest);
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();

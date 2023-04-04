@@ -13,6 +13,43 @@ import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:leb128/leb128.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:convert';
+
+import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
+import 'package:cbor/cbor.dart' as cbor;
+import 'package:cryptowallet/addressToBytes.dart';
+import 'package:sacco/utils/ecc_secp256k1.dart';
+import 'package:secp256k1/secp256k1.dart';
+import 'package:cryptowallet/model/seed_phrase_root.dart';
+import 'package:cryptowallet/screens/navigator_service.dart';
+import 'package:cryptowallet/screens/open_app_pin_failed.dart';
+import 'package:cryptowallet/screens/security.dart';
+import 'package:cryptowallet/screens/wallet.dart';
+import 'package:cryptowallet/utils/cid.dart';
+import 'package:cryptowallet/utils/app_config.dart';
+import 'package:wallet/wallet.dart';
+import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:cryptowallet/utils/wc_connector.dart';
+import 'package:cryptowallet/utils/web_notifications.dart';
+import 'package:cryptowallet/validate_tezos.dart';
+import 'package:dartez/dartez.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flotus/flotus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_js/extensions/fetch.dart';
+import 'package:flutter_js/extensions/xhr.dart';
+import 'package:flutter_js/flutter_js.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hash/hash.dart';
+import 'package:hex/hex.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:path/path.dart';
+import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 import 'app_config.dart';
 
@@ -137,10 +174,6 @@ Uint8List _getChecksum(Uint8List data) {
   return blake2bHash(data, digestSize: 4);
 }
 
-
-
-
-
 Future<Map> sendFilecoin(
   String destinationAddress,
   int filecoinToSend, {
@@ -170,55 +203,72 @@ Future<Map> sendFilecoin(
     "Params": ""
   };
 
+  final to = addressAsBytes(msg['To']);
+  final from = addressAsBytes(msg['From']);
+  final value = serializeBigNum(msg['Value']);
+  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
+  final gaspremium = serializeBigNum(msg['GasPremium']);
+  final gaslimit = msg['GasLimit'];
+
+  final method = msg['Method'];
+  final params = msg['Params'];
+
+  List<int> bytes = base64.decode(params);
+
+  final messageToEncode = [
+    0,
+    to,
+    from,
+    nonce,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method,
+    bytes
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(messageToEncode);
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey = HEX.decode(fileCoinDetails['privateKey']);
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+  final sign = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
+  const recid = 0; // FIXME: get recid from signature
+  final cid = base64.encode([...sign, recid]);
+
   msg.addAll(await _getFileCoinGas(addressPrefix, baseUrl));
-  final cid = _messageCid(msg: json.encode(msg));
 
-  return {};
-  //FIXME:
+  const signTypeSecp = 1;
 
+  final response = await http.post(
+    Uri.parse('$baseUrl/message'),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({
+      'cid': cid,
+      'raw': json.encode({
+        "Message": msg,
+        "Signature": {
+          "Type": signTypeSecp,
+          "Data": sign,
+        },
+      })
+    }),
+  );
+  final responseBody = response.body;
+  if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
+    throw Exception(responseBody);
+  }
 
-  // start demo
-  // jHF0ghnCwyl7XNEfgXx1+9sjbg3lJe09gEux/+m5pRFudpQEeFxxt9ZACHNDE//u31r3GBZ4aYixpV8xYp57HgA=
-  // end demo
+  Map jsonDecodedBody = json.decode(responseBody) as Map;
+  if (jsonDecodedBody['code'] ~/ 100 != 2) {
+    throw Exception(jsonDecodedBody['detail']);
+  }
 
-
-// const bytes = json.encode({ hello: 'world' })
-
-// const hash = await sha256.digest(bytes)
-// const cid = CID.create(1, json.code, hash)
-
-//> CID(bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea)
-
-  // final cid = await Flotus.messageCid(msg: json.encode(msg));
-
-  // String sign = await Flotus.secpSign(ck: fileCoinDetails['ck'], msg: cid);
-  // const signTypeSecp = 1;
-
-  // final response = await http.post(
-  //   Uri.parse('$baseUrl/message'),
-  //   headers: {'Content-Type': 'application/json'},
-  //   body: json.encode({
-  //     'cid': cid,
-  //     'raw': json.encode({
-  //       "Message": msg,
-  //       "Signature": {
-  //         "Type": signTypeSecp,
-  //         "Data": sign,
-  //       },
-  //     })
-  //   }),
-  // );
-  // final responseBody = response.body;
-  // if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
-  //   throw Exception(responseBody);
-  // }
-
-  // Map jsonDecodedBody = json.decode(responseBody) as Map;
-  // if (jsonDecodedBody['code'] ~/ 100 != 2) {
-  //   throw Exception(jsonDecodedBody['detail']);
-  // }
-
-  // return {'txid': jsonDecodedBody['data'].toString()};
+  return {'txid': jsonDecodedBody['data'].toString()};
 }
 
 const CID_PREFIX = [0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
