@@ -130,6 +130,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
     }
   }
 
+  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
@@ -472,24 +474,12 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                               ),
                             ),
                             onPressed: () async {
-                              // remove focus
-                              if ((double.tryParse(
-                                          etherAmountController.text.trim()) ??
-                                      0) <
-                                  minimumNetworkTokenForSwap) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: Colors.red,
-                                    content: Text(
-                                      '${AppLocalizations.of(context).minimumAmountIs} $minimumNetworkTokenForSwap ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
+                              final amountInEther = double.tryParse(
+                                etherAmountController.text.trim(),
+                              );
+                              if (amountInEther == null) return;
+                              final amounToSwap = BigInt.from(amountInEther) *
+                                  BigInt.from(pow(10, etherDecimals));
 
                               setState(() {
                                 isLoading = true;
@@ -506,8 +496,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                       ['rpc'],
                                   Client(),
                                 );
-                                final mnemonic = Hive.box(secureStorageKey)
-                                    .get(currentMmenomicKey);
+
                                 final response = await getEthereumFromMemnomic(
                                   mnemonic,
                                   getEVMBlockchains()[tokenSaleContractNetwork]
@@ -518,11 +507,57 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   response['eth_wallet_privateKey'],
                                 );
 
+                                final userAddress =
+                                    web3.EthereumAddress.fromHex(
+                                  response['eth_wallet_address'],
+                                );
+
                                 final tokenSaleContract = web3.DeployedContract(
                                     web3.ContractAbi.fromJson(
                                         tokenSaleAbi, walletName),
                                     web3.EthereumAddress.fromHex(
                                         tokenSaleContractAddress));
+                                BigInt allowance = await getErc20Allowance(
+                                  owner: response['eth_wallet_address'],
+                                  rpc: getEVMBlockchains()[
+                                      tokenSaleContractNetwork]['rpc'],
+                                  contractAddress: busdAddress,
+                                  spender: tokenSaleContractAddress,
+                                );
+
+                                int nonce = await client
+                                    .getTransactionCount(userAddress);
+                                if (allowance < amounToSwap) {
+                                  final busdContract = web3.DeployedContract(
+                                    web3.ContractAbi.fromJson(
+                                      erc20Abi,
+                                      '',
+                                    ),
+                                    web3.EthereumAddress.fromHex(busdAddress),
+                                  );
+
+                                  final approveFunction =
+                                      busdContract.function('approve');
+                                  final _parameters = [
+                                    web3.EthereumAddress.fromHex(
+                                        tokenSaleContractAddress),
+                                    amounToSwap
+                                  ];
+
+                                  final trans = await client.signTransaction(
+                                    credentials,
+                                    Transaction.callContract(
+                                        contract: busdContract,
+                                        function: approveFunction,
+                                        parameters: _parameters,
+                                        nonce: nonce),
+                                    chainId: getEVMBlockchains()[
+                                        tokenSaleContractNetwork]['chainId'],
+                                  );
+                                  nonce++;
+
+                                  await client.sendRawTransaction(trans);
+                                }
 
                                 final tokenSale = tokenSaleContract.function(
                                   'receiveBUSD',
@@ -532,15 +567,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   Transaction.callContract(
                                     contract: tokenSaleContract,
                                     function: tokenSale,
-                                    parameters: [
-                                      BigInt.from(
-                                        (double.tryParse(etherAmountController
-                                                    .text
-                                                    .trim()) ??
-                                                0) *
-                                            pow(10, etherDecimals),
-                                      )
-                                    ],
+                                    parameters: [amounToSwap],
+                                    nonce: nonce,
                                   ),
                                   chainId: getEVMBlockchains()[
                                       tokenSaleContractNetwork]['chainId'],
@@ -680,25 +708,6 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                               ),
                             ),
                             onPressed: () async {
-                              // remove focus
-                              if ((double.tryParse(
-                                          etherAmountController.text.trim()) ??
-                                      0) <
-                                  minimumNetworkTokenForSwap) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: Colors.red,
-                                    content: Text(
-                                      '${AppLocalizations.of(context).minimumAmountIs} $minimumNetworkTokenForSwap ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-
                               setState(() {
                                 isClaiming = true;
                               });
@@ -714,8 +723,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                       ['rpc'],
                                   Client(),
                                 );
-                                final mnemonic = Hive.box(secureStorageKey)
-                                    .get(currentMmenomicKey);
+
                                 final response = await getEthereumFromMemnomic(
                                   mnemonic,
                                   getEVMBlockchains()[tokenSaleContractNetwork]
@@ -736,14 +744,15 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                   'claim',
                                 );
                                 final trans = await client.signTransaction(
-                                    credentials,
-                                    Transaction.callContract(
-                                      contract: tokenSaleContract,
-                                      function: tokenSale,
-                                      parameters: [BigInt.from(1)],
-                                    ),
-                                    chainId: getEVMBlockchains()[
-                                        tokenSaleContractNetwork]['chainId']);
+                                  credentials,
+                                  Transaction.callContract(
+                                    contract: tokenSaleContract,
+                                    function: tokenSale,
+                                    parameters: [BigInt.from(1)],
+                                  ),
+                                  chainId: getEVMBlockchains()[
+                                      tokenSaleContractNetwork]['chainId'],
+                                );
 
                                 transactionHash =
                                     await client.sendRawTransaction(trans);
