@@ -526,14 +526,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-  flotus:
-    dependency: "direct main"
-    description:
-      name: flotus
-      sha256: "494e8ed669e1d51ab060bb192237929efac124e78b8e6a1ad451a96c59635b65"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
