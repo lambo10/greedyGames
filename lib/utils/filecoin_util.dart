@@ -20,6 +20,8 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
+import 'cid.dart';
+
 Future<int> getFileCoinNonce(
   String addressPrefix,
   String baseUrl,
@@ -63,10 +65,17 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
         "id": 1,
         "jsonrpc": "2.0",
         "method": "Filecoin.GasEstimateMessageGas",
-        "params": [msg]
+        "params": [
+          msg,
+          {},
+          [
+            {"/": genCid(json.encode(Map.from(msg)), CIDCodes.dagPBCode)}
+          ]
+        ]
       }),
     );
     final responseBody = response.body;
+
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
     }
@@ -75,6 +84,7 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
 
     return jsonDecodedBody;
   } catch (e) {
+    print(e);
     return {};
   }
 }
