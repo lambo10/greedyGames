@@ -182,6 +182,26 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   return cid;
 }
 
+// curl baseurl post estimate message gas
+// {
+//   "id": 1,
+//   "jsonrpc": "2.0",
+//   "method": "Filecoin.GasEstimateMessageGas",
+//   "params": [
+//     {
+//       "From": "f01234",
+//       "GasFeeCap": "0",
+//       "GasLimit": 9,
+//       "GasPremium": "0",
+//       "Method": 1,
+//       "Nonce": 42,
+//       "Params": "Ynl0ZSBhcnJheQ==",
+//       "To": "f01234",
+//       "Value": "0",
+//       "Version": 42
+//     },
+//   ]
+// }
 Future<Map> sendFilecoin(
   String destinationAddress,
   BigInt filecoinToSend, {
