@@ -213,20 +213,22 @@ Future<Map> sendFilecoin(
   final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
-  final rawSign = {
-    "Message": msg,
-    "Signature": {
-      "Type": signTypeSecp,
-      "Data": cid,
-    },
-  };
-
   final response = await http.post(
-    Uri.parse('$baseUrl/message'),
+    Uri.parse(baseUrl),
     headers: {'Content-Type': 'application/json'},
     body: json.encode({
-      'cid': cid,
-      'raw': json.encode(rawSign),
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "Filecoin.MpoolPush",
+      "params": [
+        {
+          "Message": msg,
+          "Signature": {
+            "Type": signTypeSecp,
+            "Data": cid,
+          },
+        }
+      ]
     }),
   );
 
