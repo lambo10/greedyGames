@@ -238,9 +238,6 @@ Future<Map> sendFilecoin(
   }
 
   Map jsonDecodedBody = json.decode(responseBody) as Map;
-  if (jsonDecodedBody['code'] ~/ 100 != 2) {
-    throw Exception(jsonDecodedBody['detail']);
-  }
 
-  return {'txid': jsonDecodedBody['data'].toString()};
+  return {'txid': jsonDecodedBody['result']['/']};
 }
