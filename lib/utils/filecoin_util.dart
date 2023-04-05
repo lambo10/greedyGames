@@ -79,7 +79,7 @@ Future<Map<String, dynamic>> fileCoinEstimateGas(
   } catch (e) {
     return {
       "GasLimit": 0,
-      "GasFeeCap": "9",
+      "GasFeeCap": "0",
       "GasPremium": "0",
     };
   }
@@ -194,13 +194,14 @@ Map constructFilecoinMsg(
     "Nonce": nonce,
     "Value": '$filecoinToSend',
     "GasLimit": 0,
-    "GasFeeCap": "9",
+    "GasFeeCap": "0",
     "GasPremium": "0",
     "Method": 0,
     "Params": ""
   };
   return msg;
 }
+
 // https://playground.open-rpc.org/?url=https://api.node.glif.io
 Future<Map> sendFilecoin(
   String destinationAddress,
