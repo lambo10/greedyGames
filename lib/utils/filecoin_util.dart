@@ -235,6 +235,10 @@ Future<Map> sendFilecoin(
     filecoinToSend,
   );
 
+  final gasFromNetwork = await _getFileCoinGas(addressPrefix, baseUrl, msg);
+  msg['GasLimit'] = gasFromNetwork['GasLimit'];
+  msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
+  msg['GasPremium'] = gasFromNetwork['GasPremium'];
   final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
