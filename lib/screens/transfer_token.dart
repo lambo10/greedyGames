@@ -321,10 +321,12 @@ class _TransferTokenState extends State<TransferToken> {
           msg,
         );
 
-        final feePlusPremium = double.parse(gasFromNetwork['GasPremium']) +
-            double.parse(gasFromNetwork['GasFeeCap']);
-        final fees = (feePlusPremium * gasFromNetwork['GasLimit']) /
-            pow(10, fileCoinDecimals);
+        // Transaction Fee = GasLimit * GasFeeCap + GasPremium
+        final gasLimit = gasFromNetwork['GasLimit'];
+        final gasFeeCap = double.parse(gasFromNetwork['GasFeeCap']);
+        final gasPremium = double.parse(gasFromNetwork['GasPremium']);
+        final fees = (gasLimit * gasFeeCap) + gasPremium;
+        print(fees);
 
         transactionFeeMap = {
           'transactionFee': fees,
