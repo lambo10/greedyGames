@@ -31,14 +31,23 @@ Future<int> _getFileCoinNonce(
       mnemonic,
       addressPrefix,
     );
-    final response = await http.get(Uri.parse(
-        '$baseUrl/actor/balance?actor=${Uri.encodeQueryComponent(fileCoinDetails['address'])}'));
+
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "Filecoin.MpoolGetNonce",
+        "params": [fileCoinDetails['address']]
+      }),
+    );
     final responseBody = response.body;
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
     }
 
-    return jsonDecode(responseBody)['data']['nonce'];
+    return jsonDecode(responseBody)['result'];
   } catch (e) {
     return 0;
   }
@@ -47,10 +56,12 @@ Future<int> _getFileCoinNonce(
 Future getFileCoinTransactionFee(
   String addressPrefix,
   String baseUrl,
+  Map msg,
 ) async {
   Map<String, dynamic> fileCoinFees = await _getFileCoinGas(
     addressPrefix,
     baseUrl,
+    msg,
   );
 
   return ((fileCoinFees['GasPremium'] + fileCoinFees['GasFeeCap']) *
@@ -59,16 +70,35 @@ Future getFileCoinTransactionFee(
 }
 
 Future<Map<String, dynamic>> _getFileCoinGas(
-  String addressPrefix,
-  String baseUrl,
-) async {
+    String addressPrefix, String baseUrl, Map msg) async {
   try {
     final pref = Hive.box(secureStorageKey);
     String mnemonic = pref.get(currentMmenomicKey);
     final fileCoinDetails =
         await getFileCoinFromMemnomic(mnemonic, addressPrefix);
-    final response = await http.get(Uri.parse(
-        '$baseUrl/recommend/fee?method=Send&actor=${Uri.encodeQueryComponent(fileCoinDetails['address'])}'));
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "Filecoin.GasEstimateMessageGas",
+        "params": [
+          {
+            "From": "f01234",
+            "GasFeeCap": "0",
+            "GasLimit": 9,
+            "GasPremium": "0",
+            "Method": 1,
+            "Nonce": 42,
+            "Params": "Ynl0ZSBhcnJheQ==",
+            "To": "f01234",
+            "Value": "0",
+            "Version": 42
+          },
+        ]
+      }),
+    );
     final responseBody = response.body;
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
@@ -76,11 +106,7 @@ Future<Map<String, dynamic>> _getFileCoinGas(
 
     Map jsonDecodedBody = jsonDecode(responseBody);
 
-    return {
-      'GasLimit': jsonDecodedBody['data']['gas_limit'],
-      'GasPremium': int.tryParse(jsonDecodedBody['data']['gas_premium']) ?? 0,
-      'GasFeeCap': int.tryParse(jsonDecodedBody['data']['gas_cap']) ?? 0,
-    };
+    return jsonDecodedBody;
   } catch (e) {
     return {};
   }
@@ -205,16 +231,8 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
 // }
 
 // get address nonce
-// 
+//
 
-// {
-//   "id": 1,
-//   "jsonrpc": "2.0",
-//   "method": "Filecoin.MpoolGetNonce",
-//   "params": [
-//     "f01234"
-//   ]
-// }
 Future<Map> sendFilecoin(
   String destinationAddress,
   BigInt filecoinToSend, {
