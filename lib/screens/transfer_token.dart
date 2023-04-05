@@ -308,16 +308,22 @@ class _TransferTokenState extends State<TransferToken> {
               widget.data['amount'],
             ) *
             BigInt.from(pow(10, fileCoinDecimals));
-        final fees = await getFileCoinTransactionFee(
+        final msg = constructFilecoinMsg(
+          widget.data['recipient'],
+          getFileCoinDetails['address'],
+          nonce,
+          amounToSend,
+        );
+        final gasFromNetwork = await fileCoinEstimateMessageGas(
           widget.data['prefix'],
           widget.data['baseUrl'],
-          constructFilecoinMsg(
-            widget.data['recipient'],
-            getFileCoinDetails['address'],
-            nonce,
-            amounToSend,
-          ),
+          msg,
         );
+
+        final feePlusPremium = double.parse(gasFromNetwork['GasPremium']) +
+            double.parse(gasFromNetwork['GasFeeCap']);
+        final fees = (feePlusPremium * gasFromNetwork['GasLimit']) /
+            pow(10, fileCoinDecimals);
 
         transactionFeeMap = {
           'transactionFee': fees,

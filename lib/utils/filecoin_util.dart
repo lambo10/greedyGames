@@ -53,23 +53,7 @@ Future<int> getFileCoinNonce(
   }
 }
 
-Future<double> getFileCoinTransactionFee(
-  String addressPrefix,
-  String baseUrl,
-  Map msg,
-) async {
-  Map<String, dynamic> fileCoinFees = await _getFileCoinGas(
-    addressPrefix,
-    baseUrl,
-    msg,
-  );
-  final feeTimesPremium = double.parse(fileCoinFees['GasPremium']) +
-      double.parse(fileCoinFees['GasFeeCap']);
-  return (feeTimesPremium * fileCoinFees['GasLimit']) /
-      pow(10, fileCoinDecimals);
-}
-
-Future<Map<String, dynamic>> _getFileCoinGas(
+Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
     String addressPrefix, String baseUrl, Map msg) async {
   try {
     final response = await http.post(
@@ -235,7 +219,8 @@ Future<Map> sendFilecoin(
     filecoinToSend,
   );
 
-  final gasFromNetwork = await _getFileCoinGas(addressPrefix, baseUrl, msg);
+  final gasFromNetwork =
+      await fileCoinEstimateMessageGas(addressPrefix, baseUrl, msg);
   msg['GasLimit'] = gasFromNetwork['GasLimit'];
   msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
   msg['GasPremium'] = gasFromNetwork['GasPremium'];
