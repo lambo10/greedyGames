@@ -143,9 +143,7 @@ class _TransferTokenState extends State<TransferToken> {
         if (!isNFTTransfer) {
           _parameters = [
             web3.EthereumAddress.fromHex(widget.data['recipient']),
-            BigInt.from(
-                  double.parse(widget.data['amount']),
-                ) *
+            BigInt.parse(widget.data['amount']) *
                 BigInt.from(pow(10, decimals.toInt()))
           ];
         } else if (widget.data['tokenType'] == 'ERC721') {
@@ -304,10 +302,12 @@ class _TransferTokenState extends State<TransferToken> {
           widget.data['prefix'],
           widget.data['baseUrl'],
         );
-        BigInt amounToSend = BigInt.from(
+
+        BigInt amounToSend = BigInt.parse(
               widget.data['amount'],
             ) *
             BigInt.from(pow(10, fileCoinDecimals));
+
         final msg = constructFilecoinMsg(
           widget.data['recipient'],
           getFileCoinDetails['address'],
