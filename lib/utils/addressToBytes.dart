@@ -4,6 +4,7 @@ import 'package:algorand_dart/algorand_dart.dart';
 import 'package:base32/base32.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:crypto/crypto.dart';
+import 'package:cryptowallet/utils/rpc_urls.dart';
 
 Uint8List _getCID(Uint8List message) {
   final hash = Uint8List.fromList(blake2bHash(message, digestSize: 32));
@@ -33,9 +34,9 @@ Uint8List addressAsBytes(String address) {
       }
       final bytesAddress = Uint8List.fromList([protocolIndicator] + payload);
       final calculatedChecksum = _getChecksum(bytesAddress);
-      // if (!seqEqual(calculatedChecksum, checksum)) {
-      //   throw Exception('InvalidChecksumAddress');
-      // }
+      if (!seqEqual(calculatedChecksum, checksum)) {
+        throw Exception('InvalidChecksumAddress');
+      }
       return bytesAddress;
     case ProtocolIndicator.BLS:
       throw Exception('ProtocolNotSupported');
@@ -66,9 +67,7 @@ List<int> _lebEncode(int value) {
 }
 
 Uint8List _getChecksum(Uint8List bytes) {
-  final sha = sha256.convert(bytes);
-  final sha2 = sha256.convert(sha.bytes);
-  return sha2.bytes.sublist(0, 4);
+  return Uint8List.fromList([...blake2bHash(bytes, digestSize: 4)]);
 }
 
 class ProtocolIndicator {
