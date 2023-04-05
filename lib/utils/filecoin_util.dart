@@ -232,7 +232,7 @@ Future<Map> sendFilecoin(
     msg['GasPremium'] = gasFromNetwork['GasPremium'];
   }
 
-  final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
+  final signature = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
   final response = await http.post(
@@ -247,7 +247,7 @@ Future<Map> sendFilecoin(
           "Message": msg,
           "Signature": {
             "Type": signTypeSecp,
-            "Data": cid,
+            "Data": signature,
           },
         }
       ]
