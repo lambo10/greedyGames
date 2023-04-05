@@ -182,7 +182,8 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   return cid;
 }
 
-// curl baseurl post estimate message gas
+// estimate message gas
+// curl baseurl post
 // {
 //   "id": 1,
 //   "jsonrpc": "2.0",
@@ -200,6 +201,18 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
 //       "Value": "0",
 //       "Version": 42
 //     },
+//   ]
+// }
+
+// get address nonce
+// 
+
+// {
+//   "id": 1,
+//   "jsonrpc": "2.0",
+//   "method": "Filecoin.MpoolGetNonce",
+//   "params": [
+//     "f01234"
 //   ]
 // }
 Future<Map> sendFilecoin(
