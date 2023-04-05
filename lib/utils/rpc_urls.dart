@@ -1233,7 +1233,7 @@ Map getFilecoinBlockChains() {
       'blockExplorer':
           'https://filscan.io/tipset/message-detail?cid=$transactionhashTemplateKey',
       'image': 'assets/filecoin.png',
-      'baseUrl': 'https://api.fivetoken.io/api/uip7oegcgxr6ovab296tpqoh',
+      'baseUrl': 'https://api.node.glif.io/rpc/v0',
       'prefix': 'f'
     }
   };
@@ -1244,8 +1244,7 @@ Map getFilecoinBlockChains() {
       'blockExplorer':
           'https://calibration.filscan.io/tipset/message-detail?cid=$transactionhashTemplateKey',
       'image': 'assets/filecoin.png',
-      'baseUrl':
-          'https://api.calibration.fivetoken.io/api/uip7oegcgxr6ovab296tpqoh',
+      'baseUrl': 'https://api.calibration.node.glif.io/rpc/v0',
       'prefix': 't'
     };
   }
@@ -2525,15 +2524,23 @@ Future<double> getFileCoinAddressBalance(
   if (skipNetworkRequest) return savedBalance;
 
   try {
-    final response = await http.get(Uri.parse(
-        '$baseUrl/actor/balance?actor=${Uri.encodeQueryComponent(address)}'));
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "Filecoin.WalletBalance",
+        "params": [address]
+      }),
+    );
     final responseBody = response.body;
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
     }
 
     double balanceInFileCoin = double.parse(
-          jsonDecode(responseBody)['data']['balance'].toString(),
+          jsonDecode(responseBody)['result'].toString(),
         ) /
         pow(10, fileCoinDecimals);
 

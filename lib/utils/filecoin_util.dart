@@ -1,8 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
@@ -17,10 +15,9 @@ import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/utils/addressToBytes.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
-Future<int> _getFileCoinNonce(
+Future<int> getFileCoinNonce(
   String addressPrefix,
   String baseUrl,
 ) async {
@@ -31,58 +28,60 @@ Future<int> _getFileCoinNonce(
       mnemonic,
       addressPrefix,
     );
-    final response = await http.get(Uri.parse(
-        '$baseUrl/actor/balance?actor=${Uri.encodeQueryComponent(fileCoinDetails['address'])}'));
+
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "Filecoin.MpoolGetNonce",
+        "params": [fileCoinDetails['address']]
+      }),
+    );
     final responseBody = response.body;
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
     }
 
-    return jsonDecode(responseBody)['data']['nonce'];
+    return jsonDecode(responseBody)['result'];
   } catch (e) {
     return 0;
   }
 }
 
-Future getFileCoinTransactionFee(
-  String addressPrefix,
-  String baseUrl,
-) async {
-  Map<String, dynamic> fileCoinFees = await _getFileCoinGas(
-    addressPrefix,
-    baseUrl,
-  );
-
-  return ((fileCoinFees['GasPremium'] + fileCoinFees['GasFeeCap']) *
-          fileCoinFees['GasLimit']) /
-      pow(10, fileCoinDecimals);
-}
-
-Future<Map<String, dynamic>> _getFileCoinGas(
-  String addressPrefix,
-  String baseUrl,
-) async {
+Future<Map<String, dynamic>> fileCoinEstimateGas(
+    String addressPrefix, String baseUrl, Map msg) async {
   try {
-    final pref = Hive.box(secureStorageKey);
-    String mnemonic = pref.get(currentMmenomicKey);
-    final fileCoinDetails =
-        await getFileCoinFromMemnomic(mnemonic, addressPrefix);
-    final response = await http.get(Uri.parse(
-        '$baseUrl/recommend/fee?method=Send&actor=${Uri.encodeQueryComponent(fileCoinDetails['address'])}'));
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "Filecoin.GasEstimateMessageGas",
+        "params": [msg, {}, []]
+      }),
+    );
     final responseBody = response.body;
+
     if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
       throw Exception(responseBody);
     }
 
-    Map jsonDecodedBody = jsonDecode(responseBody);
+    Map jsonDecodedBody = jsonDecode(responseBody)['result'];
 
-    return {
-      'GasLimit': jsonDecodedBody['data']['gas_limit'],
-      'GasPremium': int.tryParse(jsonDecodedBody['data']['gas_premium']) ?? 0,
-      'GasFeeCap': int.tryParse(jsonDecodedBody['data']['gas_cap']) ?? 0,
-    };
+    if (jsonDecodedBody == null) {
+      throw Exception('no response for gas fee available');
+    }
+
+    return jsonDecodedBody;
   } catch (e) {
-    return {};
+    return {
+      "GasLimit": 0,
+      "GasFeeCap": "9",
+      "GasPremium": "0",
+    };
   }
 }
 
@@ -182,6 +181,27 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   return cid;
 }
 
+Map constructFilecoinMsg(
+  String destinationAddress,
+  String from,
+  int nonce,
+  BigInt filecoinToSend,
+) {
+  final msg = {
+    "Version": 0,
+    "To": destinationAddress,
+    "From": from,
+    "Nonce": nonce,
+    "Value": '$filecoinToSend',
+    "GasLimit": 0,
+    "GasFeeCap": "9",
+    "GasPremium": "0",
+    "Method": 0,
+    "Params": ""
+  };
+  return msg;
+}
+// https://playground.open-rpc.org/?url=https://api.node.glif.io
 Future<Map> sendFilecoin(
   String destinationAddress,
   BigInt filecoinToSend, {
@@ -193,40 +213,44 @@ Future<Map> sendFilecoin(
   String mnemonic = pref.get(currentMmenomicKey);
   final fileCoinDetails =
       await getFileCoinFromMemnomic(mnemonic, addressPrefix);
-  final nonce = await _getFileCoinNonce(
+  final nonce = await getFileCoinNonce(
     addressPrefix,
     baseUrl,
   );
 
-  final msg = {
-    "Version": 0,
-    "To": destinationAddress,
-    "From": fileCoinDetails['address'],
-    "Nonce": nonce,
-    "Value": '$filecoinToSend',
-    "GasLimit": 0,
-    "GasFeeCap": "0",
-    "GasPremium": "100000",
-    "Method": 0,
-    "Params": ""
-  };
-  final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
+  final msg = constructFilecoinMsg(
+    destinationAddress,
+    fileCoinDetails['address'],
+    nonce,
+    filecoinToSend,
+  );
+
+  final gasFromNetwork = await fileCoinEstimateGas(addressPrefix, baseUrl, msg);
+  if (gasFromNetwork.isNotEmpty) {
+    msg['GasLimit'] = gasFromNetwork['GasLimit'];
+    msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
+    msg['GasPremium'] = gasFromNetwork['GasPremium'];
+  }
+
+  final signature = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
-  final rawSign = {
-    "Message": msg,
-    "Signature": {
-      "Type": signTypeSecp,
-      "Data": cid,
-    },
-  };
-
   final response = await http.post(
-    Uri.parse('$baseUrl/message'),
+    Uri.parse(baseUrl),
     headers: {'Content-Type': 'application/json'},
     body: json.encode({
-      'cid': cid,
-      'raw': json.encode(rawSign),
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "Filecoin.MpoolPush",
+      "params": [
+        {
+          "Message": msg,
+          "Signature": {
+            "Type": signTypeSecp,
+            "Data": signature,
+          },
+        }
+      ]
     }),
   );
 
@@ -236,9 +260,6 @@ Future<Map> sendFilecoin(
   }
 
   Map jsonDecodedBody = json.decode(responseBody) as Map;
-  if (jsonDecodedBody['code'] ~/ 100 != 2) {
-    throw Exception(jsonDecodedBody['detail']);
-  }
 
-  return {'txid': jsonDecodedBody['data'].toString()};
+  return {'txid': jsonDecodedBody['result']['/']};
 }

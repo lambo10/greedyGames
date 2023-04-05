@@ -143,9 +143,7 @@ class _TransferTokenState extends State<TransferToken> {
         if (!isNFTTransfer) {
           _parameters = [
             web3.EthereumAddress.fromHex(widget.data['recipient']),
-            BigInt.from(
-                  double.parse(widget.data['amount']),
-                ) *
+            BigInt.parse(widget.data['amount']) *
                 BigInt.from(pow(10, decimals.toInt()))
           ];
         } else if (widget.data['tokenType'] == 'ERC721') {
@@ -300,10 +298,35 @@ class _TransferTokenState extends State<TransferToken> {
           baseUrl: widget.data['baseUrl'],
         );
 
-        final fees = await getFileCoinTransactionFee(
+        final nonce = await getFileCoinNonce(
           widget.data['prefix'],
           widget.data['baseUrl'],
         );
+
+        BigInt amounToSend = BigInt.parse(
+              widget.data['amount'],
+            ) *
+            BigInt.from(pow(10, fileCoinDecimals));
+
+        final msg = constructFilecoinMsg(
+          widget.data['recipient'],
+          getFileCoinDetails['address'],
+          nonce,
+          amounToSend,
+        );
+
+        final gasFromNetwork = await fileCoinEstimateGas(
+          widget.data['prefix'],
+          widget.data['baseUrl'],
+          msg,
+        );
+
+        // Transaction Fee = GasLimit * GasFeeCap + GasPremium
+        final gasLimit = gasFromNetwork['GasLimit'];
+        final gasFeeCap = double.parse(gasFromNetwork['GasFeeCap']);
+        final gasPremium = double.parse(gasFromNetwork['GasPremium']);
+        final fees =
+            ((gasLimit * gasFeeCap) + gasPremium) / pow(10, fileCoinDecimals);
 
         transactionFeeMap = {
           'transactionFee': fees,
