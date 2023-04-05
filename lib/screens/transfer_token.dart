@@ -315,7 +315,7 @@ class _TransferTokenState extends State<TransferToken> {
           amounToSend,
         );
 
-        final gasFromNetwork = await fileCoinEstimateMessageGas(
+        final gasFromNetwork = await fileCoinEstimateGas(
           widget.data['prefix'],
           widget.data['baseUrl'],
           msg,

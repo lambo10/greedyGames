@@ -55,7 +55,7 @@ Future<int> getFileCoinNonce(
   }
 }
 
-Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
+Future<Map<String, dynamic>> fileCoinEstimateGas(
     String addressPrefix, String baseUrl, Map msg) async {
   try {
     final response = await http.post(
@@ -230,8 +230,7 @@ Future<Map> sendFilecoin(
     filecoinToSend,
   );
 
-  final gasFromNetwork =
-      await fileCoinEstimateMessageGas(addressPrefix, baseUrl, msg);
+  final gasFromNetwork = await fileCoinEstimateGas(addressPrefix, baseUrl, msg);
   if (gasFromNetwork.isNotEmpty) {
     msg['GasLimit'] = gasFromNetwork['GasLimit'];
     msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
