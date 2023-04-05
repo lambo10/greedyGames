@@ -6,6 +6,7 @@ import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
+import 'package:cryptowallet/sign_xrp_json.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
@@ -61,68 +62,31 @@ void main() async {
   }
 
   final xrpTransactionPrefix = [83, 84, 88, 0];
-  print(HEX.encode([
-    18,
-    0,
-    0,
-    36,
-    0,
-    0,
-    0,
-    1,
-    32,
-    27,
-    0,
-    0,
-    0,
-    0,
-    97,
-    64,
-    0,
-    0,
-    0,
-    0,
-    0,
-    3,
-    232,
-    104,
-    64,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    10,
-    115,
-    4,
-    190,
-    239,
-    222,
-    173,
-    129,
-    20,
-    253,
-    136,
-    100,
-    25,
-    76,
-    10,
-    102,
-    184,
-    138,
-    121,
-    160,
-    205,
-    75,
-    30,
-    93,
-    21,
-    113,
-    138,
-    103,
-    218
-  ]));
+  final sampleXrpJson = {
+    'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+    'Fee': '10',
+    'Sequence': 1,
+    'LastLedgerSequence': 0,
+    'TransactionType': 'Payment',
+    'SigningPubKey': 'BEEFDEAD',
+    'Amount': '1000',
+    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+  };
+
+  List xrpJson = sampleXrpJson.keys.toList();
+
+  var sorted = xrpJson.map((e) {
+    return xrpdefinitions[e];
+  }).toList()
+    ..removeWhere((f) {
+      return f == null && f['isSerialized'] == null;
+    })
+    ..sort((a, b) {
+      return (a['ordinal'] as num) - (b['ordinal'] as num);
+    });
+  for (int i = 0; i < sorted.length; i++) {
+    print(sorted[i]['name']);
+  }
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
