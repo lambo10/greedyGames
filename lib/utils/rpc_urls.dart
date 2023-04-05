@@ -2524,11 +2524,6 @@ Future<double> getFileCoinAddressBalance(
   if (skipNetworkRequest) return savedBalance;
 
   try {
-    // curl -X POST \
-    //  -H "Content-Type: application/json" \
-    //  -H "Authorization: Bearer <your-access-token>" \
-    //  -d '' \
-
     final response = await http.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
