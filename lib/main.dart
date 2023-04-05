@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -58,6 +59,9 @@ void main() async {
       value: base64UrlEncode(key),
     );
   }
+
+  final xrpTransactionPrefix = [83, 84, 88, 0];
+  print(HEX.encode(xrpTransactionPrefix) == '53545800');
 
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
