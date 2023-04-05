@@ -310,7 +310,7 @@ class _TransferTokenState extends State<TransferToken> {
 
         final msg = constructFilecoinMsg(
           widget.data['recipient'],
-          getFileCoinDetails['address'],
+          'f1bztkusy7ltb3gyttjdmvsvxkbpnwtk5owcwhmba',
           nonce,
           amounToSend,
         );

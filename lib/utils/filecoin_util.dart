@@ -65,13 +65,7 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
         "id": 1,
         "jsonrpc": "2.0",
         "method": "Filecoin.GasEstimateMessageGas",
-        "params": [
-          msg,
-          {},
-          [
-            {"/": genCid(json.encode(msg), CIDCodes.dagPBCode)}
-          ]
-        ]
+        "params": [msg, {}, []]
       }),
     );
     final responseBody = response.body;
@@ -238,9 +232,12 @@ Future<Map> sendFilecoin(
 
   final gasFromNetwork =
       await fileCoinEstimateMessageGas(addressPrefix, baseUrl, msg);
-  msg['GasLimit'] = gasFromNetwork['GasLimit'];
-  msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
-  msg['GasPremium'] = gasFromNetwork['GasPremium'];
+  if (gasFromNetwork.isNotEmpty) {
+    msg['GasLimit'] = gasFromNetwork['GasLimit'];
+    msg['GasFeeCap'] = gasFromNetwork['GasFeeCap'];
+    msg['GasPremium'] = gasFromNetwork['GasPremium'];
+  }
+
   final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 
