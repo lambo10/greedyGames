@@ -293,7 +293,6 @@ class _TransferTokenState extends State<TransferToken> {
           mnemonic,
           widget.data['prefix'],
         );
-        print(getFileCoinDetails);
         final fileCoinBalance = await getFileCoinAddressBalance(
           getFileCoinDetails['address'],
           baseUrl: widget.data['baseUrl'],
@@ -315,14 +314,12 @@ class _TransferTokenState extends State<TransferToken> {
           nonce,
           amounToSend,
         );
-        print('msg gotten');
+
         final gasFromNetwork = await fileCoinEstimateMessageGas(
           widget.data['prefix'],
           widget.data['baseUrl'],
           msg,
         );
-
-        print(gasFromNetwork);
 
         final feePlusPremium = double.parse(gasFromNetwork['GasPremium']) +
             double.parse(gasFromNetwork['GasFeeCap']);

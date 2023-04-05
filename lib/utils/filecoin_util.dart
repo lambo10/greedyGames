@@ -69,7 +69,10 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
           msg,
           {},
           [
-            {"/": genCid(json.encode(Map.from(msg)), CIDCodes.dagPBCode)}
+            {
+              "/":
+                  'bafy2bzacea3wsdh6y3a36tb3skempjoxqpuyompjbmfeyf34fi3uy6uue42v4'
+            }
           ]
         ]
       }),
@@ -84,8 +87,11 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
 
     return jsonDecodedBody;
   } catch (e) {
-    print(e);
-    return {};
+    return {
+      "GasLimit": 0,
+      "GasFeeCap": "0",
+      "GasPremium": "100000",
+    };
   }
 }
 
