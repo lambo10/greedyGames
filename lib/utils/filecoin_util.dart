@@ -1,8 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
@@ -17,10 +15,7 @@ import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cbor/cbor.dart' as cbor;
 import 'package:cryptowallet/utils/addressToBytes.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
-
-import 'cid.dart';
 
 Future<int> getFileCoinNonce(
   String addressPrefix,
