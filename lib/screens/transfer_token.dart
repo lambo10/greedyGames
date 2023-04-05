@@ -300,9 +300,23 @@ class _TransferTokenState extends State<TransferToken> {
           baseUrl: widget.data['baseUrl'],
         );
 
+        final nonce = await getFileCoinNonce(
+          widget.data['prefix'],
+          widget.data['baseUrl'],
+        );
+        BigInt amounToSend = BigInt.from(
+              widget.data['amount'],
+            ) *
+            BigInt.from(pow(10, fileCoinDecimals));
         final fees = await getFileCoinTransactionFee(
           widget.data['prefix'],
           widget.data['baseUrl'],
+          constructFilecoinMsg(
+            widget.data['recipient'],
+            getFileCoinDetails['address'],
+            nonce,
+            amounToSend,
+          ),
         );
 
         transactionFeeMap = {

@@ -20,7 +20,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
-Future<int> _getFileCoinNonce(
+Future<int> getFileCoinNonce(
   String addressPrefix,
   String baseUrl,
 ) async {
@@ -83,20 +83,7 @@ Future<Map<String, dynamic>> _getFileCoinGas(
         "id": 1,
         "jsonrpc": "2.0",
         "method": "Filecoin.GasEstimateMessageGas",
-        "params": [
-          {
-            "From": "f01234",
-            "GasFeeCap": "0",
-            "GasLimit": 9,
-            "GasPremium": "0",
-            "Method": 1,
-            "Nonce": 42,
-            "Params": "Ynl0ZSBhcnJheQ==",
-            "To": "f01234",
-            "Value": "0",
-            "Version": 42
-          },
-        ]
+        "params": [msg]
       }),
     );
     final responseBody = response.body;
@@ -104,7 +91,7 @@ Future<Map<String, dynamic>> _getFileCoinGas(
       throw Exception(responseBody);
     }
 
-    Map jsonDecodedBody = jsonDecode(responseBody);
+    Map jsonDecodedBody = jsonDecode(responseBody)['result'];
 
     return jsonDecodedBody;
   } catch (e) {
@@ -208,30 +195,26 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   return cid;
 }
 
-// estimate message gas
-// curl baseurl post
-// {
-//   "id": 1,
-//   "jsonrpc": "2.0",
-//   "method": "Filecoin.GasEstimateMessageGas",
-//   "params": [
-//     {
-//       "From": "f01234",
-//       "GasFeeCap": "0",
-//       "GasLimit": 9,
-//       "GasPremium": "0",
-//       "Method": 1,
-//       "Nonce": 42,
-//       "Params": "Ynl0ZSBhcnJheQ==",
-//       "To": "f01234",
-//       "Value": "0",
-//       "Version": 42
-//     },
-//   ]
-// }
-
-// get address nonce
-//
+Map constructFilecoinMsg(
+  String destinationAddress,
+  String from,
+  int nonce,
+  BigInt filecoinToSend,
+) {
+  final msg = {
+    "Version": 0,
+    "To": destinationAddress,
+    "From": from,
+    "Nonce": nonce,
+    "Value": '$filecoinToSend',
+    "GasLimit": 0,
+    "GasFeeCap": "0",
+    "GasPremium": "100000",
+    "Method": 0,
+    "Params": ""
+  };
+  return msg;
+}
 
 Future<Map> sendFilecoin(
   String destinationAddress,
@@ -244,23 +227,18 @@ Future<Map> sendFilecoin(
   String mnemonic = pref.get(currentMmenomicKey);
   final fileCoinDetails =
       await getFileCoinFromMemnomic(mnemonic, addressPrefix);
-  final nonce = await _getFileCoinNonce(
+  final nonce = await getFileCoinNonce(
     addressPrefix,
     baseUrl,
   );
 
-  final msg = {
-    "Version": 0,
-    "To": destinationAddress,
-    "From": fileCoinDetails['address'],
-    "Nonce": nonce,
-    "Value": '$filecoinToSend',
-    "GasLimit": 0,
-    "GasFeeCap": "0",
-    "GasPremium": "100000",
-    "Method": 0,
-    "Params": ""
-  };
+  final msg = constructFilecoinMsg(
+    destinationAddress,
+    fileCoinDetails['address'],
+    nonce,
+    filecoinToSend,
+  );
+
   final cid = transactionSignLotus(msg, fileCoinDetails['privateKey']);
   const signTypeSecp = 1;
 

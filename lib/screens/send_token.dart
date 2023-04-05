@@ -223,8 +223,8 @@ class _SendTokenState extends State<SendToken> {
                                 textAlign: TextAlign.end,
                               ),
                               onPressed: () async {
-                                String mnemonic = (Hive.box(secureStorageKey))
-                                    .get(currentMmenomicKey);
+                                // FIXME:
+                                String mnemonic = pref.get(currentMmenomicKey);
                                 if (widget.data['contractAddress'] != null) {
                                   final accountDetails =
                                       await getERC20TokenBalance(widget.data);
@@ -309,18 +309,18 @@ class _SendTokenState extends State<SendToken> {
                                   );
 
                                   if (accountDetails != 0) {
-                                    final fees =
-                                        await getFileCoinTransactionFee(
-                                      widget.data['prefix'],
-                                      widget.data['baseUrl'],
-                                    );
+                                    // final fees =
+                                    //     await getFileCoinTransactionFee(
+                                    //   widget.data['prefix'],
+                                    //   widget.data['baseUrl'],
+                                    // );
 
-                                    final maximumPayable =
-                                        accountDetails - fees;
+                                    // final maximumPayable =
+                                    //     accountDetails - fees;
 
-                                    accountDetails = maximumPayable > 0
-                                        ? maximumPayable
-                                        : accountDetails;
+                                    // accountDetails = maximumPayable > 0
+                                    //     ? maximumPayable
+                                    //     : accountDetails;
                                   }
                                   amount.text = accountDetails.toString();
                                 } else {
