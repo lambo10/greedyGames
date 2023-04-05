@@ -53,7 +53,7 @@ Future<int> getFileCoinNonce(
   }
 }
 
-Future getFileCoinTransactionFee(
+Future<double> getFileCoinTransactionFee(
   String addressPrefix,
   String baseUrl,
   Map msg,
@@ -63,19 +63,15 @@ Future getFileCoinTransactionFee(
     baseUrl,
     msg,
   );
-
-  return ((fileCoinFees['GasPremium'] + fileCoinFees['GasFeeCap']) *
-          fileCoinFees['GasLimit']) /
+  final feeTimesPremium = double.parse(fileCoinFees['GasPremium']) +
+      double.parse(fileCoinFees['GasFeeCap']);
+  return (feeTimesPremium * fileCoinFees['GasLimit']) /
       pow(10, fileCoinDecimals);
 }
 
 Future<Map<String, dynamic>> _getFileCoinGas(
     String addressPrefix, String baseUrl, Map msg) async {
   try {
-    final pref = Hive.box(secureStorageKey);
-    String mnemonic = pref.get(currentMmenomicKey);
-    final fileCoinDetails =
-        await getFileCoinFromMemnomic(mnemonic, addressPrefix);
     final response = await http.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
