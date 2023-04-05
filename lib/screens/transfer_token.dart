@@ -401,7 +401,9 @@ class _TransferTokenState extends State<TransferToken> {
       if (mounted) {
         setState(() {});
       }
-    } catch (_) {}
+    } catch (_) {
+      print(_);
+    }
   }
 
   @override

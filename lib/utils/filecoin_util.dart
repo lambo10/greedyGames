@@ -82,6 +82,10 @@ Future<Map<String, dynamic>> fileCoinEstimateMessageGas(
 
     Map jsonDecodedBody = jsonDecode(responseBody)['result'];
 
+    if (jsonDecodedBody == null) {
+      throw Exception('no response for gas fee available');
+    }
+
     return jsonDecodedBody;
   } catch (e) {
     return {
