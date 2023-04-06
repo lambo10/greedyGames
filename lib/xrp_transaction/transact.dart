@@ -92,7 +92,14 @@ String XrpEncodeForSigning(Map sampleXrpJson) {
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
       associatedValue = _toAmount(int.parse(sampleXrpJson[sortedKeys]));
     } else if (trxFieldInfo[sortedKeys]['type'] == 'AccountID') {
-      associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
+      try {
+        Map classicAddressMap =
+            xaddress_to_classic_address(sampleXrpJson[sortedKeys]);
+        associatedValue =
+            decodeClassicAddress(classicAddressMap['classicAddress']);
+      } catch (e) {
+        associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
+      }
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Blob') {
       associatedValue = HEX.decode(sampleXrpJson[sortedKeys]);
     }
