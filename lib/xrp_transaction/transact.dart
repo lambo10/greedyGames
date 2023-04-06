@@ -6266,7 +6266,7 @@ Uint8List _decode(classicAddress, List prefix) {
 
 String XrpEncodeForSigning({Map sampleXrpJson}) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
-  sampleXrpJson = {
+  sampleXrpJson ??= {
     'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
     'Fee': '10',
     'Sequence': 1,
