@@ -6361,38 +6361,6 @@ String XrpEncodeForSigning({Map sampleXrpJson}) {
   return HEX.encode(List<int>.from(serializer)).toUpperCase();
 }
 
-// def _encode_variable_length_prefix(length: int) -> bytes:
-//     """
-//     Helper function for length-prefixed fields including Blob types
-//     and some AccountID types. Calculates the prefix of variable length bytes.
-
-//     The length of the prefix is 1-3 bytes depending on the length of the contents:
-//     Content length <= 192 bytes: prefix is 1 byte
-//     192 bytes < Content length <= 12480 bytes: prefix is 2 bytes
-//     12480 bytes < Content length <= 918744 bytes: prefix is 3 bytes
-
-//     `See Length Prefixing <https://xrpl.org/serialization.html#length-prefixing>`_
-//     """
-//     if length <= _MAX_SINGLE_BYTE_LENGTH:
-//         return length.to_bytes(1, byteorder="big", signed=False)
-//     if length < _MAX_DOUBLE_BYTE_LENGTH:
-//         length -= _MAX_SINGLE_BYTE_LENGTH + 1
-//         byte1 = ((length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1)).to_bytes(
-//             1, byteorder="big", signed=False
-//         )
-//         byte2 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
-//         return byte1 + byte2
-//     if length <= _MAX_LENGTH_VALUE:
-//         length -= _MAX_DOUBLE_BYTE_LENGTH
-//         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
-//             1, byteorder="big", signed=False
-//         )
-//         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
-//         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
-//         return byte1 + byte2 + byte3
-
-//     raise ValueError(f"VariableLength field must be <= {_MAX_LENGTH_VALUE} bytes long")
-
 final int _MAX_SINGLE_BYTE_LENGTH = 192;
 final int _MAX_DOUBLE_BYTE_LENGTH = 12481;
 final int _MAX_LENGTH_VALUE = 918744;
@@ -6423,46 +6391,13 @@ extension IntToByte on int {
   }
 }
 
-// Uint8List _encode_variable_length_prefix(int length) {
-//   final _MAX_SINGLE_BYTE_LENGTH = 192;
-//   final _MAX_DOUBLE_BYTE_LENGTH = 12481;
-//   final _MAX_LENGTH_VALUE = 918744;
-//   final _MAX_SECOND_BYTE_VALUE = 240;
-
-// //   if (length <= _MAX_SINGLE_BYTE_LENGTH) {
-// //     var buffer = ByteData(8);
-// //     buffer.setInt64(1, length);
-// //     return buffer.buffer.asUint8List();
-// //   }
-// //   if (length < _MAX_DOUBLE_BYTE_LENGTH) {
-// //     length -= _MAX_SINGLE_BYTE_LENGTH + 1;
-// //     var buffer = ByteData(8);
-// //     buffer.setInt64(1, (length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1));
-// //     final byte1 = buffer.buffer.asUint8List();
-// //     var buffer2 = ByteData(8);
-// //     buffer2.setInt64(1, length & 0xFF);
-// //     final byte2 = buffer2.buffer.asUint8List();
-
-// //     return byte1 + byte2;
-// //   }
-// //   if (length <= _MAX_LENGTH_VALUE){
-// // length -= _MAX_DOUBLE_BYTE_LENGTH;
-// //         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
-// //             1, byteorder="big", signed=False
-// //         )
-// //         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
-// //         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
-// //         return byte1 + byte2 + byte3
-// //   }
-// }
-
 Uint8List toUint16(int value) {
   const _WIDTH_16 = 2;
 
   return Uint8List.fromList([
     ...value
         .toRadixString(16)
-        .padLeft(_WIDTH_16 * 2, '0')
+        .padLeft(_WIDTH_16, '0')
         .toUpperCase()
         .replaceAll(RegExp(r'[^0-9A-F]'), '')
         .split('')
@@ -6476,7 +6411,7 @@ Uint8List toUint32(int value) {
 
   return Uint8List.fromList(value
       .toRadixString(16)
-      .padLeft(_WIDTH_32 * 2, '0')
+      .padLeft(_WIDTH_32, '0')
       .toUpperCase()
       .replaceAll(RegExp(r'[^0-9A-F]'), '')
       .split('')
