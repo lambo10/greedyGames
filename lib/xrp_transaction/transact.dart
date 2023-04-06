@@ -6350,6 +6350,7 @@ String XrpEncodeForSigning({Map sampleXrpJson}) {
 
       Uint8List length_prefix =
           _encode_variable_length_prefix(byte_object.length);
+
       serializer += length_prefix;
       serializer += byte_object;
     } else {
@@ -6392,39 +6393,68 @@ String XrpEncodeForSigning({Map sampleXrpJson}) {
 
 //     raise ValueError(f"VariableLength field must be <= {_MAX_LENGTH_VALUE} bytes long")
 
+final int _MAX_SINGLE_BYTE_LENGTH = 192;
+final int _MAX_DOUBLE_BYTE_LENGTH = 12481;
+final int _MAX_LENGTH_VALUE = 918744;
+final int _MAX_SECOND_BYTE_VALUE = 240;
 
 Uint8List _encode_variable_length_prefix(int length) {
-  final _MAX_SINGLE_BYTE_LENGTH = 192;
-  final _MAX_DOUBLE_BYTE_LENGTH = 12481;
-  final _MAX_LENGTH_VALUE = 918744;
-  final _MAX_SECOND_BYTE_VALUE = 240;
-
-//   if (length <= _MAX_SINGLE_BYTE_LENGTH) {
-//     var buffer = ByteData(8);
-//     buffer.setInt64(1, length);
-//     return buffer.buffer.asUint8List();
-//   }
-//   if (length < _MAX_DOUBLE_BYTE_LENGTH) {
-//     length -= _MAX_SINGLE_BYTE_LENGTH + 1;
-//     var buffer = ByteData(8);
-//     buffer.setInt64(1, (length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1));
-//     final byte1 = buffer.buffer.asUint8List();
-//     var buffer2 = ByteData(8);
-//     buffer2.setInt64(1, length & 0xFF);
-//     final byte2 = buffer2.buffer.asUint8List();
-
-//     return byte1 + byte2;
-//   }
-//   if (length <= _MAX_LENGTH_VALUE){
-// length -= _MAX_DOUBLE_BYTE_LENGTH;
-//         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
-//             1, byteorder="big", signed=False
-//         )
-//         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
-//         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
-//         return byte1 + byte2 + byte3
-//   }
+  if (length <= _MAX_SINGLE_BYTE_LENGTH) {
+    return Uint8List.fromList([length]);
+  } else if (length < _MAX_DOUBLE_BYTE_LENGTH) {
+    length -= _MAX_SINGLE_BYTE_LENGTH + 1;
+    final byte1 = ((_MAX_SINGLE_BYTE_LENGTH + 1) + (length >> 8)).toByte();
+    final byte2 = (length & 0xFF).toByte();
+    return Uint8List.fromList([byte1, byte2]);
+  } else if (length <= _MAX_LENGTH_VALUE) {
+    length -= _MAX_DOUBLE_BYTE_LENGTH;
+    final byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).toByte();
+    final byte2 = ((length >> 8) & 0xFF).toByte();
+    final byte3 = (length & 0xFF).toByte();
+    return Uint8List.fromList([byte1, byte2, byte3]);
+  }
+  throw Exception(
+      "VariableLength field must be <= $_MAX_LENGTH_VALUE bytes long");
 }
+
+extension IntToByte on int {
+  int toByte() {
+    return this & 0xff;
+  }
+}
+
+// Uint8List _encode_variable_length_prefix(int length) {
+//   final _MAX_SINGLE_BYTE_LENGTH = 192;
+//   final _MAX_DOUBLE_BYTE_LENGTH = 12481;
+//   final _MAX_LENGTH_VALUE = 918744;
+//   final _MAX_SECOND_BYTE_VALUE = 240;
+
+// //   if (length <= _MAX_SINGLE_BYTE_LENGTH) {
+// //     var buffer = ByteData(8);
+// //     buffer.setInt64(1, length);
+// //     return buffer.buffer.asUint8List();
+// //   }
+// //   if (length < _MAX_DOUBLE_BYTE_LENGTH) {
+// //     length -= _MAX_SINGLE_BYTE_LENGTH + 1;
+// //     var buffer = ByteData(8);
+// //     buffer.setInt64(1, (length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1));
+// //     final byte1 = buffer.buffer.asUint8List();
+// //     var buffer2 = ByteData(8);
+// //     buffer2.setInt64(1, length & 0xFF);
+// //     final byte2 = buffer2.buffer.asUint8List();
+
+// //     return byte1 + byte2;
+// //   }
+// //   if (length <= _MAX_LENGTH_VALUE){
+// // length -= _MAX_DOUBLE_BYTE_LENGTH;
+// //         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
+// //             1, byteorder="big", signed=False
+// //         )
+// //         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
+// //         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
+// //         return byte1 + byte2 + byte3
+// //   }
+// }
 
 Uint8List toUint16(int value) {
   const _WIDTH_16 = 2;
