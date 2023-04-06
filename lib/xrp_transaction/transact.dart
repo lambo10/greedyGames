@@ -6267,14 +6267,14 @@ Uint8List _decode(classicAddress, List prefix) {
 String XrpEncodeForSigning({Map sampleXrpJson}) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
   sampleXrpJson ??= {
-    'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
-    'Fee': '10',
-    'Sequence': 1,
-    'LastLedgerSequence': 0,
+    'Account': 'rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x',
+    'Fee': '3939202939',
+    'Sequence': 3939202,
+    'LastLedgerSequence': 339392,
     'TransactionType': 'Payment',
-    'SigningPubKey': 'BEEFDEAD',
-    'Amount': '1000',
-    'Destination': 'rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x',
+    'SigningPubKey': 'abcdef38383833',
+    'Amount': '338382982838',
+    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
   };
 
   List xrpJson = sampleXrpJson.keys.toList();
@@ -6318,6 +6318,7 @@ String XrpEncodeForSigning({Map sampleXrpJson}) {
       associatedValue = toUint16(transType);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
+      print(associatedValue);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
@@ -6392,31 +6393,15 @@ extension IntToByte on int {
 }
 
 Uint8List toUint16(int value) {
-  const _WIDTH_16 = 2;
-
-  return Uint8List.fromList([
-    ...value
-        .toRadixString(16)
-        .padLeft(_WIDTH_16, '0')
-        .toUpperCase()
-        .replaceAll(RegExp(r'[^0-9A-F]'), '')
-        .split('')
-        .map((hexChar) => int.parse(hexChar, radix: 16))
-        .toList()
-  ]);
+  var buffer = ByteData(2);
+  buffer.setUint16(0, value);
+  return buffer.buffer.asUint8List();
 }
 
 Uint8List toUint32(int value) {
-  const _WIDTH_32 = 4;
-
-  return Uint8List.fromList(value
-      .toRadixString(16)
-      .padLeft(_WIDTH_32, '0')
-      .toUpperCase()
-      .replaceAll(RegExp(r'[^0-9A-F]'), '')
-      .split('')
-      .map((hexChar) => int.parse(hexChar, radix: 16))
-      .toList());
+  var buffer = ByteData(4);
+  buffer.setUint32(0, value);
+  return buffer.buffer.asUint8List();
 }
 
 Uint8List toAmount(int value) {
