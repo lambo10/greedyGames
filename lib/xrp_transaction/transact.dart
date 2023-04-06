@@ -253,30 +253,6 @@ int _get_tag_from_buffer(Uint8List buffer) {
   return null;
 }
 
-// def xaddress_to_classic_address(xaddress: str) -> Tuple[str, Optional[int], bool]:
-//     """
-//     Returns a tuple containing the classic address, tag, and whether the address
-//     is on a test network for an X-Address.
-
-//     Args:
-//         xaddress: base58-encoded X-Address.
-
-//     Returns:
-//         A tuple containing:
-//             classic_address: the base58 classic address
-//             tag: the destination tag
-//             is_test_network: whether the address is on the test network (or main)
-//     """
-//     decoded = base58.b58decode_check(
-//         xaddress, alphabet=XRPL_ALPHABET
-//     )  # convert b58 to bytes
-//     is_test_network = _is_test_address(decoded[:2])
-//     classic_address_bytes = decoded[2:22]
-//     tag = _get_tag_from_buffer(decoded[22:])  # extracts the destination tag
-
-//     classic_address = encode_classic_address(classic_address_bytes)
-//     return (classic_address, tag, is_test_network)
-
 bool _is_test_x_address(prefix) {
   if (seqEqual(_PREFIX_BYTES_MAIN, prefix)) {
     return false;
