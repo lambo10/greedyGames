@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const walletAbbr = 'GVERSE';
+
 const walletName = 'GreedyVerse';
 const walletURL = "https://greedyverse.co/";
 const walletIconURL = "https://greedyverse.co/api/GV.png";
