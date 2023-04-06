@@ -17,7 +17,7 @@ import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
 import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:cryptowallet/xrp_transaction/transact.dart';
+import 'package:cryptowallet/xrp_transaction/xrp_transaction.dart';
 import 'package:elliptic/elliptic.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
