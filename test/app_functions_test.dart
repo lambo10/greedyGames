@@ -302,7 +302,7 @@ void main() async {
 
   test('can encode xrp json transaction', () async {
     expect(
-      await XrpEncodeForSigning({
+      XrpEncodeForSigning({
         "Account": "rGWrZyQqhTp9Xu7G5Pkayo7bXjH4k4QYpf",
         "Fee": "0",
         "Sequence": 38292838,
@@ -314,8 +314,9 @@ void main() async {
       }),
       '535458001200002402484D66201B000095EF614000000000009C406840000000000000007307ABCDEF383838338114AA066C988C712815CC37AF71472B7CBBBD4E2A0A8314519B7BE6889CF12EAA50978FF51630E0DED92809',
     );
+
     expect(
-      await XrpEncodeForSigning({
+      XrpEncodeForSigning({
         "Account": "rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL",
         "Fee": "40000",
         "Sequence": 78697,
@@ -328,7 +329,7 @@ void main() async {
       '535458001200002400013369201B0085AE2C614000000000009C40684000000000009C407307ABCDEF383838338114FD8864194C0A66B88A79A0CD4B1E5D15718A67DA8314BA8E78626EE42C41B46D46C3048DF3A1C3C87072',
     );
     expect(
-      await XrpEncodeForSigning({
+      XrpEncodeForSigning({
         "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
         "Fee": "485600",
         "Sequence": 3882,
