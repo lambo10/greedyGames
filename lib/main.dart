@@ -6,6 +6,7 @@ import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
+import 'package:cryptowallet/sign_xrp_json.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 

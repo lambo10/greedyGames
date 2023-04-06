@@ -316,7 +316,6 @@ class _TransferTokenState extends State<TransferToken> {
         );
 
         final gasFromNetwork = await fileCoinEstimateGas(
-          widget.data['prefix'],
           widget.data['baseUrl'],
           msg,
         );
