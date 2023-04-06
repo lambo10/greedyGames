@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+
 const xrpdefinitions = {
   "65537": {
     "name": "LedgerEntryType",
@@ -6269,9 +6273,12 @@ var sorted = xrpJson.map((e) {
     return (a['ordinal'] as num) - (b['ordinal'] as num);
   });
 
-getEncoded() {
-  for (int i = 0; i < sorted.length; i++) {
-    print(sampleXrpJson[sorted[i]['name']]);
-    print(sorted[i]['isVariableLengthEncoded']);
-  }
+getEncoded() async {
+  final defination =
+      jsonDecode(await rootBundle.loadString('json/defination.json'));
+  print(defination);
+  // for (int i = 0; i < sorted.length; i++) {
+  //   print(sampleXrpJson[sorted[i]['name']]);
+  //   print(sorted[i]['isVariableLengthEncoded']);
+  // }
 }
