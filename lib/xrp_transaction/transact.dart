@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, prefer_const_declarations
 
 import 'dart:convert';
 
@@ -6297,12 +6297,18 @@ getEncoded({Map sampleXrpJson}) async {
     trxFieldInfo[key] = value;
   }
 
+  List serializer = [];
+
   for (int i = 0; i < sorted.length; i++) {
     final sortedKeys = sorted[i]['name'];
 
     trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
     trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
     trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
+
+    final typeCode = defination['TYPES'][trxFieldInfo[sortedKeys]['type']];
+    final fieldCode = trxFieldInfo[sortedKeys]['nth'];
+    final isVariableEncoded = trxFieldInfo[sortedKeys]['isVLEncoded'];
     Uint8List associatedValue;
 
     if (sortedKeys == 'TransactionType') {
@@ -6321,8 +6327,72 @@ getEncoded({Map sampleXrpJson}) async {
       associatedValue = HEX.decode(sampleXrpJson[sortedKeys]);
     }
 
-    print(associatedValue);
+    List<int> header = [];
+    if (typeCode < 16) {
+      if (fieldCode < 16) {
+        header.add(typeCode << 4 | fieldCode);
+      } else {
+        header.add(typeCode << 4);
+        header.add(fieldCode);
+      }
+    } else if (fieldCode < 16) {
+      header.addAll([fieldCode, typeCode]);
+    } else {
+      header.addAll([0, typeCode, fieldCode]);
+    }
+
+    // print(fieldCode);
+
+    // print(trxFieldInfo[sortedKeys]);
+
+    serializer.addAll(header);
+
+    if (isVariableEncoded) {
+      List byte_object = [];
+      byte_object.addAll(associatedValue);
+      final byteLength = byte_object.length;
+
+// self.write_length_encoded(value, not is_unl_modify_workaround)
+    } else {
+      serializer.addAll(associatedValue);
+    }
+
+    // print(associatedValue);
   }
+  serializer.insertAll(0, xrpTransactionPrefix);
+  print(serializer);
+}
+
+Uint8List _encode_variable_length_prefix(int length) {
+  final _MAX_SINGLE_BYTE_LENGTH = 192;
+  final _MAX_DOUBLE_BYTE_LENGTH = 12481;
+  final _MAX_LENGTH_VALUE = 918744;
+  final _MAX_SECOND_BYTE_VALUE = 240;
+//   if (length <= _MAX_SINGLE_BYTE_LENGTH) {
+//     var buffer = ByteData(8);
+//     buffer.setInt64(1, length);
+//     return buffer.buffer.asUint8List();
+//   }
+//   if (length < _MAX_DOUBLE_BYTE_LENGTH) {
+//     length -= _MAX_SINGLE_BYTE_LENGTH + 1;
+//     var buffer = ByteData(8);
+//     buffer.setInt64(1, (length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1));
+//     final byte1 = buffer.buffer.asUint8List();
+//     var buffer2 = ByteData(8);
+//     buffer2.setInt64(1, length & 0xFF);
+//     final byte2 = buffer2.buffer.asUint8List();
+
+//     return byte1 + byte2;
+//   }
+//   if (length <= _MAX_LENGTH_VALUE){
+// length -= _MAX_DOUBLE_BYTE_LENGTH;
+//         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
+//             1, byteorder="big", signed=False
+//         )
+//         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
+//         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
+//         return byte1 + byte2 + byte3
+//   }
 }
 
 Uint8List toUint16(int value) {
