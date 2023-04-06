@@ -6303,17 +6303,25 @@ getEncoded({Map sampleXrpJson}) async {
     trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
     trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
     trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
-    print(trxFieldInfo[sortedKeys]);
-    if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
-      print('yes 32');
+    var associatedValue;
+
+    if (sortedKeys == 'TransactionType') {
+      final transType =
+          defination['TRANSACTION_TYPES'][sampleXrpJson[sortedKeys]];
+      associatedValue = toUint16(transType);
+    } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
+      associatedValue = toUint32(sampleXrpJson[sortedKeys]);
+    } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
+      associatedValue = toUint32(sampleXrpJson[sortedKeys]);
+    } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
+      toAmount(int.parse(sampleXrpJson[sortedKeys]));
+      // associatedValue = toUint32(sampleXrpJson[sortedKeys]);
     }
-    if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
-      print('yes 16');
-    }
+    print(associatedValue);
   }
 }
 
-toUint16(int value) {
+String toUint16(int value) {
   const _WIDTH_16 = 2;
 
   return value
@@ -6323,10 +6331,11 @@ toUint16(int value) {
       .replaceAll(RegExp(r'[^0-9A-F]'), '')
       .split('')
       .map((hexChar) => int.parse(hexChar, radix: 16))
-      .toList();
+      .toList()
+      .join('');
 }
 
-toUint32(int value) {
+String toUint32(int value) {
   const _WIDTH_32 = 4;
 
   return value
@@ -6336,7 +6345,8 @@ toUint32(int value) {
       .replaceAll(RegExp(r'[^0-9A-F]'), '')
       .split('')
       .map((hexChar) => int.parse(hexChar, radix: 16))
-      .toList();
+      .toList()
+      .join('');
 }
 
 toAmount(int value) {
