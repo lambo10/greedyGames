@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/services.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
+import 'package:hex/hex.dart';
 
 const xrpOrdinal = {
   "65537": {
@@ -6253,14 +6254,13 @@ const xrpOrdinal = {
   }
 };
 
-decode_classic_address(classic_address) {
-  return _decode(classic_address, [0x0]);
+String decodeClassicAddress(String classicAddress) {
+  return _decode(classicAddress, [0x0]).toUpperCase();
 }
 
-_decode(classic_address, List prefix) {
-  final prefix_length = prefix.length;
-  final decoded = xrpBaseCodec.decode(classic_address);
-  return decoded.sublist(1, decoded.length - 4);
+String _decode(classicAddress, List prefix) {
+  final decoded = xrpBaseCodec.decode(classicAddress);
+  return HEX.encode(decoded.sublist(prefix.length, decoded.length - 4));
 }
 
 getEncoded({Map sampleXrpJson}) async {
@@ -6303,7 +6303,7 @@ getEncoded({Map sampleXrpJson}) async {
     trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
     trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
     trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
-    var associatedValue;
+    String associatedValue;
 
     if (sortedKeys == 'TransactionType') {
       final transType =
@@ -6314,8 +6314,11 @@ getEncoded({Map sampleXrpJson}) async {
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
-      toAmount(int.parse(sampleXrpJson[sortedKeys]));
-      // associatedValue = toUint32(sampleXrpJson[sortedKeys]);
+      associatedValue = toAmount(int.parse(sampleXrpJson[sortedKeys]));
+    } else if (trxFieldInfo[sortedKeys]['type'] == 'AccountID') {
+      associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
+    } else if (trxFieldInfo[sortedKeys]['type'] == 'Blob') {
+      associatedValue = sampleXrpJson[sortedKeys];
     }
     print(associatedValue);
   }
@@ -6349,9 +6352,10 @@ String toUint32(int value) {
       .join('');
 }
 
-toAmount(int value) {
+String toAmount(int value) {
   const _POS_SIGN_BIT_MASK = 0x4000000000000000;
-  final value_with_pos_bit = value | _POS_SIGN_BIT_MASK;
-  print(value_with_pos_bit);
-  // return value_with_pos_bit.to_bytes(8, byteorder="big")
+  final valueWithPosBit = value | _POS_SIGN_BIT_MASK;
+  var buffer = ByteData(8);
+  buffer.setInt64(0, valueWithPosBit);
+  return HEX.encode(buffer.buffer.asUint8List()).toUpperCase();
 }
