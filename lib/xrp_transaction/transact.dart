@@ -11,7 +11,7 @@ import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hex/hex.dart';
 
 Uint8List decodeClassicAddress(String classicAddress) {
-  return _decode(classicAddress, [0x0]);
+  return _decode(classicAddress, _CLASSIC_ADDRESS_PREFIX);
 }
 
 Uint8List _decode(classicAddress, List prefix) {
@@ -177,4 +177,93 @@ Uint8List _toAmount(int value) {
   var buffer = ByteData(8);
   buffer.setInt64(0, valueWithPosBit);
   return buffer.buffer.asUint8List();
+}
+
+final _PREFIX_BYTES_MAIN = Uint8List.fromList([0x05, 0x44]);
+final _PREFIX_BYTES_TEST = Uint8List.fromList([0x04, 0x93]);
+
+Map xaddress_to_classic_address(String X_Address) {
+  final decoded = xrpBaseCodec.decode(X_Address);
+  print(decoded.sublist(0, 2));
+  bool isXTestNet = _is_test_x_address(decoded.sublist(0, 2));
+  final classicAddressByte = decoded.sublist(2, 22);
+  final tag = _get_tag_from_buffer(decoded.sublist(22));
+  final classic_address = encode_classic_address(classicAddressByte);
+  return {
+    'classicAddress': classic_address,
+    'is_test_network': isXTestNet,
+    'tag': tag,
+  };
+}
+
+final _CLASSIC_ADDRESS_LENGTH = 20;
+final _CLASSIC_ADDRESS_PREFIX = [0x0];
+
+String encode_classic_address(Uint8List bytestring) {
+  return _encode(bytestring, _CLASSIC_ADDRESS_PREFIX, _CLASSIC_ADDRESS_LENGTH);
+}
+
+String _encode(Uint8List bytestring, List<int> prefix, int expected_length) {
+  if (expected_length != null && bytestring.length != expected_length) {
+    throw Exception(
+        'unexpected_payload_length: len(bytestring) does not match expected_length.Ensure that the bytes are a bytestring.');
+  }
+  final payload = prefix + bytestring;
+  return xrpBaseCodec.encode(Uint8List.fromList(payload));
+}
+
+int _get_tag_from_buffer(Uint8List buffer) {
+  int flag = buffer[0];
+  if (flag >= 2) {
+    throw Exception("Unsupported X-Address");
+  }
+  if (flag == 1) {
+    return (buffer[1] +
+        buffer[2] * 0x100 +
+        buffer[3] * 0x10000 +
+        buffer[4] * 0x1000000);
+  }
+
+  if (flag != 0) {
+    throw Exception("Flag must be zero to indicate no tag");
+  }
+
+  if (HEX.decode('0000000000000000') != buffer.sublist(1, 9)) {
+    throw Exception("Remaining bytes must be zero");
+  }
+
+  return null;
+}
+
+// def xaddress_to_classic_address(xaddress: str) -> Tuple[str, Optional[int], bool]:
+//     """
+//     Returns a tuple containing the classic address, tag, and whether the address
+//     is on a test network for an X-Address.
+
+//     Args:
+//         xaddress: base58-encoded X-Address.
+
+//     Returns:
+//         A tuple containing:
+//             classic_address: the base58 classic address
+//             tag: the destination tag
+//             is_test_network: whether the address is on the test network (or main)
+//     """
+//     decoded = base58.b58decode_check(
+//         xaddress, alphabet=XRPL_ALPHABET
+//     )  # convert b58 to bytes
+//     is_test_network = _is_test_address(decoded[:2])
+//     classic_address_bytes = decoded[2:22]
+//     tag = _get_tag_from_buffer(decoded[22:])  # extracts the destination tag
+
+//     classic_address = encode_classic_address(classic_address_bytes)
+//     return (classic_address, tag, is_test_network)
+
+bool _is_test_x_address(prefix) {
+  if (seqEqual(_PREFIX_BYTES_MAIN, prefix)) {
+    return false;
+  } else if (seqEqual(_PREFIX_BYTES_TEST, prefix)) {
+    return true;
+  }
+  throw Exception("Invalid X-Address: bad prefix");
 }
