@@ -301,6 +301,9 @@ void main() async {
   });
 
   test('can encode xrp json transaction', () async {
+    const serializedBinary =
+        '535458001200002400000F2A201B000C0B226140000000001531786840000000000768E07307ABC38383833DEF81147BA497AF24A988B63747BADDBCEB572156D156618314F606175DD417B8D2EBB12E559DA1E5ED7AE74BEF';
+
     expect(
       XrpEncodeForSigning({
         "Account": "rGWrZyQqhTp9Xu7G5Pkayo7bXjH4k4QYpf",
@@ -330,6 +333,19 @@ void main() async {
     );
     expect(
       XrpEncodeForSigning({
+        "Account": "XVaH3tVKvGo4HTCCEauvs6NYHKVSqkDVVzALJGM8wfLyquA",
+        "Fee": "485600",
+        "Sequence": 3882,
+        "LastLedgerSequence": 789282,
+        "TransactionType": "Payment",
+        "SigningPubKey": "abc38383833def",
+        "Amount": "1388920",
+        "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
+      }),
+      serializedBinary,
+    );
+    expect(
+      XrpEncodeForSigning({
         "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
         "Fee": "485600",
         "Sequence": 3882,
@@ -339,7 +355,7 @@ void main() async {
         "Amount": "1388920",
         "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
       }),
-      '535458001200002400000F2A201B000C0B226140000000001531786840000000000768E07307ABC38383833DEF81147BA497AF24A988B63747BADDBCEB572156D156618314F606175DD417B8D2EBB12E559DA1E5ED7AE74BEF',
+      serializedBinary,
     );
   });
 
