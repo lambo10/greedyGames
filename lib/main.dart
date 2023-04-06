@@ -84,8 +84,13 @@ void main() async {
     ..sort((a, b) {
       return (a['ordinal'] as num) - (b['ordinal'] as num);
     });
+
+  final a = json.fuse(utf8);
+  print(a.encode(sorted));
+
   for (int i = 0; i < sorted.length; i++) {
-    print(sorted[i]['name']);
+    print(sampleXrpJson[sorted[i]['name']]);
+    print(sorted[i]['isVariableLengthEncoded']);
   }
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
