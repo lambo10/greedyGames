@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -6286,6 +6288,42 @@ getEncoded({Map sampleXrpJson}) async {
   for (int i = 0; i < sorted.length; i++) {
     final sortedKeys = sorted[i]['name'];
 
+    trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
+    trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
+    trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
     print(trxFieldInfo[sortedKeys]);
+    if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
+      print('yes 32');
+    }
+    if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
+      print('yes 16');
+    }
   }
+}
+
+toUint16(int value) {
+  const _WIDTH_16 = 2;
+  const _WIDTH_64 = 2;
+
+  return value
+      .toRadixString(16)
+      .padLeft(_WIDTH_16 * 2, '0')
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^0-9A-F]'), '')
+      .split('')
+      .map((hexChar) => int.parse(hexChar, radix: 16))
+      .toList();
+}
+
+toUint64(int value) {
+  const _WIDTH_32 = 4;
+
+  return value
+      .toRadixString(16)
+      .padLeft(_WIDTH_32 * 2, '0')
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^0-9A-F]'), '')
+      .split('')
+      .map((hexChar) => int.parse(hexChar, radix: 16))
+      .toList();
 }
