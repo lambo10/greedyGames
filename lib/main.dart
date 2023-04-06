@@ -61,37 +61,6 @@ void main() async {
     );
   }
 
-  final xrpTransactionPrefix = [83, 84, 88, 0];
-  final sampleXrpJson = {
-    'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
-    'Fee': '10',
-    'Sequence': 1,
-    'LastLedgerSequence': 0,
-    'TransactionType': 'Payment',
-    'SigningPubKey': 'BEEFDEAD',
-    'Amount': '1000',
-    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
-  };
-
-  List xrpJson = sampleXrpJson.keys.toList();
-
-  var sorted = xrpJson.map((e) {
-    return xrpdefinitions[e];
-  }).toList()
-    ..removeWhere((f) {
-      return f == null && f['isSerialized'] == null;
-    })
-    ..sort((a, b) {
-      return (a['ordinal'] as num) - (b['ordinal'] as num);
-    });
-
-  final a = json.fuse(utf8);
-  print(a.encode(sorted));
-
-  for (int i = 0; i < sorted.length; i++) {
-    print(sampleXrpJson[sorted[i]['name']]);
-    print(sorted[i]['isVariableLengthEncoded']);
-  }
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
