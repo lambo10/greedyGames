@@ -44,6 +44,8 @@ Map constructXrpJson({
   };
 }
 
+
+
 String XrpEncodeForSigning(Map sampleXrpJson) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
 

@@ -12,6 +12,7 @@ import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_transaction.dart';
+import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,7 +50,25 @@ void main() async {
       ),
     );
   };
+  final transactionJson = {
+    "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
+    "Fee": "485600",
+    "Sequence": 3882,
+    "LastLedgerSequence": 789282,
+    "TransactionType": "Payment",
+    "SigningPubKey": "abc38383833def",
+    "Amount": "1388920",
+    "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
+  };
+  final xrpEncodingBytes = HEX.decode(
+    XrpEncodeForSigning(transactionJson),
+  );
 
+  // ED25519_HD_KE
+
+  // serialized_bytes = bytes.fromhex(serialized_for_signing)
+  // signature = sign(serialized_bytes, wallet.private_key)
+  // transaction_json["TxnSignature"] = signature
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
