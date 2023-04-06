@@ -343,6 +343,20 @@ void main() async {
     );
   });
 
+  test('convert xrp X-Address to classicAddress', () {
+    expect(
+      xaddress_to_classic_address(
+        'XVaH3tVKvGo4HTCCEauvs6NYHKVSqkDVVzALJGM8wfLyquA',
+      )['classicAddress'],
+      'rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x',
+    );
+    expect(
+      xaddress_to_classic_address(
+        'XVQyfVBqvb4bcBm5cboWKTTfaSG32QiRKyoH7QKkEPtfQ4N',
+      )['classicAddress'],
+      'rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN',
+    );
+  });
   test('validate addresses', () {
     final btcMap = {'default': "BTC", 'name': 'Bitcoin', 'P2WPKH': ''};
     final ethMap = {

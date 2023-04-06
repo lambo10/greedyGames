@@ -7,6 +7,7 @@ import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_definitions.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_ordinal.dart';
 import 'package:flutter/services.dart';
+import 'package:crypto/crypto.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hex/hex.dart';
 
@@ -183,11 +184,15 @@ final _PREFIX_BYTES_MAIN = Uint8List.fromList([0x05, 0x44]);
 final _PREFIX_BYTES_TEST = Uint8List.fromList([0x04, 0x93]);
 
 Map xaddress_to_classic_address(String X_Address) {
-  final decoded = xrpBaseCodec.decode(X_Address);
-  print(decoded.sublist(0, 2));
+  Uint8List decoded = xrpBaseCodec.decode(X_Address);
+
+  decoded = decoded.sublist(0, decoded.length - 4);
+
   bool isXTestNet = _is_test_x_address(decoded.sublist(0, 2));
   final classicAddressByte = decoded.sublist(2, 22);
+
   final tag = _get_tag_from_buffer(decoded.sublist(22));
+
   final classic_address = encode_classic_address(classicAddressByte);
   return {
     'classicAddress': classic_address,
@@ -208,8 +213,14 @@ String _encode(Uint8List bytestring, List<int> prefix, int expected_length) {
     throw Exception(
         'unexpected_payload_length: len(bytestring) does not match expected_length.Ensure that the bytes are a bytestring.');
   }
+
   final payload = prefix + bytestring;
-  return xrpBaseCodec.encode(Uint8List.fromList(payload));
+  final computedCheckSum = sha256
+      .convert(sha256.convert([0, ...bytestring]).bytes)
+      .bytes
+      .sublist(0, 4);
+  return xrpBaseCodec
+      .encode(Uint8List.fromList([...payload, ...computedCheckSum]));
 }
 
 int _get_tag_from_buffer(Uint8List buffer) {

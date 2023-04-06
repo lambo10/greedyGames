@@ -66,12 +66,8 @@ void main() async {
   final pref = await Hive.openBox(secureStorageKey,
       encryptionCipher: HiveAesCipher(encryptionKey));
 
-  print(xaddress_to_classic_address(
-      'XVaH3tVKvGo4HTCCEauvs6NYHKVSqkDVVzALJGM8wfLyquA'));
-// rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
-
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),
