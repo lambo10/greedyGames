@@ -6264,21 +6264,36 @@ Uint8List _decode(classicAddress, List prefix) {
   return decoded.sublist(prefix.length, decoded.length - 4);
 }
 
-String XrpEncodeForSigning({Map sampleXrpJson}) {
-  final xrpTransactionPrefix = [83, 84, 88, 0];
-  sampleXrpJson ??= {
-    'Account': 'rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x',
-    'Fee': '3939202939',
-    'Sequence': 3939202,
-    'LastLedgerSequence': 339392,
-    'TransactionType': 'Payment',
-    'SigningPubKey': 'abcdef38383833',
-    'Amount': '338382982838',
-    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+Map constructXrpJson({
+  String from,
+  String to,
+  String fee,
+  int sequence,
+  int lastLedgerSequence,
+  String transactionType,
+  String signingPubKey,
+  String amount,
+}) {
+  validateAddress({'default': "XRP"}, from);
+  validateAddress({'default': "XRP"}, to);
+  return {
+    'Account': from,
+    'Fee': fee ?? '0',
+    'Sequence': sequence ?? 0,
+    'LastLedgerSequence': lastLedgerSequence ?? 0,
+    'TransactionType': transactionType ?? 'Payment',
+    'SigningPubKey': signingPubKey ?? 'abcdef38383833',
+    'Amount': amount ?? '',
+    'Destination': to,
   };
+}
+
+Future<String> XrpEncodeForSigning(Map sampleXrpJson) async {
+  final xrpTransactionPrefix = [83, 84, 88, 0];
 
   List xrpJson = sampleXrpJson.keys.toList();
-
+  Map rippleDefinitions =
+      jsonDecode(await rootBundle.loadString('json/definitions.json'));
   var sorted = xrpJson.map((e) {
     return xrpOrdinal[e];
   }).toList()
@@ -6318,7 +6333,6 @@ String XrpEncodeForSigning({Map sampleXrpJson}) {
       associatedValue = toUint16(transType);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
-      print(associatedValue);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
