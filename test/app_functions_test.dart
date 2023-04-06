@@ -372,6 +372,12 @@ void main() async {
       )['classicAddress'],
       'rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN',
     );
+    expect(
+      xaddress_to_classic_address(
+        'XV5d53BfA9JaZtn2dkJVVxhCf6wDuHt6SpWYiVchZQyDswg',
+      )['classicAddress'],
+      'rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz',
+    );
   });
   test('validate addresses', () {
     final btcMap = {'default': "BTC", 'name': 'Bitcoin', 'P2WPKH': ''};
