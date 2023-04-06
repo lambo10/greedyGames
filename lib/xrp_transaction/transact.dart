@@ -2,7 +2,9 @@
 
 import 'dart:convert';
 
+import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/services.dart';
+import 'package:bs58check/bs58check.dart' as bs58check;
 
 const xrpOrdinal = {
   "65537": {
@@ -6251,6 +6253,16 @@ const xrpOrdinal = {
   }
 };
 
+decode_classic_address(classic_address) {
+  return _decode(classic_address, [0x0]);
+}
+
+_decode(classic_address, List prefix) {
+  final prefix_length = prefix.length;
+  final decoded = xrpBaseCodec.decode(classic_address);
+  return decoded.sublist(1, decoded.length - 4);
+}
+
 getEncoded({Map sampleXrpJson}) async {
   final xrpTransactionPrefix = [83, 84, 88, 0];
   sampleXrpJson = {
@@ -6261,7 +6273,7 @@ getEncoded({Map sampleXrpJson}) async {
     'TransactionType': 'Payment',
     'SigningPubKey': 'BEEFDEAD',
     'Amount': '1000',
-    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+    'Destination': 'rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x',
   };
 
   List xrpJson = sampleXrpJson.keys.toList();
@@ -6303,7 +6315,6 @@ getEncoded({Map sampleXrpJson}) async {
 
 toUint16(int value) {
   const _WIDTH_16 = 2;
-  const _WIDTH_64 = 2;
 
   return value
       .toRadixString(16)
@@ -6315,7 +6326,7 @@ toUint16(int value) {
       .toList();
 }
 
-toUint64(int value) {
+toUint32(int value) {
   const _WIDTH_32 = 4;
 
   return value
@@ -6326,4 +6337,11 @@ toUint64(int value) {
       .split('')
       .map((hexChar) => int.parse(hexChar, radix: 16))
       .toList();
+}
+
+toAmount(int value) {
+  const _POS_SIGN_BIT_MASK = 0x4000000000000000;
+  final value_with_pos_bit = value | _POS_SIGN_BIT_MASK;
+  print(value_with_pos_bit);
+  // return value_with_pos_bit.to_bytes(8, byteorder="big")
 }

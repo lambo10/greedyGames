@@ -50,6 +50,11 @@ void main() async {
     );
   };
 
+  print(toUint16(0));
+  print(toUint32(1));
+  print(
+      HEX.encode(decode_classic_address('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL')));
+  toAmount(10);
   getEncoded();
 
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
