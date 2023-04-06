@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/services.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
@@ -6263,7 +6264,7 @@ Uint8List _decode(classicAddress, List prefix) {
   return decoded.sublist(prefix.length, decoded.length - 4);
 }
 
-getEncoded({Map sampleXrpJson}) async {
+String XrpEncodeForSigning({Map sampleXrpJson}) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
   sampleXrpJson = {
     'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
@@ -6287,9 +6288,8 @@ getEncoded({Map sampleXrpJson}) async {
     ..sort((a, b) {
       return (a['ordinal'] as num) - (b['ordinal'] as num);
     });
-  final defination =
-      jsonDecode(await rootBundle.loadString('json/definitions.json'));
-  final fields = defination['FIELDS'] as List;
+
+  final fields = rippleDefinitions['FIELDS'] as List;
   Map trxFieldInfo = {};
   for (var field in fields) {
     final key = field[0];
@@ -6306,14 +6306,15 @@ getEncoded({Map sampleXrpJson}) async {
     trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
     trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
 
-    final typeCode = defination['TYPES'][trxFieldInfo[sortedKeys]['type']];
+    final typeCode =
+        rippleDefinitions['TYPES'][trxFieldInfo[sortedKeys]['type']];
     final fieldCode = trxFieldInfo[sortedKeys]['nth'];
     final isVariableEncoded = trxFieldInfo[sortedKeys]['isVLEncoded'];
     Uint8List associatedValue;
 
     if (sortedKeys == 'TransactionType') {
       final transType =
-          defination['TRANSACTION_TYPES'][sampleXrpJson[sortedKeys]];
+          rippleDefinitions['TRANSACTION_TYPES'][sampleXrpJson[sortedKeys]];
       associatedValue = toUint16(transType);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
       associatedValue = toUint32(sampleXrpJson[sortedKeys]);
@@ -6341,33 +6342,63 @@ getEncoded({Map sampleXrpJson}) async {
       header.addAll([0, typeCode, fieldCode]);
     }
 
-    // print(fieldCode);
-
-    // print(trxFieldInfo[sortedKeys]);
-
     serializer.addAll(header);
 
     if (isVariableEncoded) {
       List byte_object = [];
       byte_object.addAll(associatedValue);
-      final byteLength = byte_object.length;
 
-// self.write_length_encoded(value, not is_unl_modify_workaround)
+      Uint8List length_prefix =
+          _encode_variable_length_prefix(byte_object.length);
+      serializer += length_prefix;
+      serializer += byte_object;
     } else {
       serializer.addAll(associatedValue);
     }
-
-    // print(associatedValue);
   }
   serializer.insertAll(0, xrpTransactionPrefix);
-  print(serializer);
+  return HEX.encode(List<int>.from(serializer)).toUpperCase();
 }
+
+// def _encode_variable_length_prefix(length: int) -> bytes:
+//     """
+//     Helper function for length-prefixed fields including Blob types
+//     and some AccountID types. Calculates the prefix of variable length bytes.
+
+//     The length of the prefix is 1-3 bytes depending on the length of the contents:
+//     Content length <= 192 bytes: prefix is 1 byte
+//     192 bytes < Content length <= 12480 bytes: prefix is 2 bytes
+//     12480 bytes < Content length <= 918744 bytes: prefix is 3 bytes
+
+//     `See Length Prefixing <https://xrpl.org/serialization.html#length-prefixing>`_
+//     """
+//     if length <= _MAX_SINGLE_BYTE_LENGTH:
+//         return length.to_bytes(1, byteorder="big", signed=False)
+//     if length < _MAX_DOUBLE_BYTE_LENGTH:
+//         length -= _MAX_SINGLE_BYTE_LENGTH + 1
+//         byte1 = ((length >> 8) + (_MAX_SINGLE_BYTE_LENGTH + 1)).to_bytes(
+//             1, byteorder="big", signed=False
+//         )
+//         byte2 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
+//         return byte1 + byte2
+//     if length <= _MAX_LENGTH_VALUE:
+//         length -= _MAX_DOUBLE_BYTE_LENGTH
+//         byte1 = ((_MAX_SECOND_BYTE_VALUE + 1) + (length >> 16)).to_bytes(
+//             1, byteorder="big", signed=False
+//         )
+//         byte2 = ((length >> 8) & 0xFF).to_bytes(1, byteorder="big", signed=False)
+//         byte3 = (length & 0xFF).to_bytes(1, byteorder="big", signed=False)
+//         return byte1 + byte2 + byte3
+
+//     raise ValueError(f"VariableLength field must be <= {_MAX_LENGTH_VALUE} bytes long")
+
 
 Uint8List _encode_variable_length_prefix(int length) {
   final _MAX_SINGLE_BYTE_LENGTH = 192;
   final _MAX_DOUBLE_BYTE_LENGTH = 12481;
   final _MAX_LENGTH_VALUE = 918744;
   final _MAX_SECOND_BYTE_VALUE = 240;
+
 //   if (length <= _MAX_SINGLE_BYTE_LENGTH) {
 //     var buffer = ByteData(8);
 //     buffer.setInt64(1, length);

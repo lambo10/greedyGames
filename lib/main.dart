@@ -49,8 +49,10 @@ void main() async {
       ),
     );
   };
-
-  getEncoded();
+  rippleDefinitions =
+      jsonDecode(await rootBundle.loadString('json/definitions.json'));
+  print(XrpEncodeForSigning());
+  ;
 
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
