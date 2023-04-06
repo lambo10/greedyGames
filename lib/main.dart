@@ -52,7 +52,6 @@ void main() async {
 
   getEncoded();
 
-
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);

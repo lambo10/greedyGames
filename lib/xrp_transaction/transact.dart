@@ -6254,13 +6254,13 @@ const xrpOrdinal = {
   }
 };
 
-String decodeClassicAddress(String classicAddress) {
-  return _decode(classicAddress, [0x0]).toUpperCase();
+Uint8List decodeClassicAddress(String classicAddress) {
+  return _decode(classicAddress, [0x0]);
 }
 
-String _decode(classicAddress, List prefix) {
+Uint8List _decode(classicAddress, List prefix) {
   final decoded = xrpBaseCodec.decode(classicAddress);
-  return HEX.encode(decoded.sublist(prefix.length, decoded.length - 4));
+  return decoded.sublist(prefix.length, decoded.length - 4);
 }
 
 getEncoded({Map sampleXrpJson}) async {
@@ -6303,7 +6303,7 @@ getEncoded({Map sampleXrpJson}) async {
     trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
     trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
     trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
-    String associatedValue;
+    Uint8List associatedValue;
 
     if (sortedKeys == 'TransactionType') {
       final transType =
@@ -6318,44 +6318,45 @@ getEncoded({Map sampleXrpJson}) async {
     } else if (trxFieldInfo[sortedKeys]['type'] == 'AccountID') {
       associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Blob') {
-      associatedValue = sampleXrpJson[sortedKeys];
+      associatedValue = HEX.decode(sampleXrpJson[sortedKeys]);
     }
+
     print(associatedValue);
   }
 }
 
-String toUint16(int value) {
+Uint8List toUint16(int value) {
   const _WIDTH_16 = 2;
 
-  return value
-      .toRadixString(16)
-      .padLeft(_WIDTH_16 * 2, '0')
-      .toUpperCase()
-      .replaceAll(RegExp(r'[^0-9A-F]'), '')
-      .split('')
-      .map((hexChar) => int.parse(hexChar, radix: 16))
-      .toList()
-      .join('');
+  return Uint8List.fromList([
+    ...value
+        .toRadixString(16)
+        .padLeft(_WIDTH_16 * 2, '0')
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^0-9A-F]'), '')
+        .split('')
+        .map((hexChar) => int.parse(hexChar, radix: 16))
+        .toList()
+  ]);
 }
 
-String toUint32(int value) {
+Uint8List toUint32(int value) {
   const _WIDTH_32 = 4;
 
-  return value
+  return Uint8List.fromList(value
       .toRadixString(16)
       .padLeft(_WIDTH_32 * 2, '0')
       .toUpperCase()
       .replaceAll(RegExp(r'[^0-9A-F]'), '')
       .split('')
       .map((hexChar) => int.parse(hexChar, radix: 16))
-      .toList()
-      .join('');
+      .toList());
 }
 
-String toAmount(int value) {
+Uint8List toAmount(int value) {
   const _POS_SIGN_BIT_MASK = 0x4000000000000000;
   final valueWithPosBit = value | _POS_SIGN_BIT_MASK;
   var buffer = ByteData(8);
   buffer.setInt64(0, valueWithPosBit);
-  return HEX.encode(buffer.buffer.asUint8List()).toUpperCase();
+  return buffer.buffer.asUint8List();
 }
