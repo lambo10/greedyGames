@@ -122,10 +122,8 @@ class _WalletConnectState extends State<WalletConnect> {
                         Container(
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .primaryTextTheme
-                                  .bodyLarge
-                                  .color,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge.color,
                             ),
                             borderRadius: const BorderRadius.all(
                               Radius.circular(10),
@@ -157,7 +155,7 @@ class _WalletConnectState extends State<WalletConnect> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context)
-                                      .primaryTextTheme
+                                      .textTheme
                                       .bodyLarge
                                       .color,
                                 ),
