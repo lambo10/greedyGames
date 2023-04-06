@@ -2268,6 +2268,27 @@ Future<double> getXRPAddressBalance(
   }
 }
 
+Future<bool> fundRippleTestnet(String address) async {
+  try {
+    const ws = 'https://faucet.altnet.rippletest.net/accounts';
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({"destination": address}),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 Future<double> getAlgorandAddressBalance(
   String address,
   AlgorandTypes type, {
