@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-const xrpdefinitions = {
+const xrpOrdinal = {
   "65537": {
     "name": "LedgerEntryType",
     "nth": 1,
@@ -6249,36 +6249,43 @@ const xrpdefinitions = {
   }
 };
 
-final xrpTransactionPrefix = [83, 84, 88, 0];
-final sampleXrpJson = {
-  'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
-  'Fee': '10',
-  'Sequence': 1,
-  'LastLedgerSequence': 0,
-  'TransactionType': 'Payment',
-  'SigningPubKey': 'BEEFDEAD',
-  'Amount': '1000',
-  'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
-};
+getEncoded({Map sampleXrpJson}) async {
+  final xrpTransactionPrefix = [83, 84, 88, 0];
+  sampleXrpJson = {
+    'Account': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+    'Fee': '10',
+    'Sequence': 1,
+    'LastLedgerSequence': 0,
+    'TransactionType': 'Payment',
+    'SigningPubKey': 'BEEFDEAD',
+    'Amount': '1000',
+    'Destination': 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+  };
 
-List xrpJson = sampleXrpJson.keys.toList();
+  List xrpJson = sampleXrpJson.keys.toList();
 
-var sorted = xrpJson.map((e) {
-  return xrpdefinitions[e];
-}).toList()
-  ..removeWhere((f) {
-    return f == null && f['isSerialized'] == null;
-  })
-  ..sort((a, b) {
-    return (a['ordinal'] as num) - (b['ordinal'] as num);
-  });
-
-getEncoded() async {
+  var sorted = xrpJson.map((e) {
+    return xrpOrdinal[e];
+  }).toList()
+    ..removeWhere((f) {
+      return f == null && f['isSerialized'] == null;
+    })
+    ..sort((a, b) {
+      return (a['ordinal'] as num) - (b['ordinal'] as num);
+    });
   final defination =
-      jsonDecode(await rootBundle.loadString('json/defination.json'));
-  print(defination);
-  // for (int i = 0; i < sorted.length; i++) {
-  //   print(sampleXrpJson[sorted[i]['name']]);
-  //   print(sorted[i]['isVariableLengthEncoded']);
-  // }
+      jsonDecode(await rootBundle.loadString('json/definitions.json'));
+  final fields = defination['FIELDS'] as List;
+  Map trxFieldInfo = {};
+  for (var field in fields) {
+    final key = field[0];
+    final value = field[1];
+    trxFieldInfo[key] = value;
+  }
+
+  for (int i = 0; i < sorted.length; i++) {
+    final sortedKeys = sorted[i]['name'];
+
+    print(trxFieldInfo[sortedKeys]);
+  }
 }

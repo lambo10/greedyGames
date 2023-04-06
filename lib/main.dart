@@ -11,6 +11,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
+import 'package:cryptowallet/xrp_transaction/transact.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +49,8 @@ void main() async {
       ),
     );
   };
+
+  getEncoded();
 
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
