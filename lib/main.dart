@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ffi';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
@@ -33,7 +34,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  // change error widget
   ErrorWidget.builder = (FlutterErrorDetails details) {
     if (kReleaseMode) {
       return Container();
