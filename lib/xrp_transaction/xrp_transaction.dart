@@ -190,7 +190,7 @@ Uint8List _toUint16(int value) {
   return buffer.buffer.asUint8List();
 }
 
-signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
+Map signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
   final msg = encodeXrpJson(xrpTransactionJson);
 
   List<int> firstsha512 = sha512.convert(HEX.decode(msg)).bytes;

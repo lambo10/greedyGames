@@ -2276,12 +2276,10 @@ Future<Map> sendXRP({
       xrpJson = {...xrpJson, ...ledgers};
     }
 
-    print(xrpJson);
-
     final xrpTransaction =
         signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
 
-    print(xrpJson);
+    print(xrpTransaction);
 
     final httpFromWs = Uri.parse(ws);
     final request = await post(
