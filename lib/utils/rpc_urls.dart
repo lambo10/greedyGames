@@ -2217,7 +2217,8 @@ Future<Map> getXrpLedgerSequence(
   }
 }
 
-Future<int> getXrpFee(String ws) async {
+Future<Map> getXrpFee(String ws) async {
+  const normalBaseFee = 10;
   try {
     final httpFromWs = Uri.parse(ws);
     final request = await post(
@@ -2235,8 +2236,15 @@ Future<int> getXrpFee(String ws) async {
       throw Exception(request.body);
     }
 
-    Map txInfo = json.decode(request.body);
-  } catch (e) {}
+    Map feeInfo = json.decode(request.body);
+
+    return {
+      'Fee': feeInfo['result']['drops']['base_fee'],
+    };
+  } catch (e) {
+    print(e);
+    return null;
+  }
 }
 
 Future<Map> sendXRP({
@@ -2246,8 +2254,6 @@ Future<Map> sendXRP({
   String mnemonic,
 }) async {
   try {
-    Map accountInfo = {};
-    String tx_blob = '';
     final getXRPDetails = await getXRPFromMemnomic(
       mnemonic,
     );
@@ -2261,7 +2267,7 @@ Future<Map> sendXRP({
     );
     Map xrpJson = {
       "Account": getXRPDetails['address'],
-      "Fee": "0",
+      "Fee": "10",
       "Sequence": 0,
       "LastLedgerSequence": 0,
       "TransactionType": "Payment",
@@ -2272,14 +2278,19 @@ Future<Map> sendXRP({
 
     Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
 
+    Map fee = await getXrpFee(ws);
+
     if (ledgers != null) {
       xrpJson = {...xrpJson, ...ledgers};
+    }
+    if (fee != null) {
+      xrpJson = {...xrpJson, ...fee};
     }
 
     final xrpTransaction =
         signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
 
-    print(xrpTransaction);
+    String tx_blob = '';
 
     final httpFromWs = Uri.parse(ws);
     final request = await post(
