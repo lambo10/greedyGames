@@ -59,16 +59,7 @@ void main() async {
       ),
     );
   };
-  final transactionJson = {
-    "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
-    "Fee": "485600",
-    "Sequence": 3882,
-    "LastLedgerSequence": 789282,
-    "TransactionType": "Payment",
-    "SigningPubKey": "abc38383833def",
-    "Amount": "1388920",
-    "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
-  };
+
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);

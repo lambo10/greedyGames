@@ -2298,7 +2298,7 @@ Future<Map> sendXRP({
         "method": "submit",
         "params": [
           {
-            "tx_blob": (xrpTransaction['msg'] as String).substring(8),
+            "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
           }
         ]
       }),
