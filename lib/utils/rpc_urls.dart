@@ -59,6 +59,7 @@ import '../eip/eip681.dart';
 import '../model/seed_phrase_root.dart';
 import '../screens/build_row.dart';
 import '../screens/dapp.dart';
+import '../xrp_transaction/xrp_transaction.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
 import 'filecoin_util.dart';
@@ -2178,41 +2179,136 @@ Future<Map> calculateStellarKey(Map config) async {
   };
 }
 
+Future<Map> getXrpLedgerSequence(
+  String address,
+  String ws,
+) async {
+  try {
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "account_info",
+        "params": [
+          {"account": address}
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map accountInfo = json.decode(request.body);
+    final accountData = accountInfo['result']['account_data'];
+    if (accountData == null) {
+      throw Exception('Account not found');
+    }
+
+    return {
+      'Sequence': accountData['Sequence'],
+      'LastLedgerSequence': accountData['PreviousTxnLgrSeq'],
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+Future<int> getXrpFee(String ws) async {
+  try {
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'method': 'fee',
+        'params': [{}]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map txInfo = json.decode(request.body);
+  } catch (e) {}
+}
+
 Future<Map> sendXRP({
   String ws,
   String recipient,
-  String amount,
+  String amountInXrp,
   String mnemonic,
 }) async {
-  Map accountInfo = {};
-  //FIXME:
   try {
-    // rippleJsRuntime
-    //     .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
-    // rippleJsRuntime.evaluate('''const client = new xrpl.Client("$ws")''');
+    Map accountInfo = {};
+    String tx_blob = '';
+    final getXRPDetails = await getXRPFromMemnomic(
+      mnemonic,
+    );
 
-    // var asyncResult = await rippleJsRuntime.evaluateAsync("""
-    // client.connect().submitAndWait({
-    //   TransactionType: "Payment",
-    //   Account: wallet.address,
-    //   Amount: xrpl.xrpToDrops("$amount"),
-    //   Destination: "$recipient",
-    // }, {
-    //   autofill: true,
-    //   wallet: wallet,
-    // });
-    // """);
+    final amountInDrop =
+        BigInt.parse(amountInXrp) * BigInt.from(pow(10, xrpDecimals));
+    final publicKey = HEX.encode(
+      await ED25519_HD_KEY.getPublicKey(
+        HEX.decode(getXRPDetails['privateKey']),
+      ),
+    );
+    Map xrpJson = {
+      "Account": getXRPDetails['address'],
+      "Fee": "0",
+      "Sequence": 0,
+      "LastLedgerSequence": 0,
+      "TransactionType": "Payment",
+      "SigningPubKey": publicKey,
+      "Amount": "$amountInDrop",
+      "Destination": recipient
+    };
 
-    // rippleJsRuntime.executePendingJob();
-    // final promiseResolved = await rippleJsRuntime.handlePromise(asyncResult);
-    // accountInfo = json.decode(promiseResolved.stringResult);
+    Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
+
+    if (ledgers != null) {
+      xrpJson = {...xrpJson, ...ledgers};
+    }
+
+    print(xrpJson);
+
+    final xrpTransaction =
+        signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
+
+    print(xrpJson);
+
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "submit",
+        "params": [
+          {"tx_blob": tx_blob}
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map txInfo = json.decode(request.body);
+
+    final hash = txInfo['result']['hash'];
+
+    return {'txid': hash};
   } catch (e) {
-    rethrow;
+    return {};
   }
-  // return {
-  //   'txid': accountInfo['result']['meta']['TransactionResult'],
-  // };
-  return {};
 }
 
 Future<double> getXRPAddressBalance(

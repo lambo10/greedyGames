@@ -783,7 +783,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           Map transaction = await sendXRP(
                                             ws: widget.data['ws'],
                                             recipient: widget.data['recipient'],
-                                            amount: widget.data['amount'],
+                                            amountInXrp: widget.data['amount'],
                                             mnemonic: mnemonic,
                                           );
                                           transactionHash = transaction['txid'];
