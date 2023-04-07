@@ -175,6 +175,7 @@ Map signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
   final signature =
       _encodeSignatureToDER(sign(firstsha512, HEX.decode(privateKeyHex)));
   xrpTransactionJson['TxnSignature'] = signature;
+  xrpTransactionJson['msg'] = msg;
   return xrpTransactionJson;
 }
 
