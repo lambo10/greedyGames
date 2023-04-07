@@ -305,7 +305,7 @@ void main() async {
         '535458001200002400000F2A201B000C0B226140000000001531786840000000000768E07307ABC38383833DEF81147BA497AF24A988B63747BADDBCEB572156D156618314F606175DD417B8D2EBB12E559DA1E5ED7AE74BEF';
 
     expect(
-      XrpEncodeForSigning({
+      encodeXrpJson({
         "Account": "rGWrZyQqhTp9Xu7G5Pkayo7bXjH4k4QYpf",
         "Fee": "0",
         "Sequence": 38292838,
@@ -319,7 +319,7 @@ void main() async {
     );
 
     expect(
-      XrpEncodeForSigning({
+      encodeXrpJson({
         "Account": "rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL",
         "Fee": "40000",
         "Sequence": 78697,
@@ -332,7 +332,7 @@ void main() async {
       '535458001200002400013369201B0085AE2C614000000000009C40684000000000009C407307ABCDEF383838338114FD8864194C0A66B88A79A0CD4B1E5D15718A67DA8314BA8E78626EE42C41B46D46C3048DF3A1C3C87072',
     );
     expect(
-      XrpEncodeForSigning({
+      encodeXrpJson({
         "Account": "XVaH3tVKvGo4HTCCEauvs6NYHKVSqkDVVzALJGM8wfLyquA",
         "Fee": "485600",
         "Sequence": 3882,
@@ -345,7 +345,7 @@ void main() async {
       serializedBinary,
     );
     expect(
-      XrpEncodeForSigning({
+      encodeXrpJson({
         "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
         "Fee": "485600",
         "Sequence": 3882,
@@ -359,6 +359,42 @@ void main() async {
     );
   });
 
+  test('can get the correct signature to transfer xrp', () {
+    final signedXrpJson = signXrpTransaction(
+      'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+      {
+        "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
+        "Fee": "485600",
+        "Sequence": 3882,
+        "LastLedgerSequence": 789282,
+        "TransactionType": "Payment",
+        "SigningPubKey": "abc38383833def",
+        "Amount": "1388920",
+        "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
+      },
+    );
+    final signedXrpJson2 = signXrpTransaction(
+      'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+      {
+        "Account": "XVaH3tVKvGo4HTCCEauvs6NYHKVSqkDVVzALJGM8wfLyquA",
+        "Fee": "485600",
+        "Sequence": 3882,
+        "LastLedgerSequence": 789282,
+        "TransactionType": "Payment",
+        "SigningPubKey": "abc38383833def",
+        "Amount": "1388920",
+        "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
+      },
+    );
+    expect(
+      signedXrpJson['TxnSignature'],
+      '3045022100E076F27C34E7608C92D6071497BA834E87BB35FF89874DB66DF1F804D0CF42CC0220557ADCDDCF7BE5FCFE25C98F052A9668B4370DA37AC972CF5853DB948D878FF3',
+    );
+    expect(
+      signedXrpJson2['TxnSignature'],
+      '3045022100E076F27C34E7608C92D6071497BA834E87BB35FF89874DB66DF1F804D0CF42CC0220557ADCDDCF7BE5FCFE25C98F052A9668B4370DA37AC972CF5853DB948D878FF3',
+    );
+  });
   test('convert xrp X-Address to classicAddress', () {
     expect(
       xaddress_to_classic_address(

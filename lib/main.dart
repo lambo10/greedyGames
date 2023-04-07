@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ffi';
 
+import 'package:algorand_dart/algorand_dart.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -13,15 +15,22 @@ import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_transaction.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
+import 'package:elliptic/elliptic.dart';
+import 'package:secp256k1/secp256k1.dart' as secp256k1;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hash/hash.dart';
+// import 'package:pointycastle/pointycastle.dart';
+import 'package:crypto/crypto.dart';
 import 'package:hex/hex.dart';
+import 'package:secp256k1/secp256k1.dart' as secp256k1;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:web3dart/crypto.dart';
 
 import 'screens/main_screen.dart';
 
@@ -60,15 +69,6 @@ void main() async {
     "Amount": "1388920",
     "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
   };
-  final xrpEncodingBytes = HEX.decode(
-    XrpEncodeForSigning(transactionJson),
-  );
-
-  // ED25519_HD_KE
-
-  // serialized_bytes = bytes.fromhex(serialized_for_signing)
-  // signature = sign(serialized_bytes, wallet.private_key)
-  // transaction_json["TxnSignature"] = signature
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
       await secureStorage.containsKey(key: secureEncryptionKey);
@@ -79,6 +79,20 @@ void main() async {
       value: base64UrlEncode(key),
     );
   }
+
+  print(signXrpTransaction(
+    'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
+    {
+      "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
+      "Fee": "485600",
+      "Sequence": 3882,
+      "LastLedgerSequence": 789282,
+      "TransactionType": "Payment",
+      "SigningPubKey": "abc38383833def",
+      "Amount": "1388920",
+      "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
+    },
+  ));
 
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));

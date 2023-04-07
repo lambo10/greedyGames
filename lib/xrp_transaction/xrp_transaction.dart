@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:algorand_dart/algorand_dart.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_definitions.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hex/hex.dart';
+import 'package:web3dart/crypto.dart';
 
 Uint8List decodeClassicAddress(String classicAddress) {
   return _decode(classicAddress, _CLASSIC_ADDRESS_PREFIX);
@@ -44,9 +47,7 @@ Map constructXrpJson({
   };
 }
 
-
-
-String XrpEncodeForSigning(Map sampleXrpJson) {
+String encodeXrpJson(Map sampleXrpJson) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
 
   List xrpJson = sampleXrpJson.keys.toList();
@@ -173,6 +174,37 @@ Uint8List _toUint16(int value) {
   var buffer = ByteData(2);
   buffer.setUint16(0, value);
   return buffer.buffer.asUint8List();
+}
+
+signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
+  final msg = encodeXrpJson(xrpTransactionJson);
+
+  List<int> firstsha512 = sha512.convert(HEX.decode(msg)).bytes;
+  firstsha512 = firstsha512.sublist(0, firstsha512.length ~/ 2);
+
+  final signature =
+      encodeSignatureToDER(sign(firstsha512, HEX.decode(privateKeyHex)));
+  xrpTransactionJson['TxnSignature'] = signature;
+  return xrpTransactionJson;
+}
+
+String encodeSignatureToDER(MsgSignature signature) {
+  List<int> r = signature.r.toUint8List();
+  List<int> s = signature.s.toUint8List();
+
+  if ((r[0] & 0x80) == 0x80) {
+    r = [0] + r;
+  }
+  if ((s[0] & 0x80) == 0x80) {
+    s = [0] + s;
+  }
+
+  final sig = ([0x30] + BigInt.from(r.length + s.length + 4).toUint8List()) +
+      ([0x02] + BigInt.from(r.length).toUint8List()) +
+      r +
+      ([0x02] + BigInt.from(s.length).toUint8List()) +
+      s;
+  return HEX.encode(sig).toUpperCase();
 }
 
 Uint8List _toUint32(int value) {
