@@ -2967,7 +2967,6 @@ Future<Map> getXRPFromMemnomic(
 
   final pref = Hive.box(secureStorageKey);
   List mmenomicMapping = [];
-  await pref.delete(key);
 
   if (pref.get(key) != null) {
     mmenomicMapping = jsonDecode(pref.get(key)) as List;
