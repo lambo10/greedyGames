@@ -59,6 +59,7 @@ import '../eip/eip681.dart';
 import '../model/seed_phrase_root.dart';
 import '../screens/build_row.dart';
 import '../screens/dapp.dart';
+import '../xrp_transaction/xrp_ordinal.dart';
 import '../xrp_transaction/xrp_transaction.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
@@ -2122,6 +2123,7 @@ Map<String, String> calculateRippleKey(Map config) {
       xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
   return {
     'address': address,
+    'publicKey': HEX.encode(node.publicKey),
     'privateKey': HEX.encode(node.privateKey),
   };
 }
@@ -2260,18 +2262,14 @@ Future<Map> sendXRP({
 
     final amountInDrop =
         BigInt.parse(amountInXrp) * BigInt.from(pow(10, xrpDecimals));
-    final publicKey = HEX.encode(
-      await ED25519_HD_KEY.getPublicKey(
-        HEX.decode(getXRPDetails['privateKey']),
-      ),
-    );
+
     Map xrpJson = {
       "Account": getXRPDetails['address'],
       "Fee": "10",
       "Sequence": 0,
       "LastLedgerSequence": 0,
       "TransactionType": "Payment",
-      "SigningPubKey": publicKey,
+      "SigningPubKey": getXRPDetails['publicKey'],
       "Amount": "$amountInDrop",
       "Destination": recipient
     };
@@ -2287,12 +2285,8 @@ Future<Map> sendXRP({
       xrpJson = {...xrpJson, ...fee};
     }
 
-    final xrpTransaction =
+    Map xrpTransaction =
         signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
-
-    print(xrpTransaction);
-
-    String tx_blob = '';
 
     final httpFromWs = Uri.parse(ws);
     final request = await post(
@@ -2303,7 +2297,9 @@ Future<Map> sendXRP({
       body: json.encode({
         "method": "submit",
         "params": [
-          {"tx_blob": tx_blob}
+          {
+            "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
+          }
         ]
       }),
     );
@@ -2971,6 +2967,8 @@ Future<Map> getXRPFromMemnomic(
 
   final pref = Hive.box(secureStorageKey);
   List mmenomicMapping = [];
+  await pref.delete(key);
+
   if (pref.get(key) != null) {
     mmenomicMapping = jsonDecode(pref.get(key)) as List;
     for (int i = 0; i < mmenomicMapping.length; i++) {
@@ -3880,13 +3878,11 @@ Future<double> getTezorAddressBalance(
 
     final res = await Dartez.getBalance(address, tezorDetails['server']);
     balance = double.parse(res) / pow(10, tezorDecimals);
-    // balance = ;
 
     await pref.put(key, balance);
 
     return balance;
   } catch (e) {
-    print(e);
     return savedBalance;
   }
 }
