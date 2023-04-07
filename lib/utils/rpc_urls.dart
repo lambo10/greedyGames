@@ -2121,7 +2121,6 @@ Map<String, String> calculateRippleKey(Map config) {
       xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
   return {
     'address': address,
-    'publicKey': HEX.encode(node.publicKey),
     'privateKey': HEX.encode(node.privateKey),
   };
 }

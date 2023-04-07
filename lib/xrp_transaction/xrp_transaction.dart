@@ -197,12 +197,12 @@ signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
   firstsha512 = firstsha512.sublist(0, firstsha512.length ~/ 2);
 
   final signature =
-      encodeSignatureToDER(sign(firstsha512, HEX.decode(privateKeyHex)));
+      _encodeSignatureToDER(sign(firstsha512, HEX.decode(privateKeyHex)));
   xrpTransactionJson['TxnSignature'] = signature;
   return xrpTransactionJson;
 }
 
-String encodeSignatureToDER(MsgSignature signature) {
+String _encodeSignatureToDER(MsgSignature signature) {
   List<int> r = signature.r.toUint8List();
   List<int> s = signature.s.toUint8List();
 
