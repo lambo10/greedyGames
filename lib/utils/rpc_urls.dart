@@ -2298,7 +2298,7 @@ Future<Map> sendXRP({
         "method": "submit",
         "params": [
           {
-            "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
+            "tx_blob": (xrpTransaction['TxnSignature'] as String).substring(8),
           }
         ]
       }),
