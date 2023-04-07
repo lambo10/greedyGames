@@ -23,30 +23,6 @@ Uint8List _decode(classicAddress, List prefix) {
   return decoded.sublist(prefix.length, decoded.length - 4);
 }
 
-Map constructXrpJson({
-  String from,
-  String to,
-  String fee,
-  int sequence,
-  int lastLedgerSequence,
-  String transactionType,
-  String signingPubKey,
-  String amount,
-}) {
-  validateAddress({'default': "XRP"}, from);
-  validateAddress({'default': "XRP"}, to);
-  return {
-    'Account': from,
-    'Fee': fee ?? '0',
-    'Sequence': sequence ?? 0,
-    'LastLedgerSequence': lastLedgerSequence ?? 0,
-    'TransactionType': transactionType ?? 'Payment',
-    'SigningPubKey': signingPubKey ?? 'abcdef38383833',
-    'Amount': amount ?? '',
-    'Destination': to,
-  };
-}
-
 bool isXrp_X_Address(String x_Address) {
   try {
     xaddress_to_classic_address(x_Address);

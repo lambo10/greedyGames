@@ -2211,6 +2211,7 @@ Future<Map> getXrpLedgerSequence(
     return {
       'Sequence': accountData['Sequence'],
       'LastLedgerSequence': accountData['PreviousTxnLgrSeq'],
+      'Flags': accountData['Flags'],
     };
   } catch (e) {
     return null;
@@ -2242,7 +2243,6 @@ Future<Map> getXrpFee(String ws) async {
       'Fee': feeInfo['result']['drops']['base_fee'],
     };
   } catch (e) {
-    print(e);
     return null;
   }
 }
@@ -2289,6 +2289,8 @@ Future<Map> sendXRP({
 
     final xrpTransaction =
         signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
+
+    print(xrpTransaction);
 
     String tx_blob = '';
 
