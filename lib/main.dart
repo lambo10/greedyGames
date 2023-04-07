@@ -80,20 +80,6 @@ void main() async {
     );
   }
 
-  print(signXrpTransaction(
-    'ebb58c44303695d99f710f3b0d21c2cbea692acde24b2363c5f043edd47af10c',
-    {
-      "Account": "rUGmHgeFC6bRRG8r6gqP9FkZUtfRqGsH4x",
-      "Fee": "485600",
-      "Sequence": 3882,
-      "LastLedgerSequence": 789282,
-      "TransactionType": "Payment",
-      "SigningPubKey": "abc38383833def",
-      "Amount": "1388920",
-      "Destination": "rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz"
-    },
-  ));
-
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,

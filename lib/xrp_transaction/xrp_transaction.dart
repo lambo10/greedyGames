@@ -47,8 +47,29 @@ Map constructXrpJson({
   };
 }
 
+bool isXrp_X_Address(String x_Address) {
+  try {
+    xaddress_to_classic_address(x_Address);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 String encodeXrpJson(Map sampleXrpJson) {
   final xrpTransactionPrefix = [83, 84, 88, 0];
+
+  if (isXrp_X_Address(sampleXrpJson['Destination'])) {
+    final destinationXDetails =
+        xaddress_to_classic_address(sampleXrpJson['Destination']);
+    sampleXrpJson['Destination'] = destinationXDetails['classicAddress'];
+    sampleXrpJson['DestinationTag'] = destinationXDetails['tag'];
+  } else if (isXrp_X_Address(sampleXrpJson['Account'])) {
+    final sourceXDetails =
+        xaddress_to_classic_address(sampleXrpJson['Account']);
+    sampleXrpJson['Account'] = sourceXDetails['classicAddress'];
+    sampleXrpJson['SourceTag'] = sourceXDetails['tag'];
+  }
 
   List xrpJson = sampleXrpJson.keys.toList();
   var sorted = xrpJson.map((e) {
@@ -95,14 +116,7 @@ String encodeXrpJson(Map sampleXrpJson) {
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
       associatedValue = _toAmount(int.parse(sampleXrpJson[sortedKeys]));
     } else if (trxFieldInfo[sortedKeys]['type'] == 'AccountID') {
-      try {
-        Map classicAddressMap =
-            xaddress_to_classic_address(sampleXrpJson[sortedKeys]);
-        associatedValue =
-            decodeClassicAddress(classicAddressMap['classicAddress']);
-      } catch (e) {
-        associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
-      }
+      associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Blob') {
       associatedValue = HEX.decode(sampleXrpJson[sortedKeys]);
     }
