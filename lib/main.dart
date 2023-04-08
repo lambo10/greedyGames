@@ -1,37 +1,23 @@
 import 'dart:convert';
-import 'dart:math';
-import 'dart:ffi';
 
-import 'package:algorand_dart/algorand_dart.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart' hide Wallet;
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:upgrader/upgrader.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
-import 'package:cryptowallet/xrp_transaction/xrp_transaction.dart';
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
-import 'package:elliptic/elliptic.dart';
-import 'package:secp256k1/secp256k1.dart' as secp256k1;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hash/hash.dart';
 // import 'package:pointycastle/pointycastle.dart';
-import 'package:crypto/crypto.dart';
-import 'package:hex/hex.dart';
-import 'package:secp256k1/secp256k1.dart' as secp256k1;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:web3dart/crypto.dart';
 
 import 'screens/main_screen.dart';
 
@@ -146,10 +132,7 @@ class _MyAppState extends State<MyApp> {
           supportedLocales: AppLocalizations.supportedLocales,
           darkTheme: darkTheme,
           themeMode: currentMode,
-          home: UpgradeAlert(
-            upgrader: Upgrader(dialogStyle: UpgradeDialogStyle.cupertino),
-            child: const MyHomePage(),
-          ),
+          home: const MyHomePage(),
         );
       },
     );

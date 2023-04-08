@@ -23,6 +23,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:upgrader/upgrader.dart';
 import '../utils/app_config.dart';
 import '../utils/get_blockchain_widget.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -881,210 +882,219 @@ class _WalletMainBodyState extends State<WalletMainBody>
           await Future.delayed(const Duration(seconds: 2));
           setState(() {});
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                color:
-                    Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-                child: Padding(
+        child: UpgradeAlert(
+          upgrader: Upgrader(
+            dialogStyle: UpgradeDialogStyle.cupertino,
+            debugDisplayAlways: true,
+          ),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  color: Theme.of(context)
+                      .bottomNavigationBarTheme
+                      .backgroundColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: const [
+                            UserDetailsPlaceHolder(
+                              size: .5,
+                              showHi: true,
+                            ),
+                            SizedBox(
+                              width: 20,
+                            ),
+                          ],
+                        ),
+                        GestureDetector(
+                          child: Container(
+                              width: 35,
+                              height: 35,
+                              decoration: const BoxDecoration(
+                                  color: Color(0xff1F2051),
+                                  shape: BoxShape.circle),
+                              child: SvgPicture.asset(
+                                'assets/settings_light_home.svg',
+                              )),
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: const Settings(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                const Portfolio(),
+                Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: const [
-                          UserDetailsPlaceHolder(
-                            size: .5,
-                            showHi: true,
-                          ),
-                          SizedBox(
-                            width: 20,
-                          ),
-                        ],
+                      Text(
+                        AppLocalizations.of(context).assets,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
+                      //
                       GestureDetector(
-                        child: Container(
-                            width: 35,
-                            height: 35,
-                            decoration: const BoxDecoration(
-                                color: Color(0xff1F2051),
-                                shape: BoxShape.circle),
-                            child: SvgPicture.asset(
-                              'assets/settings_light_home.svg',
-                            )),
-                        onTap: () async {
-                          await Navigator.push(
+                        onTap: () {
+                          Navigator.push(
                             context,
                             PageTransition(
                               type: PageTransitionType.rightToLeft,
-                              child: const Settings(),
+                              child: const AddCustomToken(),
                             ),
                           );
                         },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              const Portfolio(),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).assets,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    //
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          PageTransition(
-                            type: PageTransitionType.rightToLeft,
-                            child: const AddCustomToken(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  AppLocalizations.of(context).addToken,
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                        child: Container(
+                          color: Colors.transparent,
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context).addToken,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                ),
-                                const Icon(
-                                  Icons.add,
-                                  size: 20,
-                                ),
-                              ],
+                                  const Icon(
+                                    Icons.add,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FutureBuilder(
-                        future: _getWalletToken,
-                        builder: (ctx, snapshot) {
-                          if (snapshot.hasError) {
-                            if (kDebugMode) {
-                              print(snapshot.error.toString());
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FutureBuilder(
+                          future: _getWalletToken,
+                          builder: (ctx, snapshot) {
+                            if (snapshot.hasError) {
+                              if (kDebugMode) {
+                                print(snapshot.error.toString());
+                              }
+                              return Container();
                             }
-                            return Container();
-                          }
 
-                          if (snapshot.hasData) {
-                            final appTokenWidget = <Widget>[];
+                            if (snapshot.hasData) {
+                              final appTokenWidget = <Widget>[];
 
-                            for (final appToken
-                                in (snapshot.data['elementList'] as List)) {
-                              appTokenWidget.add(
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (ctx) => Token(data: appToken),
-                                      ),
-                                    );
-                                  },
-                                  child: GetBlockChainWidget(
-                                    name_: appToken['name'],
-                                    image_: appToken['image'] != null
-                                        ? AssetImage(appToken['image'])
-                                        : null,
-                                    priceWithCurrency_:
-                                        snapshot.data['nativeCurrency'] + '0',
-                                    hasPrice_: false,
-                                    cryptoChange_: 0,
-                                    symbol_: appToken['symbol'],
-                                    cryptoAmount_: ValueListenableBuilder(
-                                      valueListenable: walletNotifier,
-                                      builder: ((_, double value, Widget __) {
-                                        if (value == null) {
-                                          () async {
-                                            try {
-                                              walletNotifier.value =
-                                                  await getERC20TokenBalance(
-                                                appToken,
-                                                skipNetworkRequest:
-                                                    walletNotifier.value ==
-                                                        null,
+                              for (final appToken
+                                  in (snapshot.data['elementList'] as List)) {
+                                appTokenWidget.add(
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (ctx) =>
+                                              Token(data: appToken),
+                                        ),
+                                      );
+                                    },
+                                    child: GetBlockChainWidget(
+                                      name_: appToken['name'],
+                                      image_: appToken['image'] != null
+                                          ? AssetImage(appToken['image'])
+                                          : null,
+                                      priceWithCurrency_:
+                                          snapshot.data['nativeCurrency'] + '0',
+                                      hasPrice_: false,
+                                      cryptoChange_: 0,
+                                      symbol_: appToken['symbol'],
+                                      cryptoAmount_: ValueListenableBuilder(
+                                        valueListenable: walletNotifier,
+                                        builder: ((_, double value, Widget __) {
+                                          if (value == null) {
+                                            () async {
+                                              try {
+                                                walletNotifier.value =
+                                                    await getERC20TokenBalance(
+                                                  appToken,
+                                                  skipNetworkRequest:
+                                                      walletNotifier.value ==
+                                                          null,
+                                                );
+                                              } catch (_) {}
+
+                                              cryptoBalancesTimer.add(
+                                                Timer.periodic(httpPollingDelay,
+                                                    (timer) async {
+                                                  try {
+                                                    walletNotifier.value =
+                                                        await getERC20TokenBalance(
+                                                      appToken,
+                                                      skipNetworkRequest:
+                                                          walletNotifier
+                                                                  .value ==
+                                                              null,
+                                                    );
+                                                  } catch (_) {}
+                                                }),
                                               );
-                                            } catch (_) {}
-
-                                            cryptoBalancesTimer.add(
-                                              Timer.periodic(httpPollingDelay,
-                                                  (timer) async {
-                                                try {
-                                                  walletNotifier.value =
-                                                      await getERC20TokenBalance(
-                                                    appToken,
-                                                    skipNetworkRequest:
-                                                        walletNotifier.value ==
-                                                            null,
-                                                  );
-                                                } catch (_) {}
-                                              }),
-                                            );
-                                          }();
-                                          return Container();
-                                        }
-                                        return UserBalance(
-                                          symbol: appToken['symbol'],
-                                          balance: value,
-                                        );
-                                      }),
+                                            }();
+                                            return Container();
+                                          }
+                                          return UserBalance(
+                                            symbol: appToken['symbol'],
+                                            balance: value,
+                                          );
+                                        }),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
+                                );
 
-                              appTokenWidget.add(
-                                const Divider(),
+                                appTokenWidget.add(
+                                  const Divider(),
+                                );
+                              }
+
+                              return Column(
+                                children: appTokenWidget,
                               );
+                            } else {
+                              return Container();
                             }
-
-                            return Column(
-                              children: appTokenWidget,
-                            );
-                          } else {
-                            return Container();
-                          }
-                        }),
-                    ...blockChainsArray,
-                    const UserAddedTokens(),
-                    const SizedBox(
-                      height: 20,
-                    )
-                  ],
+                          }),
+                      ...blockChainsArray,
+                      const UserAddedTokens(),
+                      const SizedBox(
+                        height: 20,
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
