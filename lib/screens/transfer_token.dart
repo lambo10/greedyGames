@@ -222,9 +222,13 @@ class _TransferTokenState extends State<TransferToken> {
           'userBalance': bitCoinBalance,
         };
       } else if (isTron) {
-        //FIXME:
+        final getTronDetails = await getTronFromMemnomic(mnemonic);
+        final tronBalance = await getTronAddressBalance(
+          getTronDetails['address'],
+          widget.data['api'],
+        );
         transactionFeeMap = {
-          'transactionFee': 0,
+          'transactionFee': tronBalance,
           'userBalance': 0,
         };
       } else if (isTezor) {
