@@ -581,13 +581,13 @@ class _TransferTokenState extends State<TransferToken> {
                   ),
                   widget.data['default'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '0'}  ${widget.data['default']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.data['default']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
                   widget.data['network'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '0'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
