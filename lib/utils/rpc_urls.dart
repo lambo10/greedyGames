@@ -2105,6 +2105,7 @@ calculateTronKey(Map config) {
   final address = wallet.tron.createAddress(publicKey);
 
   return {
+    'privateKey': HEX.encode(privateKey.value.toUint8List()),
     'address': address,
   };
 }
