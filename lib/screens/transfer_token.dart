@@ -228,8 +228,8 @@ class _TransferTokenState extends State<TransferToken> {
           widget.data['api'],
         );
         transactionFeeMap = {
-          'transactionFee': tronBalance,
-          'userBalance': 0,
+          'transactionFee': 0,
+          'userBalance': 3,
         };
       } else if (isTezor) {
         final getTrezorDetails =

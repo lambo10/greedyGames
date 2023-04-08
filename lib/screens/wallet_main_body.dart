@@ -886,7 +886,6 @@ class _WalletMainBodyState extends State<WalletMainBody>
           upgrader: Upgrader(
             dialogStyle: UpgradeDialogStyle.cupertino,
             showReleaseNotes: false,
-            debugDisplayAlways: kDebugMode,
           ),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

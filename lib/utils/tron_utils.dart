@@ -45,6 +45,8 @@ sendTron(
   }
 
   Map txInfo = json.decode(request.body);
+
+  print(txInfo);
 }
 //  static signString(message, privateKey, useTronHeader = true) {
 //         message = message.replace(/^0x/, '');
