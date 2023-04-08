@@ -10,6 +10,7 @@ import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/app_config.dart';
+import 'package:upgrader/upgrader.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
@@ -145,7 +146,10 @@ class _MyAppState extends State<MyApp> {
           supportedLocales: AppLocalizations.supportedLocales,
           darkTheme: darkTheme,
           themeMode: currentMode,
-          home: const MyHomePage(),
+          home: UpgradeAlert(
+            upgrader: Upgrader(dialogStyle: UpgradeDialogStyle.cupertino),
+            child: const MyHomePage(),
+          ),
         );
       },
     );
