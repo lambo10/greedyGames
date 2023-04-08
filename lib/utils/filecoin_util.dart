@@ -50,6 +50,7 @@ Future<int> getFileCoinNonce(
   }
 }
 
+const filecoinfaucet = 'https://faucet.calibration.fildev.network/';
 Future<Map<String, dynamic>> fileCoinEstimateGas(
   String baseUrl,
   Map msg,
