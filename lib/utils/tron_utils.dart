@@ -9,10 +9,13 @@ import 'package:http/http.dart';
 
 import 'app_config.dart';
 
-const ADDRESS_PREFIX = '41';
+const TRX_FEE_LIMIT = 150000000;
+const TRX_ADDRESS_PREFIX = '41';
+const TRX_MESSAGE_HEADER = '\x19TRON Signed Message:\n32';
+
 String tronAddressToHex(String address) {
   if (isHexString(address)) {
-    return address.replaceFirst('0x', ADDRESS_PREFIX).toUpperCase();
+    return address.replaceFirst('0x', TRX_ADDRESS_PREFIX).toUpperCase();
   }
   return HEX.encode(bs58check.decode(address)).toUpperCase();
 }
@@ -43,3 +46,26 @@ sendTron(
 
   Map txInfo = json.decode(request.body);
 }
+//  static signString(message, privateKey, useTronHeader = true) {
+//         message = message.replace(/^0x/, '');
+//         const value ={
+//             toHexString: function() {
+//                 return '0x' + privateKey
+//             },
+//             value: privateKey
+//         }
+//         const signingKey = new SigningKey(value);
+//         const messageBytes = [
+//             ...toUtf8Bytes(useTronHeader ? TRX_MESSAGE_HEADER : ETH_MESSAGE_HEADER),
+//             ...utils.code.hexStr2byteArray(message)
+//         ];
+//         const messageDigest = keccak256(messageBytes);
+//         const signature = signingKey.signDigest(messageDigest);
+//         const signatureHex = [
+//             '0x',
+//             signature.r.substring(2),
+//             signature.s.substring(2),
+//             Number(signature.v).toString(16)
+//         ].join('');
+//         return signatureHex
+//     }
