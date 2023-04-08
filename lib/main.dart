@@ -15,7 +15,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hex/hex.dart';
 // import 'package:pointycastle/pointycastle.dart';
+import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -25,7 +27,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
-
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([

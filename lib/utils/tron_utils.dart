@@ -2,9 +2,12 @@
 
 import 'dart:convert';
 
+import 'package:bitbox/bitbox.dart';
+import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:eth_sig_util/util/utils.dart';
 import 'package:hex/hex.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
+import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 
 import 'app_config.dart';
@@ -26,6 +29,10 @@ sendTron(
   String from,
   String to,
 ) async {
+  final pref = Hive.box(secureStorageKey);
+  final mnemonic = pref.get(currentMmenomicKey);
+  final tronDetails = await getTronFromMemnomic(mnemonic);
+  print(tronDetails);
   final httpFromApi = Uri.parse('$api/wallet/createtransaction');
   final request = await post(
     httpFromApi,

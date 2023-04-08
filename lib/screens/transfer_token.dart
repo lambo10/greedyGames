@@ -635,9 +635,11 @@ class _TransferTokenState extends State<TransferToken> {
                                     if (await authenticate(context)) {
                                       ScaffoldMessenger.of(context)
                                           .hideCurrentSnackBar();
-                                      setState(() {
-                                        isSending = true;
-                                      });
+                                      if (mounted) {
+                                        setState(() {
+                                          isSending = true;
+                                        });
+                                      }
                                       try {
                                         final pref = Hive.box(secureStorageKey);
 
@@ -1065,9 +1067,11 @@ class _TransferTokenState extends State<TransferToken> {
                                         );
 
                                         if (isNFTTransfer) {
-                                          setState(() {
-                                            isSending = false;
-                                          });
+                                          if (mounted) {
+                                            setState(() {
+                                              isSending = false;
+                                            });
+                                          }
                                           if (Navigator.canPop(context)) {
                                             int count = 0;
                                             Navigator.popUntil(context,
@@ -1113,9 +1117,11 @@ class _TransferTokenState extends State<TransferToken> {
                                           userTransactionsKey,
                                           jsonEncode(userTransactions),
                                         );
-                                        setState(() {
-                                          isSending = false;
-                                        });
+                                        if (mounted) {
+                                          setState(() {
+                                            isSending = false;
+                                          });
+                                        }
                                         if (Navigator.canPop(context)) {
                                           int count = 0;
                                           Navigator.popUntil(context, (route) {
@@ -1123,20 +1129,22 @@ class _TransferTokenState extends State<TransferToken> {
                                           });
                                         }
                                       } catch (e) {
-                                        setState(() {
-                                          isSending = false;
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              backgroundColor: Colors.red,
-                                              content: Text(
-                                                e.toString(),
-                                                style: const TextStyle(
-                                                    color: Colors.white),
+                                        if (mounted) {
+                                          setState(() {
+                                            isSending = false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                backgroundColor: Colors.red,
+                                                content: Text(
+                                                  e.toString(),
+                                                  style: const TextStyle(
+                                                      color: Colors.white),
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        });
+                                            );
+                                          });
+                                        }
                                       }
                                     } else {
                                       ScaffoldMessenger.of(context)
