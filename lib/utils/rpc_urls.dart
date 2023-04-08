@@ -2195,7 +2195,10 @@ Future<Map> getXrpLedgerSequence(
       body: json.encode({
         "method": "account_info",
         "params": [
-          {"account": address}
+          {
+            "account": address,
+            "ledger_index": "current",
+          }
         ]
       }),
     );
@@ -2205,6 +2208,7 @@ Future<Map> getXrpLedgerSequence(
     }
 
     Map accountInfo = json.decode(request.body);
+
     final accountData = accountInfo['result']['account_data'];
     if (accountData == null) {
       throw Exception('Account not found');
@@ -2212,7 +2216,6 @@ Future<Map> getXrpLedgerSequence(
 
     return {
       'Sequence': accountData['Sequence'],
-      'LastLedgerSequence': accountData['PreviousTxnLgrSeq'],
       'Flags': accountData['Flags'],
     };
   } catch (e) {
@@ -2221,7 +2224,6 @@ Future<Map> getXrpLedgerSequence(
 }
 
 Future<Map> getXrpFee(String ws) async {
-  const normalBaseFee = 10;
   try {
     final httpFromWs = Uri.parse(ws);
     final request = await post(
@@ -2261,13 +2263,12 @@ Future<Map> sendXRP({
     );
 
     final amountInDrop =
-        BigInt.parse(amountInXrp) * BigInt.from(pow(10, xrpDecimals));
+        BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
 
     Map xrpJson = {
       "Account": getXRPDetails['address'],
       "Fee": "10",
       "Sequence": 0,
-      "LastLedgerSequence": 0,
       "TransactionType": "Payment",
       "SigningPubKey": getXRPDetails['publicKey'],
       "Amount": "$amountInDrop",
@@ -2316,7 +2317,7 @@ Future<Map> sendXRP({
 
     Map txInfo = json.decode(request.body);
 
-    final hash = txInfo['result']['hash'];
+    final hash = txInfo['result']["tx_json"]['hash'];
 
     return {'txid': hash};
   } catch (e) {

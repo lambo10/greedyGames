@@ -71,6 +71,7 @@ class _TransferTokenState extends State<TransferToken> {
     isTezor = widget.data['default'] == 'XTZ';
     isXRP = widget.data['default'] == 'XRP';
     isNFTTransfer = widget.data['isNFT'] != null;
+
     getTransactionFee();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -143,8 +144,9 @@ class _TransferTokenState extends State<TransferToken> {
         if (!isNFTTransfer) {
           _parameters = [
             web3.EthereumAddress.fromHex(widget.data['recipient']),
-            BigInt.parse(widget.data['amount']) *
-                BigInt.from(pow(10, decimals.toInt()))
+            BigInt.from(
+              double.parse(widget.data['amount']) * pow(10, decimals.toInt()),
+            )
           ];
         } else if (widget.data['tokenType'] == 'ERC721') {
           _parameters = [
@@ -157,7 +159,9 @@ class _TransferTokenState extends State<TransferToken> {
             sendingAddress,
             web3.EthereumAddress.fromHex(widget.data['recipient']),
             widget.data['tokenId'],
-            BigInt.parse(widget.data['amount']),
+            BigInt.from(
+              double.parse(widget.data['amount']),
+            ),
             Uint8List(1)
           ];
         }
@@ -172,9 +176,9 @@ class _TransferTokenState extends State<TransferToken> {
             widget.data['contractAddress'],
           ),
         );
+        final etherAmountBalance = await client.getBalance(sendingAddress);
         final userBalance =
-            (await client.getBalance(sendingAddress)).getInWei.toDouble() /
-                pow(10, etherDecimals);
+            etherAmountBalance.getInWei.toDouble() / pow(10, etherDecimals);
 
         final blockChainCost = transactionFee / pow(10, etherDecimals);
 
@@ -194,8 +198,8 @@ class _TransferTokenState extends State<TransferToken> {
 
         List getUnspentOutput;
         int fee = 0;
-        int satoshiToSend =
-            (double.parse(widget.data['amount']) * pow(10, 8)).toInt();
+        num satoshi = double.parse(widget.data['amount']) * pow(10, 8);
+        int satoshiToSend = satoshi.toInt();
 
         if (widget.data['default'] == 'BCH') {
           fee = await getBCHNetworkFee(
@@ -302,11 +306,10 @@ class _TransferTokenState extends State<TransferToken> {
           widget.data['prefix'],
           widget.data['baseUrl'],
         );
+        final attoFIL = double.parse(widget.data['amount']) *
+            pow(10, fileCoinDecimals.toInt());
 
-        BigInt amounToSend = BigInt.parse(
-              widget.data['amount'],
-            ) *
-            BigInt.from(pow(10, fileCoinDecimals));
+        BigInt amounToSend = BigInt.from(attoFIL);
 
         final msg = constructFilecoinMsg(
           widget.data['recipient'],
@@ -386,11 +389,13 @@ class _TransferTokenState extends State<TransferToken> {
           ),
         );
 
-        final userBalance = (await client.getBalance(
-                    EthereumAddress.fromHex(response['eth_wallet_address'])))
-                .getInWei
-                .toDouble() /
-            pow(10, etherDecimals);
+        final senderAddress =
+            EthereumAddress.fromHex(response['eth_wallet_address']);
+
+        final getSenderBalance = await client.getBalance(senderAddress);
+
+        final userBalance =
+            getSenderBalance.getInWei.toDouble() / pow(10, etherDecimals);
 
         final blockChainCost = transactionFee / pow(10, etherDecimals);
 
@@ -710,12 +715,12 @@ class _TransferTokenState extends State<TransferToken> {
                                             widget.data,
                                           );
 
-                                          double amount = double.parse(
-                                            widget.data['amount'],
-                                          );
-                                          int amountToSend = (amount *
-                                                  pow(10, bitCoinDecimals))
-                                              .toInt();
+                                          double satoshi = double.parse(
+                                                widget.data['amount'],
+                                              ) *
+                                              pow(10, bitCoinDecimals);
+
+                                          int amountToSend = satoshi.toInt();
 
                                           final transaction = await sendBTCType(
                                             widget.data['recipient'],
@@ -750,6 +755,9 @@ class _TransferTokenState extends State<TransferToken> {
                                             Dartez.writeKeyWithHint(
                                                 keyStore.secretKey, 'edsk'),
                                           );
+                                          final microTez = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, tezorDecimals);
 
                                           final result = await Dartez
                                               .sendTransactionOperation(
@@ -757,10 +765,7 @@ class _TransferTokenState extends State<TransferToken> {
                                             signer,
                                             keyStore,
                                             widget.data['recipient'],
-                                            (double.parse(
-                                                        widget.data['amount']) *
-                                                    pow(10, tezorDecimals))
-                                                .toInt(),
+                                            microTez.toInt(),
                                             1500,
                                           );
                                           transactionHash = Map.from(
@@ -819,12 +824,13 @@ class _TransferTokenState extends State<TransferToken> {
                                               await getSolanaFromMemnomic(
                                                   mnemonic);
 
+                                          final lamport = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, solanaDecimals);
+
                                           final transaction = await sendSolana(
                                             widget.data['recipient'],
-                                            (double.parse(
-                                                        widget.data['amount']) *
-                                                    pow(10, solanaDecimals))
-                                                .toInt(),
+                                            lamport.toInt(),
                                             widget.data['solanaCluster'],
                                           );
                                           transactionHash = transaction['txid'];
@@ -841,13 +847,12 @@ class _TransferTokenState extends State<TransferToken> {
                                             widget.data['cardano_network'],
                                           );
 
-                                          double amount = double.parse(
-                                            widget.data['amount'],
-                                          );
+                                          final lovelace = double.parse(
+                                                widget.data['amount'],
+                                              ) *
+                                              pow(10, cardanoDecimals);
 
-                                          int amountToSend = (amount *
-                                                  pow(10, cardanoDecimals))
-                                              .toInt();
+                                          int amountToSend = lovelace.toInt();
                                           final transaction = await compute(
                                             sendCardano,
                                             {
@@ -881,15 +886,12 @@ class _TransferTokenState extends State<TransferToken> {
                                             widget.data['prefix'],
                                           );
 
-                                          double amount = double.parse(
-                                            widget.data['amount'],
-                                          );
+                                          final attoFil = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, fileCoinDecimals);
 
-                                          BigInt amounToSend = BigInt.from(
-                                                amount,
-                                              ) *
-                                              BigInt.from(
-                                                  pow(10, fileCoinDecimals));
+                                          BigInt amounToSend =
+                                              BigInt.from(attoFil);
 
                                           final transaction =
                                               await sendFilecoin(
@@ -974,6 +976,10 @@ class _TransferTokenState extends State<TransferToken> {
                                           final gasPrice =
                                               await client.getGasPrice();
 
+                                          final wei = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, etherDecimals);
+
                                           final trans =
                                               await client.signTransaction(
                                             credentials,
@@ -984,11 +990,8 @@ class _TransferTokenState extends State<TransferToken> {
                                               to: web3.EthereumAddress.fromHex(
                                                   widget.data['recipient']),
                                               value: web3.EtherAmount.inWei(
-                                                  BigInt.from(double.parse(
-                                                          widget.data[
-                                                              'amount'])) *
-                                                      BigInt.from(pow(
-                                                          10, etherDecimals))),
+                                                BigInt.from(wei),
+                                              ),
                                               gasPrice: gasPrice,
                                             ),
                                             chainId: widget.data['chainId'],
