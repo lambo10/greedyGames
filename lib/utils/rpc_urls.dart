@@ -2274,6 +2274,12 @@ Future<Map> sendXRP({
       "Destination": recipient
     };
 
+    if (getXRPDetails['address'] == recipient) {
+      throw Exception(
+        'An XRP payment transaction cannot have the same sender and destination',
+      );
+    }
+
     Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
 
     Map fee = await getXrpFee(ws);
