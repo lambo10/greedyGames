@@ -795,6 +795,7 @@ Map getBitCoinPOSBlockchains() {
 }
 
 Map getCosmosBlockChains() {
+  // change lcdurl for cosmos to sdk 0.37.9 / cosmoshub-3
   Map blockChains = {
     'Cosmos': {
       'blockExplorer':
