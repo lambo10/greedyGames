@@ -2,9 +2,10 @@
 
 import 'dart:convert';
 
-import 'package:bitbox/bitbox.dart';
+import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:eth_sig_util/util/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hive/hive.dart';
@@ -32,7 +33,41 @@ sendTron(
   final pref = Hive.box(secureStorageKey);
   final mnemonic = pref.get(currentMmenomicKey);
   final tronDetails = await getTronFromMemnomic(mnemonic);
-  print(tronDetails);
+  final txInfo = await tronTrxInfo(api, amount, from, to);
+  final ecPair = ECPair.fromPrivateKey(HEX.decode(tronDetails['privateKey']));
+  final signatureSinged = ecPair.sign(HEX.decode(txInfo['txID']));
+  final signature = '${HEX.encode(signatureSinged)}00';
+  txInfo['signature'] = [signature];
+  final txSent = await sendRawTransaction(api, txInfo);
+  return {
+    'txid': txSent['txID'],
+  };
+}
+
+Future<Map> sendRawTransaction(String api, Map txInfo) async {
+  final httpFromApi = Uri.parse('$api/wallet/broadcasttransaction');
+  final request = await post(
+    httpFromApi,
+    headers: {
+      'Content-Type': 'application/json',
+      'TRON-PRO-API-KEY': tronGridApiKey,
+    },
+    body: json.encode(txInfo),
+  );
+
+  if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+    throw Exception(request.body);
+  }
+
+  return json.decode(request.body);
+}
+
+Future<Map> tronTrxInfo(
+  String api,
+  int amount,
+  String from,
+  String to,
+) async {
   final httpFromApi = Uri.parse('$api/wallet/createtransaction');
   final request = await post(
     httpFromApi,
@@ -51,30 +86,5 @@ sendTron(
     throw Exception(request.body);
   }
 
-  Map txInfo = json.decode(request.body);
-
-  print(txInfo);
+  return json.decode(request.body);
 }
-//  static signString(message, privateKey, useTronHeader = true) {
-//         message = message.replace(/^0x/, '');
-//         const value ={
-//             toHexString: function() {
-//                 return '0x' + privateKey
-//             },
-//             value: privateKey
-//         }
-//         const signingKey = new SigningKey(value);
-//         const messageBytes = [
-//             ...toUtf8Bytes(useTronHeader ? TRX_MESSAGE_HEADER : ETH_MESSAGE_HEADER),
-//             ...utils.code.hexStr2byteArray(message)
-//         ];
-//         const messageDigest = keccak256(messageBytes);
-//         const signature = signingKey.signDigest(messageDigest);
-//         const signatureHex = [
-//             '0x',
-//             signature.r.substring(2),
-//             signature.s.substring(2),
-//             Number(signature.v).toString(16)
-//         ].join('');
-//         return signatureHex
-//     }
