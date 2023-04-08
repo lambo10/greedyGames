@@ -130,7 +130,7 @@ const appUnlockTime = 'applockksksietimeal382';
 const transactionhashTemplateKey = '{{TransactionHash}}';
 
 // enable
-const enableTestNet = kDebugMode ? true : false;
+const enableTestNet = kDebugMode;
 
 // app theme
 final darkTheme = ThemeData(
