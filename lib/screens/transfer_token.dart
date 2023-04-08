@@ -229,7 +229,7 @@ class _TransferTokenState extends State<TransferToken> {
         );
         transactionFeeMap = {
           'transactionFee': 0,
-          'userBalance': 3,
+          'userBalance': tronBalance,
         };
       } else if (isTezor) {
         final getTrezorDetails =
