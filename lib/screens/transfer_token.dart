@@ -9,6 +9,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/stellar_utils.dart';
+import 'package:cryptowallet/utils/tron_utils.dart';
 import 'package:dartez/dartez.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
@@ -881,6 +882,28 @@ class _TransferTokenState extends State<TransferToken> {
                                           coinDecimals = cardanoDecimals;
                                           userAddress =
                                               getCardanoDetails['address'];
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
+                                        } else if (isTron) {
+                                          final getTronDetails =
+                                              await getTronFromMemnomic(
+                                                  mnemonic);
+
+                                          final microTron = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, tronDecimals);
+
+                                          final transaction = await sendTron(
+                                            widget.data['api'],
+                                            microTron.toInt(),
+                                            getTronDetails['address'],
+                                            widget.data['recipient'],
+                                          );
+                                          transactionHash = transaction['txid'];
+
+                                          coinDecimals = tronDecimals;
+                                          userAddress =
+                                              getTronDetails['address'];
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
                                         } else if (isFilecoin) {
