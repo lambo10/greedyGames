@@ -432,9 +432,11 @@ class _TransferTokenState extends State<TransferToken> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '-${formatMoney(widget.data['amount'] ?? '1')} ${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']}',
+                    '-${widget.data['amount'] ?? '1'} ${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']}',
                     style: const TextStyle(
-                        fontSize: 25, fontWeight: FontWeight.bold),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(
                     height: 20,
