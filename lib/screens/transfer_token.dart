@@ -10,6 +10,7 @@ import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/stellar_utils.dart';
 import 'package:dartez/dartez.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -578,13 +579,13 @@ class _TransferTokenState extends State<TransferToken> {
                   ),
                   widget.data['default'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? transactionFeeMap['transactionFee'] : '0'}  ${widget.data['default']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '0'}  ${widget.data['default']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
                   widget.data['network'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? transactionFeeMap['transactionFee'] : '0'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '0'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
