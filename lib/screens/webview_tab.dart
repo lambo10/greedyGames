@@ -1246,17 +1246,19 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                   _isSecure = sslCertificate != null || urlIsSecure(url);
                 }
 
-                final favicons = await _controller?.getFavicons();
-                if (favicons != null && favicons.isNotEmpty) {
-                  for (final favicon in favicons) {
-                    if (_favicon == null) {
-                      _favicon = favicon;
-                    } else if (favicon.width != null &&
-                        (favicon.width ?? 0) > (_favicon?.width ?? 0)) {
-                      _favicon = favicon;
+                try {
+                  final favicons = await _controller?.getFavicons();
+                  if (favicons != null && favicons.isNotEmpty) {
+                    for (final favicon in favicons) {
+                      if (_favicon == null) {
+                        _favicon = favicon;
+                      } else if (favicon.width != null &&
+                          (favicon.width ?? 0) > (_favicon?.width ?? 0)) {
+                        _favicon = favicon;
+                      }
                     }
                   }
-                }
+                } catch (_) {}
 
                 widget.onStateUpdated.call();
               },

@@ -59,6 +59,8 @@ import '../eip/eip681.dart';
 import '../model/seed_phrase_root.dart';
 import '../screens/build_row.dart';
 import '../screens/dapp.dart';
+import '../xrp_transaction/xrp_ordinal.dart';
+import '../xrp_transaction/xrp_transaction.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
 import 'filecoin_util.dart';
@@ -2121,6 +2123,7 @@ Map<String, String> calculateRippleKey(Map config) {
       xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
   return {
     'address': address,
+    'publicKey': HEX.encode(node.publicKey),
     'privateKey': HEX.encode(node.privateKey),
   };
 }
@@ -2178,41 +2181,148 @@ Future<Map> calculateStellarKey(Map config) async {
   };
 }
 
+Future<Map> getXrpLedgerSequence(
+  String address,
+  String ws,
+) async {
+  try {
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "account_info",
+        "params": [
+          {
+            "account": address,
+            "ledger_index": "current",
+          }
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map accountInfo = json.decode(request.body);
+
+    final accountData = accountInfo['result']['account_data'];
+    if (accountData == null) {
+      throw Exception('Account not found');
+    }
+
+    return {
+      'Sequence': accountData['Sequence'],
+      'Flags': accountData['Flags'],
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+Future<Map> getXrpFee(String ws) async {
+  try {
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'method': 'fee',
+        'params': [{}]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map feeInfo = json.decode(request.body);
+
+    return {
+      'Fee': feeInfo['result']['drops']['base_fee'],
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 Future<Map> sendXRP({
   String ws,
   String recipient,
-  String amount,
+  String amountInXrp,
   String mnemonic,
 }) async {
-  Map accountInfo = {};
-  //FIXME:
   try {
-    // rippleJsRuntime
-    //     .evaluate('const wallet = xrpl.Wallet.fromMnemonic("$mnemonic")');
-    // rippleJsRuntime.evaluate('''const client = new xrpl.Client("$ws")''');
+    final getXRPDetails = await getXRPFromMemnomic(
+      mnemonic,
+    );
 
-    // var asyncResult = await rippleJsRuntime.evaluateAsync("""
-    // client.connect().submitAndWait({
-    //   TransactionType: "Payment",
-    //   Account: wallet.address,
-    //   Amount: xrpl.xrpToDrops("$amount"),
-    //   Destination: "$recipient",
-    // }, {
-    //   autofill: true,
-    //   wallet: wallet,
-    // });
-    // """);
+    final amountInDrop =
+        BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
 
-    // rippleJsRuntime.executePendingJob();
-    // final promiseResolved = await rippleJsRuntime.handlePromise(asyncResult);
-    // accountInfo = json.decode(promiseResolved.stringResult);
+    Map xrpJson = {
+      "Account": getXRPDetails['address'],
+      "Fee": "10",
+      "Sequence": 0,
+      "TransactionType": "Payment",
+      "SigningPubKey": getXRPDetails['publicKey'],
+      "Amount": "$amountInDrop",
+      "Destination": recipient
+    };
+
+    if (getXRPDetails['address'] == recipient) {
+      throw Exception(
+        'An XRP payment transaction cannot have the same sender and destination',
+      );
+    }
+
+    Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
+
+    Map fee = await getXrpFee(ws);
+
+    if (ledgers != null) {
+      xrpJson = {...xrpJson, ...ledgers};
+    }
+    if (fee != null) {
+      xrpJson = {...xrpJson, ...fee};
+    }
+
+    Map xrpTransaction =
+        signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
+
+    final httpFromWs = Uri.parse(ws);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "submit",
+        "params": [
+          {
+            "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
+          }
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map txInfo = json.decode(request.body);
+
+    final hash = txInfo['result']["tx_json"]['hash'];
+
+    return {'txid': hash};
   } catch (e) {
-    rethrow;
+    return {};
   }
-  // return {
-  //   'txid': accountInfo['result']['meta']['TransactionResult'],
-  // };
-  return {};
 }
 
 Future<double> getXRPAddressBalance(
@@ -2864,6 +2974,7 @@ Future<Map> getXRPFromMemnomic(
 
   final pref = Hive.box(secureStorageKey);
   List mmenomicMapping = [];
+
   if (pref.get(key) != null) {
     mmenomicMapping = jsonDecode(pref.get(key)) as List;
     for (int i = 0; i < mmenomicMapping.length; i++) {
@@ -3773,13 +3884,11 @@ Future<double> getTezorAddressBalance(
 
     final res = await Dartez.getBalance(address, tezorDetails['server']);
     balance = double.parse(res) / pow(10, tezorDecimals);
-    // balance = ;
 
     await pref.put(key, balance);
 
     return balance;
   } catch (e) {
-    print(e);
     return savedBalance;
   }
 }

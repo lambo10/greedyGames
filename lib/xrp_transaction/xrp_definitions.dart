@@ -1,4 +1,4 @@
-{
+Map rippleDefinitions = {
   "TYPES": {
     "Done": -1,
     "Unknown": -2,
@@ -2176,7 +2176,6 @@
     "telCAN_NOT_QUEUE_BLOCKED": -389,
     "telCAN_NOT_QUEUE_FEE": -388,
     "telCAN_NOT_QUEUE_FULL": -387,
-
     "temMALFORMED": -299,
     "temBAD_AMOUNT": -298,
     "temBAD_CURRENCY": -297,
@@ -2215,7 +2214,6 @@
     "temUNKNOWN": -264,
     "temSEQ_AND_TICKET": -263,
     "temBAD_NFTOKEN_TRANSFER_FEE": -262,
-
     "tefFAILURE": -199,
     "tefALREADY": -198,
     "tefBAD_ADD_AUTH": -197,
@@ -2237,7 +2235,6 @@
     "tefTOO_BIG": -181,
     "tefNO_TICKET": -180,
     "tefNFTOKEN_IS_NOT_TRANSFERABLE": -179,
-
     "terRETRY": -99,
     "terFUNDS_SPENT": -98,
     "terINSUF_FEE_B": -97,
@@ -2250,9 +2247,7 @@
     "terNO_RIPPLE": -90,
     "terQUEUED": -89,
     "terPRE_TICKET": -88,
-
     "tesSUCCESS": 0,
-
     "tecCLAIM": 100,
     "tecPATH_PARTIAL": 101,
     "tecUNFUNDED_ADD": 102,
@@ -2334,4 +2329,4 @@
     "SetFee": 101,
     "UNLModify": 102
   }
-}
+};
