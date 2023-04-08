@@ -242,8 +242,9 @@ class _TransferTokenState extends State<TransferToken> {
           getXRPDetails['address'],
           widget.data['ws'],
         );
+        final fee = await getXrpFee(widget.data['ws']);
         transactionFeeMap = {
-          'transactionFee': 0,
+          'transactionFee': double.parse(fee['Fee']) / pow(10, xrpDecimals),
           'userBalance': xrpBalance,
         };
       } else if (isAlgorand) {
