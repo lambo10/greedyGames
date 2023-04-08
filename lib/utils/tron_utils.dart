@@ -39,6 +39,7 @@ sendTron(
   final signature = '${HEX.encode(signatureSinged)}00';
   txInfo['signature'] = [signature];
   final txSent = await sendRawTransaction(api, txInfo);
+  print(txSent);
   return {
     'txid': txSent['txID'],
   };
