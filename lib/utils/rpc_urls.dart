@@ -1580,7 +1580,7 @@ Future<Map> sendCardano(Map config) async {
     if (kDebugMode) {
       print(txResult.err());
     }
-    return {};
+    throw Exception(txResult.err());
   }
 
   final submitTrx = await userWallet.blockchainAdapter.submitTransaction(
@@ -1591,7 +1591,7 @@ Future<Map> sendCardano(Map config) async {
     if (kDebugMode) {
       print(submitTrx.err());
     }
-    return {};
+    throw Exception(submitTrx.err());
   }
 
   final txHash = submitTrx.unwrap();
