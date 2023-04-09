@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:algorand_dart/algorand_dart.dart';
 import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:eth_sig_util/util/utils.dart';
@@ -37,10 +38,12 @@ sendTron(
   final txInfo = await tronTrxInfo(api, amount, from, to);
   Uint8List privateKey = HEX.decode(tronDetails['privateKey']);
   Uint8List txID = HEX.decode(txInfo['txID']);
-  final ecPair = ECPair.fromPrivateKey(privateKey);
-  final signatureSinged = ecPair.sign(txID);
-  final recid = sign(txID, privateKey).v - 27;
-  final signature = '${HEX.encode(signatureSinged)}0$recid';
+  final signatureEC = sign(txID, privateKey);
+  final recid = signatureEC.v - 27;
+  final signature = '${HEX.encode([
+        ...signatureEC.r.toUint8List(),
+        ...signatureEC.s.toUint8List(),
+      ])}0$recid';
   txInfo['signature'] = [signature];
   final txSent = await sendRawTransaction(api, txInfo);
 
