@@ -10,6 +10,7 @@ import 'package:hex/hex.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import 'package:web3dart/crypto.dart';
 
 import 'app_config.dart';
 
@@ -34,14 +35,18 @@ sendTron(
   final mnemonic = pref.get(currentMmenomicKey);
   final tronDetails = await getTronFromMemnomic(mnemonic);
   final txInfo = await tronTrxInfo(api, amount, from, to);
-  final ecPair = ECPair.fromPrivateKey(HEX.decode(tronDetails['privateKey']));
-  final signatureSinged = ecPair.sign(HEX.decode(txInfo['txID']));
-  final signature = '${HEX.encode(signatureSinged)}00';
+  Uint8List privateKey = HEX.decode(tronDetails['privateKey']);
+  Uint8List txID = HEX.decode(txInfo['txID']);
+  final ecPair = ECPair.fromPrivateKey(privateKey);
+  final signatureSinged = ecPair.sign(txID);
+  final recid = sign(txID, privateKey).v - 27;
+  final signature = '${HEX.encode(signatureSinged)}0$recid';
   txInfo['signature'] = [signature];
   final txSent = await sendRawTransaction(api, txInfo);
+
   if (txSent['result'] ?? false) {
     return {
-      'txid': txSent['txID'],
+      'txid': txSent['txid'],
     };
   }
   return {};
