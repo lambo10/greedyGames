@@ -9,6 +9,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/stellar_utils.dart';
+import 'package:cryptowallet/utils/tron_utils.dart';
 import 'package:dartez/dartez.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
@@ -221,10 +222,14 @@ class _TransferTokenState extends State<TransferToken> {
           'userBalance': bitCoinBalance,
         };
       } else if (isTron) {
-        //FIXME:
+        final getTronDetails = await getTronFromMemnomic(mnemonic);
+        final tronBalance = await getTronAddressBalance(
+          getTronDetails['address'],
+          widget.data['api'],
+        );
         transactionFeeMap = {
           'transactionFee': 0,
-          'userBalance': 0,
+          'userBalance': tronBalance,
         };
       } else if (isTezor) {
         final getTrezorDetails =
@@ -630,9 +635,11 @@ class _TransferTokenState extends State<TransferToken> {
                                     if (await authenticate(context)) {
                                       ScaffoldMessenger.of(context)
                                           .hideCurrentSnackBar();
-                                      setState(() {
-                                        isSending = true;
-                                      });
+                                      if (mounted) {
+                                        setState(() {
+                                          isSending = true;
+                                        });
+                                      }
                                       try {
                                         final pref = Hive.box(secureStorageKey);
 
@@ -883,6 +890,28 @@ class _TransferTokenState extends State<TransferToken> {
                                               getCardanoDetails['address'];
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
+                                        } else if (isTron) {
+                                          final getTronDetails =
+                                              await getTronFromMemnomic(
+                                                  mnemonic);
+
+                                          final microTron = double.parse(
+                                                  widget.data['amount']) *
+                                              pow(10, tronDecimals);
+
+                                          final transaction = await sendTron(
+                                            widget.data['api'],
+                                            microTron.toInt(),
+                                            getTronDetails['address'],
+                                            widget.data['recipient'],
+                                          );
+                                          transactionHash = transaction['txid'];
+
+                                          coinDecimals = tronDecimals;
+                                          userAddress =
+                                              getTronDetails['address'];
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
                                         } else if (isFilecoin) {
                                           final getFileCoinDetails =
                                               await getFileCoinFromMemnomic(
@@ -1038,9 +1067,11 @@ class _TransferTokenState extends State<TransferToken> {
                                         );
 
                                         if (isNFTTransfer) {
-                                          setState(() {
-                                            isSending = false;
-                                          });
+                                          if (mounted) {
+                                            setState(() {
+                                              isSending = false;
+                                            });
+                                          }
                                           if (Navigator.canPop(context)) {
                                             int count = 0;
                                             Navigator.popUntil(context,
@@ -1086,9 +1117,11 @@ class _TransferTokenState extends State<TransferToken> {
                                           userTransactionsKey,
                                           jsonEncode(userTransactions),
                                         );
-                                        setState(() {
-                                          isSending = false;
-                                        });
+                                        if (mounted) {
+                                          setState(() {
+                                            isSending = false;
+                                          });
+                                        }
                                         if (Navigator.canPop(context)) {
                                           int count = 0;
                                           Navigator.popUntil(context, (route) {
@@ -1096,20 +1129,22 @@ class _TransferTokenState extends State<TransferToken> {
                                           });
                                         }
                                       } catch (e) {
-                                        setState(() {
-                                          isSending = false;
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              backgroundColor: Colors.red,
-                                              content: Text(
-                                                e.toString(),
-                                                style: const TextStyle(
-                                                    color: Colors.white),
+                                        if (mounted) {
+                                          setState(() {
+                                            isSending = false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                backgroundColor: Colors.red,
+                                                content: Text(
+                                                  e.toString(),
+                                                  style: const TextStyle(
+                                                      color: Colors.white),
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        });
+                                            );
+                                          });
+                                        }
                                       }
                                     } else {
                                       ScaffoldMessenger.of(context)

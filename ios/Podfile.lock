@@ -61,6 +61,9 @@ PODS:
     - Flutter
   - share (0.0.1):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - smart_auth (0.0.1):
     - Flutter
   - sqflite (0.0.2):
@@ -93,6 +96,7 @@ DEPENDENCIES:
   - scan (from `.symlinks/plugins/scan/ios`)
   - screenshot_callback (from `.symlinks/plugins/screenshot_callback/ios`)
   - share (from `.symlinks/plugins/share/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
   - smart_auth (from `.symlinks/plugins/smart_auth/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
@@ -151,6 +155,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/screenshot_callback/ios"
   share:
     :path: ".symlinks/plugins/share/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/ios"
   smart_auth:
     :path: ".symlinks/plugins/smart_auth/ios"
   sqflite:
@@ -189,6 +195,7 @@ SPEC CHECKSUMS:
   scan: aea35bb4aa59ccc8839c576a18cd57c7d492cc86
   screenshot_callback: b173e7f4bd8d2ef14a9a5e5a77c0ac6a47578608
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
+  shared_preferences_foundation: 986fc17f3d3251412d18b0265f9c64113a8c2472
   smart_auth: 4bedbc118723912d0e45a07e8ab34039c19e04f2
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de

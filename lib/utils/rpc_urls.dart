@@ -795,6 +795,7 @@ Map getBitCoinPOSBlockchains() {
 }
 
 Map getCosmosBlockChains() {
+  // change lcdurl for cosmos to sdk 0.37.9 / cosmoshub-3
   Map blockChains = {
     'Cosmos': {
       'blockExplorer':
@@ -2104,6 +2105,7 @@ calculateTronKey(Map config) {
   final address = wallet.tron.createAddress(publicKey);
 
   return {
+    'privateKey': HEX.encode(privateKey.value.toUint8List()),
     'address': address,
   };
 }
@@ -2257,72 +2259,67 @@ Future<Map> sendXRP({
   String amountInXrp,
   String mnemonic,
 }) async {
-  try {
-    final getXRPDetails = await getXRPFromMemnomic(
-      mnemonic,
+  final getXRPDetails = await getXRPFromMemnomic(
+    mnemonic,
+  );
+
+  final amountInDrop =
+      BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
+
+  Map xrpJson = {
+    "Account": getXRPDetails['address'],
+    "Fee": "10",
+    "Sequence": 0,
+    "TransactionType": "Payment",
+    "SigningPubKey": getXRPDetails['publicKey'],
+    "Amount": "$amountInDrop",
+    "Destination": recipient
+  };
+
+  if (getXRPDetails['address'] == recipient) {
+    throw Exception(
+      'An XRP payment transaction cannot have the same sender and destination',
     );
-
-    final amountInDrop =
-        BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
-
-    Map xrpJson = {
-      "Account": getXRPDetails['address'],
-      "Fee": "10",
-      "Sequence": 0,
-      "TransactionType": "Payment",
-      "SigningPubKey": getXRPDetails['publicKey'],
-      "Amount": "$amountInDrop",
-      "Destination": recipient
-    };
-
-    if (getXRPDetails['address'] == recipient) {
-      throw Exception(
-        'An XRP payment transaction cannot have the same sender and destination',
-      );
-    }
-
-    Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
-
-    Map fee = await getXrpFee(ws);
-
-    if (ledgers != null) {
-      xrpJson = {...xrpJson, ...ledgers};
-    }
-    if (fee != null) {
-      xrpJson = {...xrpJson, ...fee};
-    }
-
-    Map xrpTransaction =
-        signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
-
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        "method": "submit",
-        "params": [
-          {
-            "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
-          }
-        ]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map txInfo = json.decode(request.body);
-
-    final hash = txInfo['result']["tx_json"]['hash'];
-
-    return {'txid': hash};
-  } catch (e) {
-    return {};
   }
+
+  Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
+
+  Map fee = await getXrpFee(ws);
+
+  if (ledgers != null) {
+    xrpJson = {...xrpJson, ...ledgers};
+  }
+  if (fee != null) {
+    xrpJson = {...xrpJson, ...fee};
+  }
+
+  Map xrpTransaction = signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
+
+  final httpFromWs = Uri.parse(ws);
+  final request = await post(
+    httpFromWs,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      "method": "submit",
+      "params": [
+        {
+          "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
+        }
+      ]
+    }),
+  );
+
+  if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+    throw Exception(request.body);
+  }
+
+  Map txInfo = json.decode(request.body);
+
+  final hash = txInfo['result']["tx_json"]['hash'];
+
+  return {'txid': hash};
 }
 
 Future<double> getXRPAddressBalance(
