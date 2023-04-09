@@ -6,6 +6,7 @@ import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/crypto_charts/crypto_chart.dart';
 import 'package:cryptowallet/screens/receive_token.dart';
 import 'package:cryptowallet/screens/send_token.dart';
+import 'package:cryptowallet/screens/token_contract_info.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
@@ -471,6 +472,23 @@ class _TokenState extends State<Token> {
                     : const Color(0x00aaaaaa),
               ),
             ),
+          if (widget.data['contractAddress'] != null)
+            IconButton(
+              onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TokenContractInfo(
+                      tokenData: widget.data,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.info,
+                color: Colors.white,
+              ),
+            ),
         ],
       ),
       body: SizedBox(
@@ -528,7 +546,9 @@ class _TokenState extends State<Token> {
                                                 Text(
                                                   '${widget.data['contractAddress'] != null ? ellipsify(str: blockchainPrice['symbol']) : (blockchainPrice)['symbol']}${formatMoney((blockchainPrice)['price'])}',
                                                   style: const TextStyle(
-                                                      fontSize: 16),
+                                                    fontSize: 16,
+                                                    color: Colors.white70,
+                                                  ),
                                                 ),
                                                 const SizedBox(
                                                   width: 5,
