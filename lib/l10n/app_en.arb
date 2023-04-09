@@ -216,5 +216,6 @@
   "save": "Save",
   "games": "Games",
   "trending": "TRENDING",
-  "presale": "Presale"
+  "presale": "Presale",
+  "tokenDetails": "Token Details"
 }

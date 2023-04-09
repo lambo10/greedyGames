@@ -21,7 +21,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.tokenData['name'],
+          AppLocalizations.of(context).tokenDetails,
         ),
       ),
       body: SizedBox(
@@ -63,7 +63,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                                 width: 10,
                               ),
                               Text(
-                                widget.tokenData['name'],
+                                widget.tokenData['symbol'],
                                 style: const TextStyle(
                                     fontSize: 16, color: Colors.grey),
                               ),

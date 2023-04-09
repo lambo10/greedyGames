@@ -200,5 +200,6 @@
   "save": "Sauvegarder",
   "games": "Jeux",
   "trending": "TENDANCE",
-  "presale": "Prévente"
+  "presale": "Prévente",
+  "tokenDetails": "Détails du jeton"
 }
