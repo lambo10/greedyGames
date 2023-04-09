@@ -51,7 +51,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
+                              SizedBox(
                                 width: 40,
                                 height: 25,
                                 child: BlockieWidget(
@@ -59,7 +59,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                                   data: widget.tokenData['contractAddress'],
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 10,
                               ),
                               Text(
