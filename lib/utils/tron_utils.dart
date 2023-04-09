@@ -39,10 +39,12 @@ sendTron(
   final signature = '${HEX.encode(signatureSinged)}00';
   txInfo['signature'] = [signature];
   final txSent = await sendRawTransaction(api, txInfo);
-  print(txSent);
-  return {
-    'txid': txSent['txID'],
-  };
+  if (txSent['result'] ?? false) {
+    return {
+      'txid': txSent['txID'],
+    };
+  }
+  return {};
 }
 
 Future<Map> sendRawTransaction(String api, Map txInfo) async {
