@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
+import 'package:algorand_dart/algorand_dart.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
@@ -180,11 +181,15 @@ String transactionSignLotus(Map msg, String privateKeyHex) {
   Uint8List privateKey = HEX.decode(privateKeyHex);
 
   final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-  final signature = ECPair.fromPrivateKey(privateKey).sign(messageDigest);
 
-  final recid = sign(messageDigest, privateKey).v - 27;
+  final signatureEC = sign(messageDigest, privateKey);
+  final recid = signatureEC.v - 27;
 
-  final cid = base64.encode([...signature, recid]);
+  final cid = base64.encode([
+    ...signatureEC.r.toUint8List(),
+    ...signatureEC.s.toUint8List(),
+    recid,
+  ]);
   return cid;
 }
 
