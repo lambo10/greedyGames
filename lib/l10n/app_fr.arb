@@ -201,5 +201,6 @@
   "games": "Jeux",
   "trending": "TENDANCE",
   "presale": "Prévente",
-  "tokenDetails": "Détails du jeton"
+  "tokenDetails": "Détails du jeton",
+  "token": "Jeton"
 }

@@ -238,5 +238,6 @@
   "games": "游戏",
   "trending": "趋势",
   "presale": "预售",
-  "tokenDetails": "代币详情"
+  "tokenDetails": "代币详情",
+  "token": "代币"
 }

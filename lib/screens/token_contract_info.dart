@@ -40,9 +40,9 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Token',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context).token,
+                            style: const TextStyle(
                               fontSize: 20,
                             ),
                           ),
@@ -70,9 +70,9 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'Token contract address',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context).contractAddress,
+                            style: const TextStyle(
                               fontSize: 20,
                             ),
                           ),
@@ -113,9 +113,9 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'Token Symbol',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context).symbol,
+                            style: const TextStyle(
                               fontSize: 20,
                             ),
                           ),
@@ -128,9 +128,9 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                                 fontSize: 16, color: Colors.grey),
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'Token decimal',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context).decimals,
+                            style: const TextStyle(
                               fontSize: 20,
                             ),
                           ),
@@ -143,9 +143,9 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                                 fontSize: 16, color: Colors.grey),
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'Network',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context).network,
+                            style: const TextStyle(
                               fontSize: 20,
                             ),
                           ),
