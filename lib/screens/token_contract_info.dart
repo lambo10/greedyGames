@@ -84,7 +84,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                               Text(
                                 ellipsify(
                                   str: widget.tokenData['contractAddress'],
-                                  maxLength: 30,
+                                  maxLength: 24,
                                 ),
                                 style: const TextStyle(
                                     fontSize: 16, color: Colors.grey),
