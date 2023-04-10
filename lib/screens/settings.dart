@@ -12,10 +12,12 @@ import 'package:cryptowallet/screens/main_screen.dart';
 import 'package:cryptowallet/screens/recovery_pharse.dart';
 import 'package:cryptowallet/screens/send_token.dart';
 import 'package:cryptowallet/screens/set_currency.dart';
+import 'package:cryptowallet/screens/unlock_with_biometrics.dart';
 import 'package:cryptowallet/screens/view_wallets.dart';
 import 'package:cryptowallet/screens/wallet_connect.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -531,6 +533,43 @@ class _SettingsState extends State<Settings> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(
+                            height: 35,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 26,
+                                      height: 26,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(13),
+                                        color:
+                                            Color.fromARGB(255, 238, 20, 139),
+                                      ),
+                                      child: Icon(
+                                        FontAwesomeIcons.unlock,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      'Biometrics unlock',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  ],
+                                ),
+                                UnlockWithBiometrics(),
+                              ],
+                            ),
+                          ),
+                          const Divider(),
                           InkWell(
                             onTap: () async {
                               String mnemonic = (Hive.box(secureStorageKey))

@@ -47,20 +47,20 @@ void main() async {
       ),
     );
   };
-
+  const _secureEncryptionKey = 'encryptionKeyekalslslaidkeiaoa';
   const FlutterSecureStorage secureStorage = FlutterSecureStorage();
   var containsEncryptionKey =
-      await secureStorage.containsKey(key: secureEncryptionKey);
+      await secureStorage.containsKey(key: _secureEncryptionKey);
   if (!containsEncryptionKey) {
     var key = Hive.generateSecureKey();
     await secureStorage.write(
-      key: secureEncryptionKey,
+      key: _secureEncryptionKey,
       value: base64UrlEncode(key),
     );
   }
 
   var encryptionKey =
-      base64Url.decode(await secureStorage.read(key: secureEncryptionKey));
+      base64Url.decode(await secureStorage.read(key: _secureEncryptionKey));
   final pref = await Hive.openBox(secureStorageKey,
       encryptionCipher: HiveAesCipher(encryptionKey));
 

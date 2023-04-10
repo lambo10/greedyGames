@@ -450,6 +450,10 @@ Future<bool> authenticateIsAvailable() async {
 }
 
 Future<bool> localAuthentication() async {
+  final pref = Hive.box(secureStorageKey);
+  if (!pref.get(biometricsKey, defaultValue: true)) {
+    return false;
+  }
   final localAuth = LocalAuthentication();
   bool didAuthenticate = false;
   if (await authenticateIsAvailable()) {

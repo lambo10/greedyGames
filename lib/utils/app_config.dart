@@ -103,8 +103,8 @@ const pureStakeApiKey = 'G322hXkYM4749xUANJXm02d6M98WvYjtaWeAgJ4m';
 const seedRootKey = 'seedRoot';
 
 // settings key...not to be edited
-const secureEncryptionKey = 'encryptionKeyekalslslaidkeiaoa';
 const addcontactKey = 'addContactdk383laskdnco3';
+const biometricsKey = 's3ialdkal3aksleidla83aidildilsiei83019';
 const userUnlockPasscodeKey = 'userUnlockPasscode';
 const languageKey = 'languageksks38q830qialdkjd';
 const darkModekey = 'userTheme';
