@@ -203,5 +203,6 @@
   "presale": "Prévente",
   "tokenDetails": "Détails du jeton",
   "token": "Jeton",
-  "viewOnBlockExplorer": "Afficher sur l'explorateur de blocs"
+  "viewOnBlockExplorer": "Afficher sur l'explorateur de blocs",
+  "useBiometrics": "Utiliser la biométrie"
 }

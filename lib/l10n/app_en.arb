@@ -219,5 +219,6 @@
   "presale": "Presale",
   "tokenDetails": "Token Details",
   "token": "Token",
-  "viewOnBlockExplorer": "View on block explorer"
+  "viewOnBlockExplorer": "View on block explorer",
+  "useBiometrics": "Use Biometrics"
 }

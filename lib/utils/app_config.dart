@@ -40,9 +40,9 @@ const twitterLink = 'https://www.twitter.com/GreedyVerse';
 const mediumLink = 'https://medium.com/@greedyverseproject';
 // const linkedInLink = 'https://www.linkedin.com/in/';
 // const redditLink = 'https://reddit.com/r/';
-// const discordLink = 'https://discord.gg/';
+const discordLink = 'https://discord.gg/dDnaMYtk';
 // const facebookLink = 'https://facebook.com/';
-// const instagramLink = 'https://instagram.com/';
+const instagramLink = 'https://www.instagram.com/GreedyVerse/';
 
 // color
 const settingIconColor = Colors.white;
@@ -103,8 +103,8 @@ const pureStakeApiKey = 'G322hXkYM4749xUANJXm02d6M98WvYjtaWeAgJ4m';
 const seedRootKey = 'seedRoot';
 
 // settings key...not to be edited
-const secureEncryptionKey = 'encryptionKeyekalslslaidkeiaoa';
 const addcontactKey = 'addContactdk383laskdnco3';
+const biometricsKey = 's3ialdkal3aksleidla83aidildilsiei83019';
 const userUnlockPasscodeKey = 'userUnlockPasscode';
 const languageKey = 'languageksks38q830qialdkjd';
 const darkModekey = 'userTheme';

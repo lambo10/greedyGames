@@ -240,5 +240,6 @@
   "presale": "Vorverkauf",
   "tokenDetails": "Token-Details",
   "token": "Zeichen",
-  "viewOnBlockExplorer": "Ansicht im Block-Explorer"
+  "viewOnBlockExplorer": "Ansicht im Block-Explorer",
+  "useBiometrics": "Verwenden Sie Biometrie"
 }
