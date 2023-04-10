@@ -161,8 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedSplashScreen.withScreenFunction(
-        curve: Curves.linear,
-        splashTransition: SplashTransition.fadeTransition,
         splashIconSize: 100,
         backgroundColor: Theme.of(context).backgroundColor,
         splash: 'assets/logo.png',
