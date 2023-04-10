@@ -551,7 +551,7 @@ class _SettingsState extends State<Settings> {
                                             Color.fromARGB(255, 238, 20, 139),
                                       ),
                                       child: Icon(
-                                        FontAwesomeIcons.unlock,
+                                        FontAwesomeIcons.fingerprint,
                                         size: 16,
                                         color: Colors.white,
                                       ),
@@ -560,7 +560,7 @@ class _SettingsState extends State<Settings> {
                                       width: 10,
                                     ),
                                     Text(
-                                      'Biometrics unlock',
+                                      'Use Biometrics',
                                       style: TextStyle(fontSize: 18),
                                     ),
                                   ],
