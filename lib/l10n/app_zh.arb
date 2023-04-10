@@ -239,5 +239,6 @@
   "trending": "趋势",
   "presale": "预售",
   "tokenDetails": "代币详情",
-  "token": "代币"
+  "token": "代币",
+  "viewOnBlockExplorer": "在区块浏览器上查看"
 }
