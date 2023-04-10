@@ -203,5 +203,6 @@
   "presale": "पूर्व बिक्री",
   "tokenDetails": "टोकन विवरण",
   "token": "टोकन",
-  "viewOnBlockExplorer": "ब्लॉक एक्सप्लोरर पर देखें"
+  "viewOnBlockExplorer": "ब्लॉक एक्सप्लोरर पर देखें",
+  "useBiometrics": "बायोमेट्रिक्स का प्रयोग करें"
 }

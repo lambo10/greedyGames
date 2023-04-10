@@ -26,27 +26,30 @@ class _UnlockWithBiometricsState extends State<UnlockWithBiometrics> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoSwitch(
-      value: allowedBiometrics,
-      activeColor: appBackgroundblue,
-      onChanged: (bool value) async {
-        if (await authenticate(context)) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          allowedBiometrics = !allowedBiometrics;
-          setState(() {});
-          await pref.put(biometricsKey, allowedBiometrics);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.red,
-              content: Text(
-                AppLocalizations.of(context).authFailed,
-                style: const TextStyle(color: Colors.white),
+    return Transform.scale(
+      scale: 0.9,
+      child: CupertinoSwitch(
+        value: allowedBiometrics,
+        activeColor: appBackgroundblue,
+        onChanged: (bool value) async {
+          if (await authenticate(context)) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            allowedBiometrics = !allowedBiometrics;
+            setState(() {});
+            await pref.put(biometricsKey, allowedBiometrics);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: Colors.red,
+                content: Text(
+                  AppLocalizations.of(context).authFailed,
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
-            ),
-          );
-        }
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }

@@ -560,7 +560,8 @@ class _SettingsState extends State<Settings> {
                                       width: 10,
                                     ),
                                     Text(
-                                      'Use Biometrics',
+                                      AppLocalizations.of(context)
+                                          .useBiometrics,
                                       style: TextStyle(fontSize: 18),
                                     ),
                                   ],

@@ -240,5 +240,6 @@
   "presale": "预售",
   "tokenDetails": "代币详情",
   "token": "代币",
-  "viewOnBlockExplorer": "在区块浏览器上查看"
+  "viewOnBlockExplorer": "在区块浏览器上查看",
+  "useBiometrics": "使用生物识别技术"
 }
