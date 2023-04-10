@@ -156,7 +156,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
                                     style: TextStyle(
                                         fontSize: 15,
                                         color: widget.hasPrice
-                                            ? Colors.white70
+                                            ? Colors.grey
                                             : const Color(0x00ffffff)),
                                   ),
                                   const SizedBox(
