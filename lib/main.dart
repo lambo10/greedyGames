@@ -161,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedSplashScreen.withScreenFunction(
-        disableNavigation: true,
+        curve: Curves.linear,
         splashIconSize: 100,
         backgroundColor: Theme.of(context).backgroundColor,
         splash: 'assets/logo.png',
@@ -192,7 +192,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
           return const Security();
         },
-        splashTransition: SplashTransition.slideTransition,
         pageTransitionType: PageTransitionType.rightToLeft,
       ),
     );
