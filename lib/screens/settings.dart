@@ -828,7 +828,6 @@ class _SettingsState extends State<Settings> {
                               },
                               child: const Icon(
                                 FontAwesomeIcons.telegram,
-                                color: settingIconColor,
                               ),
                             ),
                             const SizedBox(
@@ -840,7 +839,6 @@ class _SettingsState extends State<Settings> {
                               },
                               child: const Icon(
                                 FontAwesomeIcons.twitter,
-                                color: settingIconColor,
                               ),
                             ),
                             const SizedBox(
@@ -852,7 +850,6 @@ class _SettingsState extends State<Settings> {
                               },
                               child: const Icon(
                                 FontAwesomeIcons.medium,
-                                color: settingIconColor,
                               ),
                             ),
                             const SizedBox(
@@ -864,7 +861,7 @@ class _SettingsState extends State<Settings> {
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.linkedin,
-                            //     color: settingIconColor,
+
                             //   ),
                             // ),
                             // const SizedBox(
@@ -876,7 +873,7 @@ class _SettingsState extends State<Settings> {
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.reddit,
-                            //     color: settingIconColor,
+
                             //   ),
                             // ),
                             // const SizedBox(
@@ -888,7 +885,7 @@ class _SettingsState extends State<Settings> {
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.discord,
-                            //     color: settingIconColor,
+
                             //   ),
                             // ),
                             // const SizedBox(
@@ -900,7 +897,7 @@ class _SettingsState extends State<Settings> {
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.instagram,
-                            //     color: settingIconColor,
+
                             //   ),
                             // ),
                           ],
