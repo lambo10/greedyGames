@@ -162,9 +162,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: AnimatedSplashScreen.withScreenFunction(
         curve: Curves.linear,
-        splashTransition: SplashTransition.fadeTransition,
         splashIconSize: 100,
         backgroundColor: Theme.of(context).backgroundColor,
+        disableNavigation: true,
         splash: 'assets/logo.png',
         screenFunction: () async {
           final pref = Hive.box(secureStorageKey);
