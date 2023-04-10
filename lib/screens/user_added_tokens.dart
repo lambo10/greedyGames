@@ -46,7 +46,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
 
   Future getUserAddedToken() async {
     final pref = Hive.box(secureStorageKey);
-    final userTokenListKey = await getAddTokenKey();
+    final userTokenListKey = getAddTokenKey();
     final prefToken = pref.get(userTokenListKey);
 
     List userTokenList = [];
@@ -107,7 +107,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
             confirmDismiss: (DismissDirection direction) async {
               final pref = Hive.box(secureStorageKey);
 
-              final userTokenListKey = await getAddTokenKey();
+              final userTokenListKey = getAddTokenKey();
 
               if (userAddedToken.isEmpty) return false;
               String customTokenDetailsKey = await contractDetailsKey(

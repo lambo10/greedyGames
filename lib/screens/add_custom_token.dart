@@ -369,7 +369,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                         return;
                       }
 
-                      final userTokenListKey = await getAddTokenKey();
+                      final userTokenListKey = getAddTokenKey();
 
                       final Map customTokenDetails = {
                         'contractAddress': contractAddr,
