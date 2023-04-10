@@ -547,7 +547,7 @@ class _TokenState extends State<Token> {
                                                   '${widget.data['contractAddress'] != null ? ellipsify(str: blockchainPrice['symbol']) : (blockchainPrice)['symbol']}${formatMoney((blockchainPrice)['price'])}',
                                                   style: const TextStyle(
                                                     fontSize: 16,
-                                                    color: Colors.white70,
+                                                    color: Colors.grey,
                                                   ),
                                                 ),
                                                 const SizedBox(

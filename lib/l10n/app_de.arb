@@ -239,5 +239,6 @@
   "trending": "IM TREND",
   "presale": "Vorverkauf",
   "tokenDetails": "Token-Details",
-  "token": "Zeichen"
+  "token": "Zeichen",
+  "viewOnBlockExplorer": "Ansicht im Block-Explorer"
 }

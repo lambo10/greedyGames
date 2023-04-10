@@ -202,5 +202,6 @@
   "trending": "TENDANCE",
   "presale": "Prévente",
   "tokenDetails": "Détails du jeton",
-  "token": "Jeton"
+  "token": "Jeton",
+  "viewOnBlockExplorer": "Afficher sur l'explorateur de blocs"
 }

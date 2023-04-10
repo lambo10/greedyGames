@@ -218,5 +218,6 @@
   "trending": "TRENDING",
   "presale": "Presale",
   "tokenDetails": "Token Details",
-  "token": "Token"
+  "token": "Token",
+  "viewOnBlockExplorer": "View on block explorer"
 }

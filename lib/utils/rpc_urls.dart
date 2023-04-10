@@ -485,7 +485,7 @@ Future<bool> authenticate(BuildContext context,
   return didAuthenticate ?? false;
 }
 
-Future getAddTokenKey() async {
+String getAddTokenKey() {
   final pref = Hive.box(secureStorageKey);
   final String mnemonicHash = sha3(pref.get(currentMmenomicKey));
   return 'userTokenList$mnemonicHash'.toLowerCase();
