@@ -852,16 +852,15 @@ class _SettingsState extends State<Settings> {
                                 FontAwesomeIcons.medium,
                               ),
                             ),
-                            const SizedBox(
-                              width: 20,
-                            ),
+                            // const SizedBox(
+                            //   width: 20,
+                            // ),
                             // GestureDetector(
                             //   onTap: () async {
-                            //     await launch(linkedInLink);
+                            // await launchUrl(Uri.parse(linkedInLink));
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.linkedin,
-
                             //   ),
                             // ),
                             // const SizedBox(
@@ -869,37 +868,34 @@ class _SettingsState extends State<Settings> {
                             // ),
                             // GestureDetector(
                             //   onTap: () async {
-                            //     await launch(redditLink);
+                            //  await launchUrl(Uri.parse(redditLink));
                             //   },
                             //   child: const Icon(
                             //     FontAwesomeIcons.reddit,
-
                             //   ),
                             // ),
-                            // const SizedBox(
-                            //   width: 20,
-                            // ),
-                            // GestureDetector(
-                            //   onTap: () async {
-                            //     await launch(discordLink);
-                            //   },
-                            //   child: const Icon(
-                            //     FontAwesomeIcons.discord,
-
-                            //   ),
-                            // ),
-                            // const SizedBox(
-                            //   width: 20,
-                            // ),
-                            // GestureDetector(
-                            //   onTap: () async {
-                            //     await launch(instagramLink);
-                            //   },
-                            //   child: const Icon(
-                            //     FontAwesomeIcons.instagram,
-
-                            //   ),
-                            // ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                await launchUrl(Uri.parse(discordLink));
+                              },
+                              child: const Icon(
+                                FontAwesomeIcons.discord,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                await launchUrl(Uri.parse(instagramLink));
+                              },
+                              child: const Icon(
+                                FontAwesomeIcons.instagram,
+                              ),
+                            ),
                           ],
                         )
                       ],

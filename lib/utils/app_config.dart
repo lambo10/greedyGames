@@ -40,9 +40,9 @@ const twitterLink = 'https://www.twitter.com/GreedyVerse';
 const mediumLink = 'https://medium.com/@greedyverseproject';
 // const linkedInLink = 'https://www.linkedin.com/in/';
 // const redditLink = 'https://reddit.com/r/';
-// const discordLink = 'https://discord.gg/';
+const discordLink = 'https://discord.gg/dDnaMYtk';
 // const facebookLink = 'https://facebook.com/';
-// const instagramLink = 'https://instagram.com/';
+const instagramLink = 'https://www.instagram.com/GreedyVerse/';
 
 // color
 const settingIconColor = Colors.white;
