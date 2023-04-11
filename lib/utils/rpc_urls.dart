@@ -1309,6 +1309,7 @@ const coinGeckCryptoSymbolToID = {
   "FTM": "fantom",
   "HT": "huobi-token",
   "MATIC": "matic-network",
+  "NEAR": "near",
   "KCS": "kucoin-shares",
   "ELA": "elastos",
   "TT": "thunder-token",
@@ -2459,6 +2460,36 @@ Future<double> getAlgorandAddressBalance(
   }
 }
 
+Future<double> getNearAddressBalance(
+  String address,
+  String nearApi, {
+  bool skipNetworkRequest = false,
+}) async {
+  final pref = Hive.box(secureStorageKey);
+
+  final key = 'nearAddressBalance$address$nearApi';
+
+  final storedBalance = pref.get(key);
+
+  double savedBalance = 0;
+
+  if (storedBalance != null) {
+    savedBalance = storedBalance;
+  }
+
+  if (skipNetworkRequest) return savedBalance;
+
+  try {
+    throw Exception("Not Implemented");
+    //FIXME:
+    // await pref.put(key, balanceInNear);
+
+    // return balanceInNear;
+  } catch (e) {
+    return savedBalance;
+  }
+}
+
 Future<double> getTronAddressBalance(
   String address,
   String tronGridApi, {
@@ -3193,6 +3224,21 @@ Future<double> totalCryptoBalance({
     );
 
     totalBalance += cosmosBalance * cosmosPrice;
+  }
+  for (String i in getNearBlockChains().keys) {
+    final Map nearBlockchain = getNearBlockChains()[i];
+    final nearPrice =
+        (allCryptoPrice[coinGeckCryptoSymbolToID[nearBlockchain['symbol']]]
+                [defaultCurrency.toLowerCase()] as num)
+            .toDouble();
+    final getNearDetails = await getNearFromMemnomic(mnemonic);
+    final nearBalance = await getNearAddressBalance(
+      getNearDetails['address'],
+      nearBlockchain['api'],
+      skipNetworkRequest: skipNetworkRequest,
+    );
+
+    totalBalance += nearBalance * nearPrice;
   }
   for (String i in getStellarBlockChains().keys) {
     final Map stellarBlockchain = getStellarBlockChains()[i];

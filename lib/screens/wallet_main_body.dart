@@ -637,7 +637,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                       final getNearDetails =
                           await getNearFromMemnomic(mnemonic);
                       try {
-                        notifier.value = await getTronAddressBalance(
+                        notifier.value = await getNearAddressBalance(
                           getNearDetails['address'],
                           nearBlockchains['api'],
                           skipNetworkRequest: notifier.value == null,
@@ -647,7 +647,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                       cryptoBalancesTimer.add(
                         Timer.periodic(httpPollingDelay, (timer) async {
                           try {
-                            notifier.value = await getTronAddressBalance(
+                            notifier.value = await getNearAddressBalance(
                               getNearDetails['address'],
                               nearBlockchains['api'],
                               skipNetworkRequest: notifier.value == null,
