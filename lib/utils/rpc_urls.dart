@@ -1215,10 +1215,20 @@ Map getNearBlockChains() {
       'default': 'NEAR',
       'blockExplorer':
           'https://explorer.near.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/near.png'
+      'image': 'assets/near.png',
+      'api': ''
     }
   };
-  if (enableTestNet) {}
+  if (enableTestNet) {
+    blockChains['Near(Testnet)'] = {
+      'symbol': 'NEAR',
+      'default': 'NEAR',
+      'blockExplorer':
+          'https://explorer.testnet.near.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/near.png',
+      'api': ''
+    };
+  }
   return blockChains;
 }
 
