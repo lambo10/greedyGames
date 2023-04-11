@@ -19,7 +19,7 @@ import '../xrp_transaction/xrp_transaction.dart';
 final pref = Hive.box(secureStorageKey);
 const xrpDecimals = 6;
 
-class XRPCoin implements Coin {
+class XRPCoin extends Coin {
   String api;
   String address;
   String blockExplorer;

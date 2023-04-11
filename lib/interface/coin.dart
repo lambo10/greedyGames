@@ -13,4 +13,7 @@ abstract class Coin {
   String default__();
   String address_();
   String image_();
+  String contractAddress() {
+    return null;
+  }
 }

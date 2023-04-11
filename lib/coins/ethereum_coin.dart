@@ -15,7 +15,7 @@ import '../utils/rpc_urls.dart';
 final pref = Hive.box(secureStorageKey);
 const etherDecimals = 18;
 
-class EthereumCoin implements Coin {
+class EthereumCoin extends Coin {
   int coinType;
   int chainId;
   String rpcUrl;

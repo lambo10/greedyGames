@@ -16,7 +16,7 @@ import '../utils/rpc_urls.dart';
 final pref = Hive.box(secureStorageKey);
 const algorandDecimals = 6;
 
-class AlgorandCoin implements Coin {
+class AlgorandCoin extends Coin {
   AlgorandTypes algoType;
   String address;
   String blockExplorer;

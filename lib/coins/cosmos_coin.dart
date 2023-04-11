@@ -16,7 +16,7 @@ import '../utils/app_config.dart';
 final pref = Hive.box(secureStorageKey);
 const cosmosDecimals = 6;
 
-class CosmosCoin implements Coin {
+class CosmosCoin extends Coin {
   String bech32Hrp;
   String lcdUrl;
   String address;

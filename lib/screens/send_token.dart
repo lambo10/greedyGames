@@ -1,3 +1,4 @@
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/interface/coin.dart';
@@ -278,6 +279,7 @@ class _SendTokenState extends State<SendToken> {
                           ),
                     onPressed: () async {
                       if (isLoading) return;
+
                       // hide snackbar if it is showing
                       ScaffoldMessenger.of(context).clearSnackBars();
                       FocusManager.instance.primaryFocus?.unfocus();
@@ -320,7 +322,7 @@ class _SendTokenState extends State<SendToken> {
                         setState(() {
                           isLoading = true;
                         });
-                        if (widget.tokenData['default'] == 'XLM' &&
+                        if (widget.tokenData.default__() == 'XLM' &&
                             iscryptoDomain) {
                           try {
                             stellar.FederationResponse response =
@@ -339,12 +341,16 @@ class _SendTokenState extends State<SendToken> {
                             cryptoDomain = recipient;
                             recipient = ensAddress['msg'];
                           } else {
+                            String currency;
+                            if (widget.tokenData is EthereumCoin) {
+                              currency = null;
+                            } else {
+                              currency = widget.tokenData.default__();
+                            }
                             Map unstoppableDomainAddr =
                                 await unstoppableDomainENS(
                               cryptoDomainName: recipient,
-                              currency: widget.tokenData['rpc'] == null
-                                  ? widget.tokenData['default']
-                                  : null,
+                              currency: currency,
                             );
                             cryptoDomain = unstoppableDomainAddr['success']
                                 ? recipient
@@ -359,7 +365,7 @@ class _SendTokenState extends State<SendToken> {
                           isLoading = false;
                         });
 
-                        validateAddress(widget.tokenData, recipient);
+                        widget.tokenData.validateAddress(recipient);
                       } catch (e) {
                         setState(() {
                           isLoading = false;

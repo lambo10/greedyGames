@@ -14,7 +14,7 @@ import '../utils/app_config.dart';
 
 final pref = Hive.box(secureStorageKey);
 const stellarDecimals = 6;
-class StellarCoin implements Coin {
+class StellarCoin extends Coin {
   stellar.Network cluster;
   stellar.StellarSDK sdk;
   String address;

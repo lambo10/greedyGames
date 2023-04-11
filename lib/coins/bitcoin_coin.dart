@@ -29,7 +29,7 @@ final pref = Hive.box(secureStorageKey);
 const sochainApi = 'https://sochain.com/api/v2/';
 const bitCoinDecimals = 8;
 
-class BitcoinCoin implements Coin {
+class BitcoinCoin extends Coin {
   NetworkType POSNetwork;
   bool P2WPKHType;
   String derivationPath;

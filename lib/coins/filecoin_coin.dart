@@ -29,7 +29,7 @@ final pref = Hive.box(secureStorageKey);
 const filecoinfaucet = 'https://faucet.calibration.fildev.network/';
 const fileCoinDecimals = 18;
 
-class FilecoinCoin implements Coin {
+class FilecoinCoin extends Coin {
   String prefix;
   String baseUrl;
   String address;

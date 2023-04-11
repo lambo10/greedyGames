@@ -15,7 +15,7 @@ import 'package:bs58check/bs58check.dart' as bs58check;
 final pref = Hive.box(secureStorageKey);
 const tezorDecimals = 6;
 
-class TezosCoin implements Coin {
+class TezosCoin extends Coin {
   TezosTypes tezorType;
   String server;
   String address;

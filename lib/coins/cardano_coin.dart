@@ -15,7 +15,7 @@ import '../utils/rpc_urls.dart';
 final pref = Hive.box(secureStorageKey);
 const cardanoDecimals = 6;
 
-class CardanoCoin implements Coin {
+class CardanoCoin extends Coin {
   String blockFrostKey;
   cardano.NetworkId cardano_network;
   String address;

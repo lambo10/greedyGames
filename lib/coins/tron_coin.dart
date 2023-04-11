@@ -24,7 +24,7 @@ const TRX_MESSAGE_HEADER = '\x19TRON Signed Message:\n32';
 
 const tronDecimals = 6;
 
-class TronCoin implements Coin {
+class TronCoin extends Coin {
   String api;
   String address;
   String blockExplorer;

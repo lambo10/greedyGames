@@ -17,7 +17,7 @@ import '../utils/rpc_urls.dart';
 final pref = Hive.box(secureStorageKey);
 const nearDecimals = 24;
 
-class NearCoin implements Coin {
+class NearCoin extends Coin {
   String api;
   String address;
   String blockExplorer;
