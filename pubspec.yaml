@@ -37,7 +37,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   animated_splash_screen: ^1.1.0
+  connectivity_plus: 2.3.6+1
   flutter_launcher_icons: ^0.9.2
+  near_api_flutter: ^0.0.13-alpha
   bip39: ^1.0.6
   bip32: ^2.0.0
   http: ^0.13.4

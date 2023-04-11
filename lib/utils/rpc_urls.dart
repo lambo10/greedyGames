@@ -23,6 +23,7 @@ import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:hive/hive.dart';
 import 'package:leb128/leb128.dart';
+import 'package:near_api_flutter/near_api_flutter.dart' hide PrivateKey;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sacco/sacco.dart' as cosmos;
@@ -80,6 +81,7 @@ const satoshiDustAmount = 546;
 const stellarDecimals = 6;
 const algorandDecimals = 6;
 const tezorDecimals = 6;
+const nearDecimals = 24;
 const int maxFeeGuessForCardano = 200000;
 
 // time
@@ -1208,6 +1210,30 @@ Map getStellarBlockChains() {
   return blockChains;
 }
 
+Map getNearBlockChains() {
+  Map blockChains = {
+    'Near': {
+      'symbol': 'NEAR',
+      'default': 'NEAR',
+      'blockExplorer':
+          'https://explorer.near.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/near.png',
+      'api': 'https://rpc.mainnet.near.org'
+    }
+  };
+  if (enableTestNet) {
+    blockChains['Near(Testnet)'] = {
+      'symbol': 'NEAR',
+      'default': 'NEAR',
+      'blockExplorer':
+          'https://explorer.testnet.near.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/near.png',
+      'api': 'https://rpc.testnet.near.org'
+    };
+  }
+  return blockChains;
+}
+
 Map getXRPBlockChains() {
   Map blockChains = {
     'XRP': {
@@ -1295,6 +1321,7 @@ const coinGeckCryptoSymbolToID = {
   "FTM": "fantom",
   "HT": "huobi-token",
   "MATIC": "matic-network",
+  "NEAR": "near",
   "KCS": "kucoin-shares",
   "ELA": "elastos",
   "TT": "thunder-token",
@@ -1533,6 +1560,7 @@ Future<void> initializeAllPrivateKeys(String mnemonic) async {
   await getAlgorandFromMemnomic(mnemonic);
   await getTronFromMemnomic(mnemonic);
   await getXRPFromMemnomic(mnemonic);
+  await getNearFromMemnomic(mnemonic);
 }
 
 Future<Map> sendCardano(Map config) async {
@@ -2094,6 +2122,26 @@ Future calculateAlgorandKey(Map config) async {
   };
 }
 
+class NearRpcProvider extends RPCProvider {
+  final String endpoint;
+
+  NearRpcProvider(this.endpoint) : super(endpoint);
+}
+
+Future calculateNearKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  KeyData masterKey =
+      await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
+  final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
+
+  final address = HEX.encode(publicKey).substring(2);
+
+  return {
+    'privateKey': HEX.encode(masterKey.key),
+    'address': address,
+  };
+}
+
 String calculateEthereumKey(Map config) {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
   return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
@@ -2425,6 +2473,60 @@ Future<double> getAlgorandAddressBalance(
     await pref.put(key, userBalance);
 
     return userBalance;
+  } catch (e) {
+    return savedBalance;
+  }
+}
+
+Future<double> getNearAddressBalance(
+  String address,
+  String nearApi, {
+  bool skipNetworkRequest = false,
+}) async {
+  final pref = Hive.box(secureStorageKey);
+
+  final key = 'nearAddressBalance$address$nearApi';
+
+  final storedBalance = pref.get(key);
+
+  double savedBalance = 0;
+
+  if (storedBalance != null) {
+    savedBalance = storedBalance;
+  }
+
+  if (skipNetworkRequest) return savedBalance;
+
+  try {
+    final request = await post(
+      Uri.parse(nearApi),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(
+        {
+          "jsonrpc": "2.0",
+          "id": "dontcare",
+          "method": "query",
+          "params": {
+            "request_type": "view_account",
+            "finality": "final",
+            "account_id": address
+          },
+        },
+      ),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception('Request failed');
+    }
+    Map decodedData = jsonDecode(request.body);
+
+    final BigInt balance = BigInt.parse(decodedData['result']['amount']);
+    final base = BigInt.from(10);
+
+    final balanceInNear = (balance / base.pow(nearDecimals)).toDouble();
+    await pref.put(key, balanceInNear);
+
+    return balanceInNear;
   } catch (e) {
     return savedBalance;
   }
@@ -2995,6 +3097,33 @@ Future<Map> getXRPFromMemnomic(
   return keys;
 }
 
+Future<Map> getNearFromMemnomic(
+  String mnemonic,
+) async {
+  String key = 'nearDetails$mnemonic';
+
+  final pref = Hive.box(secureStorageKey);
+  List mmenomicMapping = [];
+
+  if (pref.get(key) != null) {
+    mmenomicMapping = jsonDecode(pref.get(key)) as List;
+    for (int i = 0; i < mmenomicMapping.length; i++) {
+      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
+        return mmenomicMapping[i]['key'];
+      }
+    }
+  }
+
+  final keys = await compute(calculateNearKey, {
+    mnemonicKey: mnemonic,
+    seedRootKey: seedPhraseRoot,
+  });
+
+  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
+  await pref.put(key, jsonEncode(mmenomicMapping));
+  return keys;
+}
+
 Future<Map> getAlgorandFromMemnomic(
   String mnemonic,
 ) async {
@@ -3137,6 +3266,21 @@ Future<double> totalCryptoBalance({
     );
 
     totalBalance += cosmosBalance * cosmosPrice;
+  }
+  for (String i in getNearBlockChains().keys) {
+    final Map nearBlockchain = getNearBlockChains()[i];
+    final nearPrice =
+        (allCryptoPrice[coinGeckCryptoSymbolToID[nearBlockchain['symbol']]]
+                [defaultCurrency.toLowerCase()] as num)
+            .toDouble();
+    final getNearDetails = await getNearFromMemnomic(mnemonic);
+    final nearBalance = await getNearAddressBalance(
+      getNearDetails['address'],
+      nearBlockchain['api'],
+      skipNetworkRequest: skipNetworkRequest,
+    );
+
+    totalBalance += nearBalance * nearPrice;
   }
   for (String i in getStellarBlockChains().keys) {
     final Map stellarBlockchain = getStellarBlockChains()[i];

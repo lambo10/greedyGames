@@ -603,6 +603,72 @@ class _WalletMainBodyState extends State<WalletMainBody>
       blockChainsArray.add(const Divider());
     }
 
+    for (String i in getNearBlockChains().keys) {
+      final Map nearBlockchains = Map.from(getNearBlockChains()[i])
+        ..addAll({'name': i});
+
+      final notifier = ValueNotifier<double>(null);
+      cryptoBalanceListNotifiers.add(notifier);
+
+      blockChainsArray.addAll([
+        InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => Token(
+                    data: nearBlockchains,
+                  ),
+                ),
+              );
+            },
+            child: GetBlockChainWidget(
+              name_: i,
+              symbol_: nearBlockchains['symbol'],
+              hasPrice_: true,
+              image_: AssetImage(
+                nearBlockchains['image'],
+              ),
+              cryptoAmount_: ValueListenableBuilder(
+                valueListenable: notifier,
+                builder: ((context, value, child) {
+                  if (value == null) {
+                    () async {
+                      final getNearDetails =
+                          await getNearFromMemnomic(mnemonic);
+                      try {
+                        notifier.value = await getNearAddressBalance(
+                          getNearDetails['address'],
+                          nearBlockchains['api'],
+                          skipNetworkRequest: notifier.value == null,
+                        );
+                      } catch (_) {}
+
+                      cryptoBalancesTimer.add(
+                        Timer.periodic(httpPollingDelay, (timer) async {
+                          try {
+                            notifier.value = await getNearAddressBalance(
+                              getNearDetails['address'],
+                              nearBlockchains['api'],
+                              skipNetworkRequest: notifier.value == null,
+                            );
+                          } catch (_) {}
+                        }),
+                      );
+                    }();
+                    return Container();
+                  }
+                  return UserBalance(
+                    symbol: nearBlockchains['symbol'],
+                    balance: value,
+                  );
+                }),
+              ),
+            )),
+      ]);
+      blockChainsArray.add(const Divider());
+    }
+
     for (String i in getTronBlockchains().keys) {
       final Map tronBlockchain = Map.from(getTronBlockchains()[i])
         ..addAll({'name': i});

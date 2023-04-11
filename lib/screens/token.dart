@@ -158,6 +158,13 @@ class _TokenState extends State<Token> {
           widget.data['blockFrostKey'],
           skipNetworkRequest: skipNetworkRequest,
         );
+      } else if (widget.data['default'] == 'NEAR') {
+        final getNearDetails = await getNearFromMemnomic(mnemonic);
+        cryptoBalance = await getNearAddressBalance(
+          getNearDetails['address'],
+          widget.data['api'],
+          skipNetworkRequest: skipNetworkRequest,
+        );
       } else if (widget.data['default'] == 'FIL') {
         final getFileCoinDetails = await getFileCoinFromMemnomic(
           mnemonic,
@@ -227,6 +234,11 @@ class _TokenState extends State<Token> {
             (await getSolanaFromMemnomic(mnemonic))['address'].toString();
       } else if (widget.data['default'] == 'XRP') {
         currentAddress = (await getXRPFromMemnomic(
+          mnemonic,
+        ))['address']
+            .toString();
+      } else if (widget.data['default'] == 'NEAR') {
+        currentAddress = (await getNearFromMemnomic(
           mnemonic,
         ))['address']
             .toString();

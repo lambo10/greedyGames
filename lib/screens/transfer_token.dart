@@ -16,9 +16,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:near_api_flutter/near_api_flutter.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -53,6 +55,7 @@ class _TransferTokenState extends State<TransferToken> {
   bool isTron;
   bool isTezor;
   bool isXRP;
+  bool isNear;
   ContractAbi contrAbi;
   List _parameters;
   String mnemonic;
@@ -72,6 +75,7 @@ class _TransferTokenState extends State<TransferToken> {
     isTron = widget.data['default'] == 'TRX';
     isTezor = widget.data['default'] == 'XTZ';
     isXRP = widget.data['default'] == 'XRP';
+    isNear = widget.data['default'] == 'NEAR';
     isNFTTransfer = widget.data['isNFT'] != null;
 
     getTransactionFee();
@@ -230,6 +234,16 @@ class _TransferTokenState extends State<TransferToken> {
         transactionFeeMap = {
           'transactionFee': 0,
           'userBalance': tronBalance,
+        };
+      } else if (isNear) {
+        final getNearDetails = await getNearFromMemnomic(mnemonic);
+        final nearBalance = await getNearAddressBalance(
+          getNearDetails['address'],
+          widget.data['api'],
+        );
+        transactionFeeMap = {
+          'transactionFee': 0,
+          'userBalance': nearBalance,
         };
       } else if (isTezor) {
         final getTrezorDetails =
@@ -487,6 +501,10 @@ class _TransferTokenState extends State<TransferToken> {
                         widget.data['cardano_network'],
                       );
                       return {'address': getCardanoDetails['address']};
+                    } else if (isNear) {
+                      final getNearDetails =
+                          await getNearFromMemnomic(mnemonic);
+                      return {'address': getNearDetails['address']};
                     } else if (isTezor) {
                       final getTezorDetails = await getTezorFromMemnomic(
                         mnemonic,
@@ -788,6 +806,54 @@ class _TransferTokenState extends State<TransferToken> {
                                           coinDecimals = tezorDecimals;
                                           userAddress =
                                               getTezorDetails['address'];
+
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
+                                        } else if (isNear) {
+                                          final getNearDetails =
+                                              await getNearFromMemnomic(
+                                            mnemonic,
+                                          );
+                                          final privateKeyPublic = [
+                                            ...HEX.decode(
+                                                getNearDetails['privateKey']),
+                                            ...HEX.decode(
+                                                getNearDetails['address'])
+                                          ];
+                                          final publicKey = PublicKey(
+                                            HEX.decode(
+                                              getNearDetails['address'],
+                                            ),
+                                          );
+                                          Account account = Account(
+                                            accountId:
+                                                getNearDetails['address'],
+                                            keyPair: KeyPair(
+                                              PrivateKey(privateKeyPublic),
+                                              publicKey,
+                                            ),
+                                            provider: NearRpcProvider(
+                                              widget.data['api'],
+                                            ),
+                                          );
+
+                                          final trans =
+                                              await account.sendTokens(
+                                            double.parse(
+                                              widget.data['amount'],
+                                            ),
+                                            widget.data['recipient'],
+                                          );
+
+                                          transactionHash = trans['result']
+                                              ['transaction']['hash'];
+
+                                          transactionHash = transactionHash
+                                              .replaceAll('\n', '');
+
+                                          coinDecimals = nearDecimals;
+                                          userAddress =
+                                              getNearDetails['address'];
 
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';

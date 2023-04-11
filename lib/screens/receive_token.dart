@@ -59,6 +59,9 @@ class _ReceiveTokenState extends State<ReceiveToken> {
         widget.data['cardano_network'],
       );
       return {'address': cardano['address']};
+    } else if (widget.data['default'] == 'NEAR') {
+      final near = await getNearFromMemnomic(mnemonic);
+      return {'address': near['address']};
     } else if (widget.data['default'] == 'ALGO') {
       final algorand = await getAlgorandFromMemnomic(
         mnemonic,
