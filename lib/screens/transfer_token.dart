@@ -16,9 +16,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:cryptowallet/utils/rpc_urls.dart';
+import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:near_api_flutter/near_api_flutter.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -809,11 +811,42 @@ class _TransferTokenState extends State<TransferToken> {
                                               '${widget.data['default']} Details';
                                         } else if (isNear) {
                                           final getNearDetails =
-                                              await getXRPFromMemnomic(
+                                              await getNearFromMemnomic(
                                             mnemonic,
                                           );
-                                          Map transaction = {};
-                                          transactionHash = transaction['txid'];
+                                          final privateKeyPublic = [
+                                            ...HEX.decode(
+                                                getNearDetails['privateKey']),
+                                            ...HEX.decode(
+                                                getNearDetails['address'])
+                                          ];
+                                          final publicKey = PublicKey(
+                                            HEX.decode(
+                                              getNearDetails['address'],
+                                            ),
+                                          );
+                                          Account account = Account(
+                                            accountId:
+                                                getNearDetails['address'],
+                                            keyPair: KeyPair(
+                                              PrivateKey(privateKeyPublic),
+                                              publicKey,
+                                            ),
+                                            provider: NearRpcProvider(
+                                              widget.data['api'],
+                                            ),
+                                          );
+
+                                          final trans =
+                                              await account.sendTokens(
+                                            double.parse(
+                                              widget.data['amount'],
+                                            ),
+                                            widget.data['recipient'],
+                                          );
+
+                                          transactionHash = trans['result']
+                                              ['transaction']['hash'];
 
                                           transactionHash = transactionHash
                                               .replaceAll('\n', '');

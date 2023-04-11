@@ -23,6 +23,7 @@ import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:hive/hive.dart';
 import 'package:leb128/leb128.dart';
+import 'package:near_api_flutter/near_api_flutter.dart' hide PrivateKey;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sacco/sacco.dart' as cosmos;
@@ -2119,6 +2120,12 @@ Future calculateAlgorandKey(Map config) async {
   return {
     'address': account.publicAddress,
   };
+}
+
+class NearRpcProvider extends RPCProvider {
+  final String endpoint;
+
+  NearRpcProvider(this.endpoint) : super(endpoint);
 }
 
 Future calculateNearKey(Map config) async {
