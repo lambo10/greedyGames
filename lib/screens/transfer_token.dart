@@ -9,7 +9,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/stellar_utils.dart';
-import 'package:cryptowallet/utils/tron_utils.dart';
+import 'package:cryptowallet/coins/tron_utils.dart';
 import 'package:dartez/dartez.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
@@ -738,24 +738,7 @@ class _TransferTokenState extends State<TransferToken> {
 
                                           await client.dispose();
                                         } else if (isBitcoinType) {
-                                          final getBitCoinDetails =
-                                              await getBitcoinFromMemnomic(
-                                            mnemonic,
-                                            widget.data,
-                                          );
-
-                                          double satoshi = double.parse(
-                                                widget.data['amount'],
-                                              ) *
-                                              pow(10, bitCoinDecimals);
-
-                                          int amountToSend = satoshi.toInt();
-
-                                          final transaction = await sendBTCType(
-                                            widget.data['recipient'],
-                                            amountToSend,
-                                            widget.data,
-                                          );
+                                          
                                           transactionHash = transaction['txid'];
 
                                           coinDecimals = bitCoinDecimals;
@@ -901,9 +884,7 @@ class _TransferTokenState extends State<TransferToken> {
                                               await getSolanaFromMemnomic(
                                                   mnemonic);
 
-                                          final lamport = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, solanaDecimals);
+                                       
 
                                           final transaction = await sendSolana(
                                             widget.data['recipient'],
@@ -961,9 +942,6 @@ class _TransferTokenState extends State<TransferToken> {
                                               await getTronFromMemnomic(
                                                   mnemonic);
 
-                                          final microTron = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, tronDecimals);
 
                                           final transaction = await sendTron(
                                             widget.data['api'],
