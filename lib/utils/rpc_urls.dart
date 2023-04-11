@@ -2514,9 +2514,9 @@ Future<double> getNearAddressBalance(
     Map decodedData = jsonDecode(request.body);
 
     final BigInt balance = BigInt.parse(decodedData['result']['amount']);
+    final base = BigInt.from(10);
 
-    final balanceInNear =
-        (balance / BigInt.from(pow(10, nearDecimals))).toDouble();
+    final balanceInNear = (balance / base.pow(nearDecimals)).toDouble();
     await pref.put(key, balanceInNear);
 
     return balanceInNear;
