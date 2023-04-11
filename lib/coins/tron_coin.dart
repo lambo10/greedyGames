@@ -72,7 +72,7 @@ class TronCoin implements Coin {
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'tronDetails$mnemonic';
 
-    final pref = Hive.box(secureStorageKey);
+
     List mmenomicMapping = [];
     if (pref.get(key) != null) {
       mmenomicMapping = jsonDecode(pref.get(key)) as List;

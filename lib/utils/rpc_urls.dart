@@ -733,85 +733,12 @@ final List<String> months = [
   'Dec'
 ];
 
-Map getTezosBlockchains() {
-  Map blockChains = {
-    'Tezos': {
-      'blockExplorer': 'https://tzkt.io/$transactionhashTemplateKey',
-      'symbol': 'XTZ',
-      'default': 'XTZ',
-      'image': 'assets/tezos.png',
-      'tezorType': TezosTypes.mainNet,
-      'server': 'https://rpc.tzkt.io/mainnet'
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Tezos(Testnet)'] = {
-      'blockExplorer': 'https://ghostnet.tzkt.io/$transactionhashTemplateKey',
-      'symbol': 'XTZ',
-      'default': 'XTZ',
-      'image': 'assets/tezos.png',
-      'tezorType': TezosTypes.ghostNet,
-      'server': 'https://rpc.tzkt.io/ghostnet'
-    };
-  }
-  return blockChains;
-}
-
 reInstianteSeedRoot() async {
   final pref = Hive.box(secureStorageKey);
   final currentPhrase = pref.get(currentMmenomicKey);
   if (currentPhrase != null) {
     seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
   }
-}
-
-Map getNearBlockChains() {
-  Map blockChains = {
-    'NEAR': {
-      'symbol': 'NEAR',
-      'default': 'NEAR',
-      'blockExplorer':
-          'https://explorer.near.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/near.png',
-      'api': 'https://rpc.mainnet.near.org'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['NEAR(Testnet)'] = {
-      'symbol': 'NEAR',
-      'default': 'NEAR',
-      'blockExplorer':
-          'https://explorer.testnet.near.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/near.png',
-      'api': 'https://rpc.testnet.near.org'
-    };
-  }
-  return blockChains;
-}
-
-Map getXRPBlockChains() {
-  Map blockChains = {
-    'XRP': {
-      'symbol': 'XRP',
-      'default': 'XRP',
-      'blockExplorer':
-          'https://livenet.xrpl.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/ripple.png',
-      'ws': 'https://s1.ripple.com:51234/'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['XRP(Testnet)'] = {
-      'symbol': 'XRP',
-      'default': 'XRP',
-      'blockExplorer':
-          'https://testnet.xrpl.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/ripple.png',
-      'ws': 'https://s.altnet.rippletest.net:51234/',
-    };
-  }
-  return blockChains;
 }
 
 const coinGeckCryptoSymbolToID = {
@@ -1112,36 +1039,6 @@ Future<Map> getCardanoFromMemnomic(
   final pref = Hive.box(secureStorageKey);
 }
 
-Future<Map> getTezorFromMemnomic(
-  String mnemonic,
-  Map tezorDetails,
-) async {
-  final pref = Hive.box(secureStorageKey);
-  TezosTypes tezorType = tezorDetails['tezorType'];
-
-  final keyName = 'tezorDetails${tezorType.index}';
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(
-    calculateTezorKey,
-    Map.from(tezorDetails)
-      ..addAll({
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      }),
-  );
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
 Future<Map> decodeAbi(String txData) async {
   JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
   try {
@@ -1171,19 +1068,6 @@ Future<Map> decodeAbi(String txData) async {
   } finally {
     javaScriptRuntime.dispose();
   }
-}
-
-Future<Map> calculateTezorKey(Map config) async {
-  List<String> keys = await Dartez.restoreIdentityFromDerivationPath(
-    "m/44'/1729'/0'/0'",
-    config[mnemonicKey],
-  );
-
-  return {
-    'address': keys[2],
-    'private_key': keys[0],
-    'public_key': keys[1],
-  };
 }
 
 algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {
@@ -1221,313 +1105,8 @@ class NearRpcProvider extends RPCProvider {
   NearRpcProvider(this.endpoint) : super(endpoint);
 }
 
-Future calculateNearKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  KeyData masterKey =
-      await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
-  final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
 
-  final address = HEX.encode(publicKey).substring(2);
 
-  return {
-    'privateKey': HEX.encode(masterKey.key),
-    'address': address,
-  };
-}
-
-Map<String, String> calculateRippleKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
-
-  final pubKeyHash = computePublicKeyHash(node.publicKey);
-
-  final t = sha256
-      .convert(sha256.convert([0, ...pubKeyHash]).bytes)
-      .bytes
-      .sublist(0, 4);
-
-  String address =
-      xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
-  return {
-    'address': address,
-    'publicKey': HEX.encode(node.publicKey),
-    'privateKey': HEX.encode(node.privateKey),
-  };
-}
-
-Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
-  final hash256 = sha256.convert(publicKeyBytes).bytes;
-  final hash160 = RIPEMD160().update(hash256).digest();
-
-  return Uint8List.fromList(hash160);
-}
-
-Future<Map> getXrpLedgerSequence(
-  String address,
-  String ws,
-) async {
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        "method": "account_info",
-        "params": [
-          {
-            "account": address,
-            "ledger_index": "current",
-          }
-        ]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map accountInfo = json.decode(request.body);
-
-    final accountData = accountInfo['result']['account_data'];
-    if (accountData == null) {
-      throw Exception('Account not found');
-    }
-
-    return {
-      'Sequence': accountData['Sequence'],
-      'Flags': accountData['Flags'],
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-Future<Map> getXrpFee(String ws) async {
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'method': 'fee',
-        'params': [{}]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map feeInfo = json.decode(request.body);
-
-    return {
-      'Fee': feeInfo['result']['drops']['base_fee'],
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-Future<Map> sendXRP({
-  String ws,
-  String recipient,
-  String amountInXrp,
-  String mnemonic,
-}) async {
-  final getXRPDetails = await getXRPFromMemnomic(
-    mnemonic,
-  );
-
-  final amountInDrop =
-      BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
-
-  Map xrpJson = {
-    "Account": getXRPDetails['address'],
-    "Fee": "10",
-    "Sequence": 0,
-    "TransactionType": "Payment",
-    "SigningPubKey": getXRPDetails['publicKey'],
-    "Amount": "$amountInDrop",
-    "Destination": recipient
-  };
-
-  if (getXRPDetails['address'] == recipient) {
-    throw Exception(
-      'An XRP payment transaction cannot have the same sender and destination',
-    );
-  }
-
-  Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
-
-  Map fee = await getXrpFee(ws);
-
-  if (ledgers != null) {
-    xrpJson = {...xrpJson, ...ledgers};
-  }
-  if (fee != null) {
-    xrpJson = {...xrpJson, ...fee};
-  }
-
-  Map xrpTransaction = signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
-
-  final httpFromWs = Uri.parse(ws);
-  final request = await post(
-    httpFromWs,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode({
-      "method": "submit",
-      "params": [
-        {
-          "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
-        }
-      ]
-    }),
-  );
-
-  if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-    throw Exception(request.body);
-  }
-
-  Map txInfo = json.decode(request.body);
-
-  final hash = txInfo['result']["tx_json"]['hash'];
-
-  return {'txid': hash};
-}
-
-Future<double> getXRPAddressBalance(
-  String address,
-  String ws, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'xrpAddressBalance$address$ws';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        "method": "account_info",
-        "params": [
-          {"account": address}
-        ]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map accountInfo = json.decode(request.body);
-
-    if (accountInfo['result']['account_data'] == null) {
-      throw Exception('Account not found');
-    }
-
-    final balance = accountInfo['result']['account_data']['Balance'];
-    final userBalance = double.parse(balance) / pow(10, xrpDecimals);
-    await pref.put(key, userBalance);
-
-    return userBalance;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<bool> fundRippleTestnet(String address) async {
-  try {
-    const ws = 'https://faucet.altnet.rippletest.net/accounts';
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({"destination": address}),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-Future<double> getNearAddressBalance(
-  String address,
-  String nearApi, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'nearAddressBalance$address$nearApi';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final request = await post(
-      Uri.parse(nearApi),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(
-        {
-          "jsonrpc": "2.0",
-          "id": "dontcare",
-          "method": "query",
-          "params": {
-            "request_type": "view_account",
-            "finality": "final",
-            "account_id": address
-          },
-        },
-      ),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception('Request failed');
-    }
-    Map decodedData = jsonDecode(request.body);
-
-    final BigInt balance = BigInt.parse(decodedData['result']['amount']);
-    final base = BigInt.from(10);
-
-    final balanceInNear = (balance / base.pow(nearDecimals)).toDouble();
-    await pref.put(key, balanceInNear);
-
-    return balanceInNear;
-  } catch (e) {
-    return savedBalance;
-  }
-}
 
 Future<String> getCryptoPrice({
   bool skipNetworkRequest = false,
@@ -1784,59 +1363,6 @@ Future<String> etherPrivateKeyToAddress(String privateKey) async {
   return web3.EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
 }
 
-Future<Map> getXRPFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'xrpDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(calculateRippleKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getNearFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'nearDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(calculateNearKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
 
 Future<String> getCurrencyJson() async {
   return await rootBundle.loadString('json/currencies.json');
@@ -2214,40 +1740,16 @@ bool seqEqual(Uint8List a, Uint8List b) {
 
 validateAddress(Map data, String recipient) {
   if (data['default'] == 'XRP') {
-    final bytes = xrpBaseCodec.decode(recipient);
-
-    final computedCheckSum = sha256
-        .convert(sha256.convert(bytes.sublist(0, bytes.length - 4)).bytes)
-        .bytes
-        .sublist(0, 4);
-    final expectedCheckSum = bytes.sublist(bytes.length - 4);
-
-    if (!seqEqual(computedCheckSum, expectedCheckSum)) {
-      throw Exception('Invalid XRP address');
-    }
   } else if (data['default'] == 'ALGO') {
   } else if (data['default'] == 'NEAR') {
-    final bytes = HEX.decode(recipient);
-    const exceptedLength = 64;
-    const exceptedBytesLength = 32;
-    if (recipient.length != exceptedLength) {
-      throw Exception("Near address must have a length of 64");
-    }
-    if (bytes.length != exceptedBytesLength) {
-      throw Exception("Near address must have a decoded byte length of 32");
-    }
+   
   } else if (data['default'] == 'BCH') {
     bitbox.Address.detectFormat(recipient);
   } else if (data['default'] == 'XTZ') {
-    if (!validateTezosAddress(recipient)) {
-      throw Exception('Invalid ${data['default']} address');
-    }
   } else if (data['default'] == 'TRX') {
-    
   } else if (data['P2WPKH'] != null) {
   } else if (data['default'] == 'SOL') {
   } else if (data['default'] == 'ADA') {
-
   } else if (data['default'] == 'XLM') {
   } else if (data['default'] == 'FIL') {
   } else if (data['default'] == 'ATOM') {
@@ -2588,38 +2090,6 @@ Future addEthereumChain({
     ),
     canDismiss: false,
   );
-}
-
-Future<double> getTezorAddressBalance(
-  String address,
-  Map tezorDetails, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = '${tezorDetails['tezorType'].index}AddressBalance$address';
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    double balance = 0.0;
-
-    final res = await Dartez.getBalance(address, tezorDetails['server']);
-    balance = double.parse(res) / pow(10, tezorDecimals);
-
-    await pref.put(key, balance);
-
-    return balance;
-  } catch (e) {
-    return savedBalance;
-  }
 }
 
 switchEthereumChain({

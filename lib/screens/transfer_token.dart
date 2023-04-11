@@ -748,44 +748,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
                                         } else if (isTezor) {
-                                          final getTezorDetails =
-                                              await getTezorFromMemnomic(
-                                            mnemonic,
-                                            widget.data,
-                                          );
-
-                                          final keyStore = KeyStoreModel(
-                                            publicKey:
-                                                getTezorDetails['public_key'],
-                                            secretKey:
-                                                getTezorDetails['private_key'],
-                                            publicKeyHash:
-                                                getTezorDetails['address'],
-                                          );
-
-                                          final signer = Dartez.createSigner(
-                                            Dartez.writeKeyWithHint(
-                                                keyStore.secretKey, 'edsk'),
-                                          );
-                                          final microTez = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, tezorDecimals);
-
-                                          final result = await Dartez
-                                              .sendTransactionOperation(
-                                            widget.data['server'],
-                                            signer,
-                                            keyStore,
-                                            widget.data['recipient'],
-                                            microTez.toInt(),
-                                            1500,
-                                          );
-                                          transactionHash = Map.from(
-                                              result)['operationGroupID'];
-
-                                          transactionHash = transactionHash
-                                              .replaceAll('\n', '');
-
+                                          
                                           coinDecimals = tezorDecimals;
                                           userAddress =
                                               getTezorDetails['address'];
@@ -793,46 +756,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
                                         } else if (isNear) {
-                                          final getNearDetails =
-                                              await getNearFromMemnomic(
-                                            mnemonic,
-                                          );
-                                          final privateKeyPublic = [
-                                            ...HEX.decode(
-                                                getNearDetails['privateKey']),
-                                            ...HEX.decode(
-                                                getNearDetails['address'])
-                                          ];
-                                          final publicKey = PublicKey(
-                                            HEX.decode(
-                                              getNearDetails['address'],
-                                            ),
-                                          );
-                                          Account account = Account(
-                                            accountId:
-                                                getNearDetails['address'],
-                                            keyPair: KeyPair(
-                                              PrivateKey(privateKeyPublic),
-                                              publicKey,
-                                            ),
-                                            provider: NearRpcProvider(
-                                              widget.data['api'],
-                                            ),
-                                          );
-
-                                          final trans =
-                                              await account.sendTokens(
-                                            double.parse(
-                                              widget.data['amount'],
-                                            ),
-                                            widget.data['recipient'],
-                                          );
-
-                                          transactionHash = trans['result']
-                                              ['transaction']['hash'];
-
-                                          transactionHash = transactionHash
-                                              .replaceAll('\n', '');
+                                          
 
                                           coinDecimals = nearDecimals;
                                           userAddress =

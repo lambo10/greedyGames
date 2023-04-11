@@ -76,7 +76,7 @@ class FilecoinCoin implements Coin {
 
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
-    final pref = Hive.box(secureStorageKey);
+
     final keyName = 'fileCoinDetail$prefix';
     List mmenomicMapping = [];
     if (pref.get(keyName) != null) {

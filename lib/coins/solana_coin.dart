@@ -16,7 +16,8 @@ import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
 
-class SolanoCoin implements Coin {
+class Solana
+ implements Coin {
   SolanaClusters solanaCluster;
   String address;
   String blockExplorer;
@@ -25,7 +26,8 @@ class SolanoCoin implements Coin {
   String image;
   String name;
 
-  SolanoCoin({
+  Solana
+  ({
     this.blockExplorer,
     this.symbol,
     this.default_,
@@ -35,7 +37,8 @@ class SolanoCoin implements Coin {
     this.solanaCluster,
   });
 
-  SolanoCoin.fromJson(Map<String, dynamic> json) {
+  Solana
+  .fromJson(Map<String, dynamic> json) {
     solanaCluster = json['solanaCluster'];
     blockExplorer = json['blockExplorer'];
     default_ = json['default'];

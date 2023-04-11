@@ -80,8 +80,6 @@ class BitcoinCoin implements Coin {
 
   @override
   fromMnemonic(String mnemonic) async {
-    final pref = Hive.box(secureStorageKey);
-
     final keyName = sha3('bitcoinDetail$POSNetwork$default_');
     List mmenomicMapping = [];
     if (pref.get(keyName) != null) {
@@ -107,7 +105,6 @@ class BitcoinCoin implements Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    final pref = Hive.box(secureStorageKey);
     final sochainType = _abrFromNetwork(POSNetwork);
 
     final key = '${sochainType}AddressBalance$address';
@@ -167,6 +164,11 @@ class BitcoinCoin implements Coin {
 
   @override
   validateAddress(String address) {
+    if (default_ == 'BCH') {
+      bitbox.Address.detectFormat(address);
+      return;
+    }
+
     if (Address.validateAddress(address, POSNetwork)) {
       return;
     }
@@ -214,8 +216,6 @@ class BitcoinCoin implements Coin {
   }
 
   Future<List> _getUnspentTXs(Map posDetails) async {
-    final pref = Hive.box(secureStorageKey);
-
     final bitcoinDetails = await fromMnemonic(pref.get(currentMmenomicKey));
     NetworkType bitcoinNetworkType = posDetails['POSNetwork'];
     final url =
