@@ -3617,10 +3617,14 @@ validateAddress(Map data, String recipient) {
       address: recipient,
     );
   } else if (data['default'] == 'NEAR') {
-    HEX.decode(recipient);
-
-    if (recipient.length != 64) {
+    final bytes = HEX.decode(recipient);
+    const exceptedLength = 64;
+    const exceptedBytesLength = 32;
+    if (recipient.length != exceptedLength) {
       throw Exception("Near address must have a length of 64");
+    }
+    if (bytes.length != exceptedBytesLength) {
+      throw Exception("Near address must have a decoded byte length of 32");
     }
   } else if (data['default'] == 'BCH') {
     bitbox.Address.detectFormat(recipient);
