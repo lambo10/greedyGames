@@ -1212,7 +1212,7 @@ Map getStellarBlockChains() {
 
 Map getNearBlockChains() {
   Map blockChains = {
-    'Near': {
+    'NEAR': {
       'symbol': 'NEAR',
       'default': 'NEAR',
       'blockExplorer':
@@ -1222,7 +1222,7 @@ Map getNearBlockChains() {
     }
   };
   if (enableTestNet) {
-    blockChains['Near(Testnet)'] = {
+    blockChains['NEAR(Testnet)'] = {
       'symbol': 'NEAR',
       'default': 'NEAR',
       'blockExplorer':
