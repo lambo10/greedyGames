@@ -1208,6 +1208,20 @@ Map getStellarBlockChains() {
   return blockChains;
 }
 
+Map getNearBlockChains() {
+  Map blockChains = {
+    'Near': {
+      'symbol': 'NEAR',
+      'default': 'NEAR',
+      'blockExplorer':
+          'https://explorer.near.org/transactions/$transactionhashTemplateKey',
+      'image': 'assets/near.png'
+    }
+  };
+  if (enableTestNet) {}
+  return blockChains;
+}
+
 Map getXRPBlockChains() {
   Map blockChains = {
     'XRP': {
@@ -1533,6 +1547,7 @@ Future<void> initializeAllPrivateKeys(String mnemonic) async {
   await getAlgorandFromMemnomic(mnemonic);
   await getTronFromMemnomic(mnemonic);
   await getXRPFromMemnomic(mnemonic);
+  await getNearFromMemnomic(mnemonic);
 }
 
 Future<Map> sendCardano(Map config) async {
@@ -3000,6 +3015,33 @@ Future<Map> getXRPFromMemnomic(
   }
 
   final keys = await compute(calculateRippleKey, {
+    mnemonicKey: mnemonic,
+    seedRootKey: seedPhraseRoot,
+  });
+
+  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
+  await pref.put(key, jsonEncode(mmenomicMapping));
+  return keys;
+}
+
+Future<Map> getNearFromMemnomic(
+  String mnemonic,
+) async {
+  String key = 'nearDetails$mnemonic';
+
+  final pref = Hive.box(secureStorageKey);
+  List mmenomicMapping = [];
+
+  if (pref.get(key) != null) {
+    mmenomicMapping = jsonDecode(pref.get(key)) as List;
+    for (int i = 0; i < mmenomicMapping.length; i++) {
+      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
+        return mmenomicMapping[i]['key'];
+      }
+    }
+  }
+
+  final keys = await compute(calculateNearKey, {
     mnemonicKey: mnemonic,
     seedRootKey: seedPhraseRoot,
   });
