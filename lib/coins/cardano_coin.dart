@@ -4,13 +4,10 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
-import 'package:web3dart/web3dart.dart';
 
 import '../interface/coin.dart';
-import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import '../utils/rpc_urls.dart';

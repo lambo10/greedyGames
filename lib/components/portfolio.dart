@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import '../screens/build_row.dart';
 import '../utils/app_config.dart';
 import '../utils/slide_up_panel.dart';

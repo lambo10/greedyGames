@@ -3,10 +3,8 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:bech32/bech32.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart';
 
 import '../interface/coin.dart';
 import '../model/seed_phrase_root.dart';

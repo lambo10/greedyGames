@@ -1,20 +1,16 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:convert';
-import 'dart:math';
 
-import 'package:bech32/bech32.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:near_api_flutter/near_api_flutter.dart';
-import 'package:sacco/sacco.dart' as cosmos;
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 
 import '../interface/coin.dart';
 import '../model/seed_phrase_root.dart';
-import '../utils/alt_ens.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 

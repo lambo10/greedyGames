@@ -4,11 +4,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:algorand_dart/algorand_dart.dart';
-import 'package:bech32/bech32.dart';
 import 'package:eth_sig_util/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
-import 'package:sacco/sacco.dart' as cosmos;
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
@@ -16,7 +14,6 @@ import 'package:wallet/wallet.dart' as wallet;
 import 'package:web3dart/crypto.dart';
 import '../interface/coin.dart';
 import '../model/seed_phrase_root.dart';
-import '../utils/alt_ens.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
