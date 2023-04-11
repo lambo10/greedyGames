@@ -1216,7 +1216,7 @@ Map getNearBlockChains() {
       'blockExplorer':
           'https://explorer.near.org/transactions/$transactionhashTemplateKey',
       'image': 'assets/near.png',
-      'api': ''
+      'api': 'https://rpc.mainnet.near.org'
     }
   };
   if (enableTestNet) {
@@ -1226,7 +1226,7 @@ Map getNearBlockChains() {
       'blockExplorer':
           'https://explorer.testnet.near.org/transactions/$transactionhashTemplateKey',
       'image': 'assets/near.png',
-      'api': ''
+      'api': 'https://rpc.testnet.near.org'
     };
   }
   return blockChains;
