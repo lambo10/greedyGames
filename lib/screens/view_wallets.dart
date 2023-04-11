@@ -56,6 +56,7 @@ class _ViewWalletsState extends State<ViewWallets> {
                 child: GestureDetector(
                   onTap: () async {
                     final pref = Hive.box(secureStorageKey);
+                    final currentPhrase = pref.get(currentMmenomicKey);
                     await pref.put(
                       currentMmenomicKey,
                       seedList[index]['phrase'],
@@ -64,6 +65,12 @@ class _ViewWalletsState extends State<ViewWallets> {
                       currentUserWalletNameKey,
                       seedList[index]['name'],
                     );
+
+                    final currentPhraseAfter = pref.get(currentMmenomicKey);
+
+                    if (currentPhrase != currentPhraseAfter) {
+                      await reInstianteSeedRoot();
+                    }
 
                     Navigator.pushAndRemoveUntil(
                       context,

@@ -2094,6 +2094,20 @@ Future calculateAlgorandKey(Map config) async {
   };
 }
 
+Future calculateNearKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  KeyData masterKey =
+      await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
+  final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
+
+  final address = HEX.encode(publicKey).substring(2);
+
+  return {
+    'privateKey': HEX.encode(masterKey.key),
+    'address': address,
+  };
+}
+
 String calculateEthereumKey(Map config) {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
   return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
