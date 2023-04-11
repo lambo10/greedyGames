@@ -3616,6 +3616,12 @@ validateAddress(Map data, String recipient) {
     algo_rand.Address.fromAlgorandAddress(
       address: recipient,
     );
+  } else if (data['default'] == 'NEAR') {
+    HEX.decode(recipient);
+
+    if (recipient.length != 64) {
+      throw Exception("Near address must have a length of 64");
+    }
   } else if (data['default'] == 'BCH') {
     bitbox.Address.detectFormat(recipient);
   } else if (data['default'] == 'XTZ') {
