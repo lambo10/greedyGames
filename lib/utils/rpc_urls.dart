@@ -80,6 +80,7 @@ const satoshiDustAmount = 546;
 const stellarDecimals = 6;
 const algorandDecimals = 6;
 const tezorDecimals = 6;
+const nearDecimals = 6;
 const int maxFeeGuessForCardano = 200000;
 
 // time

@@ -53,6 +53,7 @@ class _TransferTokenState extends State<TransferToken> {
   bool isTron;
   bool isTezor;
   bool isXRP;
+  bool isNear;
   ContractAbi contrAbi;
   List _parameters;
   String mnemonic;
@@ -72,6 +73,7 @@ class _TransferTokenState extends State<TransferToken> {
     isTron = widget.data['default'] == 'TRX';
     isTezor = widget.data['default'] == 'XTZ';
     isXRP = widget.data['default'] == 'XRP';
+    isNear = widget.data['default'] == 'NEAR';
     isNFTTransfer = widget.data['isNFT'] != null;
 
     getTransactionFee();
@@ -230,6 +232,16 @@ class _TransferTokenState extends State<TransferToken> {
         transactionFeeMap = {
           'transactionFee': 0,
           'userBalance': tronBalance,
+        };
+      } else if (isNear) {
+        final getNearDetails = await getNearFromMemnomic(mnemonic);
+        final nearBalance = await getNearAddressBalance(
+          getNearDetails['address'],
+          widget.data['api'],
+        );
+        transactionFeeMap = {
+          'transactionFee': 0,
+          'userBalance': nearBalance,
         };
       } else if (isTezor) {
         final getTrezorDetails =
@@ -487,6 +499,10 @@ class _TransferTokenState extends State<TransferToken> {
                         widget.data['cardano_network'],
                       );
                       return {'address': getCardanoDetails['address']};
+                    } else if (isNear) {
+                      final getNearDetails =
+                          await getNearFromMemnomic(mnemonic);
+                      return {'address': getNearDetails['address']};
                     } else if (isTezor) {
                       final getTezorDetails = await getTezorFromMemnomic(
                         mnemonic,
@@ -788,6 +804,23 @@ class _TransferTokenState extends State<TransferToken> {
                                           coinDecimals = tezorDecimals;
                                           userAddress =
                                               getTezorDetails['address'];
+
+                                          userTransactionsKey =
+                                              '${widget.data['default']} Details';
+                                        } else if (isNear) {
+                                          final getNearDetails =
+                                              await getXRPFromMemnomic(
+                                            mnemonic,
+                                          );
+                                          Map transaction = {};
+                                          transactionHash = transaction['txid'];
+
+                                          transactionHash = transactionHash
+                                              .replaceAll('\n', '');
+
+                                          coinDecimals = nearDecimals;
+                                          userAddress =
+                                              getNearDetails['address'];
 
                                           userTransactionsKey =
                                               '${widget.data['default']} Details';
