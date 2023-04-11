@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/utils/blockie_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -28,10 +29,12 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
 
       final currentWalletName = pref.get(currentUserWalletNameKey);
       final mnemonic = pref.get(currentMmenomicKey);
-      final web3Response = await getEthereumFromMemnomic(
-        mnemonic,
-        getEVMBlockchains()['Ethereum']['coinType'],
-      );
+      Map ethereumMap =
+          getEVMBlockchains().first((e) => e['name'] == 'Ethereum');
+
+      final web3Response =
+          await EthereumCoin.fromJson(ethereumMap).fromMnemonic(mnemonic);
+
       Map userDetails = {
         'user_address': web3Response['eth_wallet_address'].toLowerCase(),
       };

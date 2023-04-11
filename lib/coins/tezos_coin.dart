@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:convert';
 import 'dart:math';
@@ -24,6 +24,35 @@ class TezosCoin implements Coin {
   String default_;
   String image;
   String name;
+  @override
+  String address_() {
+    return address;
+  }
+
+  @override
+  String blockExplorer_() {
+    return blockExplorer;
+  }
+
+  @override
+  String default__() {
+    return default_;
+  }
+
+  @override
+  String image_() {
+    return image;
+  }
+
+  @override
+  String name_() {
+    return name;
+  }
+
+  @override
+  String symbol_() {
+    return symbol;
+  }
 
   TezosCoin({
     this.blockExplorer,

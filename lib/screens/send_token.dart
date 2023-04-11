@@ -1,16 +1,11 @@
-import 'dart:math';
-
-import 'package:bech32/bech32.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/eip/eip681.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/screens/contact.dart';
 import 'package:cryptowallet/screens/transfer_token.dart';
 import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
-import 'package:cryptowallet/utils/filecoin_util.dart';
 import 'package:cryptowallet/utils/qr_scan_view.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:decimal/decimal.dart';
@@ -19,22 +14,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
-import 'package:validators/validators.dart';
-import 'package:web3dart/crypto.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar
     hide Row;
-import 'package:web3dart/web3dart.dart' as web3;
-import 'package:bs58check/bs58check.dart' as bs58check;
-import 'package:bitbox/bitbox.dart' as bitbox;
 
 // import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
-import 'package:solana/solana.dart' as solana;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 class SendToken extends StatefulWidget {
-  final Map data;
+  final Coin tokenData;
 
-  const SendToken({this.data, Key key}) : super(key: key);
+  const SendToken({this.tokenData, Key key}) : super(key: key);
 
   @override
   _SendTokenState createState() => _SendTokenState();
@@ -46,23 +35,12 @@ class _SendTokenState extends State<SendToken> {
   final tokenId = TextEditingController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isLoading = false;
-  bool isNFT;
-  String tokenType;
-  String symbol;
-  String recipient;
-  String rpc;
   Box pref;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pref = Hive.box(secureStorageKey);
-    isNFT = widget.data['isNFT'];
-    tokenType = widget.data['tokenType'];
-    symbol = widget.data['symbol'];
-    recipient = widget.data['recipient'];
-    rpc = widget.data['rpc'];
   }
 
   @override
@@ -78,7 +56,7 @@ class _SendTokenState extends State<SendToken> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
-            '${AppLocalizations.of(context).send} ${widget.data['contractAddress'] != null ? ellipsify(str: symbol) : symbol}'),
+            '${AppLocalizations.of(context).send} ${widget.tokenData['contractAddress'] != null ? ellipsify(str: symbol) : symbol}'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -122,7 +100,7 @@ class _SendTokenState extends State<SendToken> {
                             }
 
                             try {
-                              if (widget.data['contractAddress'] != null) {
+                              if (widget.tokenData['contractAddress'] != null) {
                                 Map data = EIP681.parse(recipientAddr);
 
                                 recipientAddressController.text =
@@ -149,7 +127,7 @@ class _SendTokenState extends State<SendToken> {
                                 MaterialPageRoute(
                                   builder: (ctx) => Contact(
                                     showAdd: false,
-                                    sendName: widget.data['name'],
+                                    sendName: widget.tokenData['name'],
                                   ),
                                 ),
                               );
@@ -210,7 +188,7 @@ class _SendTokenState extends State<SendToken> {
                     inputFormatters: <TextInputFormatter>[
                       if (isNFT ?? false) FilteringTextInputFormatter.digitsOnly
                     ],
-                    controller: amount..text = widget.data['amount'],
+                    controller: amount..text = widget.tokenData['amount'],
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),
@@ -222,148 +200,7 @@ class _SendTokenState extends State<SendToken> {
                                 AppLocalizations.of(context).max,
                                 textAlign: TextAlign.end,
                               ),
-                              onPressed: () async {
-                                // FIXME:
-                                String mnemonic = pref.get(currentMmenomicKey);
-                                if (widget.data['contractAddress'] != null) {
-                                  final accountDetails =
-                                      await getERC20TokenBalance(widget.data);
-                                  amount.text = accountDetails.toString();
-                                } else if (widget.data['POSNetwork'] != null) {
-                                  final getBitcoinDetails =
-                                      await getBitcoinFromMemnomic(
-                                    mnemonic,
-                                    widget.data,
-                                  );
-                                  final accountDetails =
-                                      await getBitcoinAddressBalance(
-                                    getBitcoinDetails['address'],
-                                    widget.data['POSNetwork'],
-                                  );
-
-                                  if (accountDetails != 0) {}
-
-                                  amount.text = accountDetails.toString();
-                                } else if (widget.data['default'] == 'SOL') {
-                                  final getSolanaDetails =
-                                      await getSolanaFromMemnomic(mnemonic);
-                                  double accountDetails =
-                                      await getSolanaAddressBalance(
-                                          getSolanaDetails['address'],
-                                          widget.data['solanaCluster']);
-
-                                  if (accountDetails != 0) {
-                                    final fees = await getSolanaClient(
-                                            widget.data['solanaCluster'])
-                                        .rpcClient
-                                        .getFees();
-                                    final feesDouble = fees.feeCalculator
-                                            .lamportsPerSignature /
-                                        pow(10, solanaDecimals);
-
-                                    final maximumPayable =
-                                        accountDetails - feesDouble;
-
-                                    accountDetails = maximumPayable > 0
-                                        ? maximumPayable
-                                        : accountDetails;
-                                  }
-
-                                  amount.text = accountDetails.toString();
-                                } else if (widget.data['default'] == 'ADA') {
-                                  final getCardanoDetails =
-                                      await getCardanoFromMemnomic(
-                                    mnemonic,
-                                    widget.data['cardano_network'],
-                                  );
-                                  double accountDetails =
-                                      await getCardanoAddressBalance(
-                                    getCardanoDetails['address'],
-                                    widget.data['cardano_network'],
-                                    widget.data['blockFrostKey'],
-                                  );
-
-                                  if (accountDetails != 0) {
-                                    final fees = maxFeeGuessForCardano /
-                                        pow(10, cardanoDecimals);
-
-                                    final maximumPayable =
-                                        accountDetails - fees;
-
-                                    accountDetails = maximumPayable > 0
-                                        ? maximumPayable
-                                        : accountDetails;
-                                  }
-
-                                  amount.text = accountDetails.toString();
-                                } else if (widget.data['default'] == 'FIL') {
-                                  final getFileCoinDetails =
-                                      await getFileCoinFromMemnomic(
-                                    mnemonic,
-                                    widget.data['prefix'],
-                                  );
-                                  double accountDetails =
-                                      await getFileCoinAddressBalance(
-                                    getFileCoinDetails['address'],
-                                    baseUrl: widget.data['baseUrl'],
-                                  );
-
-                                  if (accountDetails != 0) {
-                                    // final fees =
-                                    //     await getFileCoinTransactionFee(
-                                    //   widget.data['prefix'],
-                                    //   widget.data['baseUrl'],
-                                    // );
-
-                                    // final maximumPayable =
-                                    //     accountDetails - fees;
-
-                                    // accountDetails = maximumPayable > 0
-                                    //     ? maximumPayable
-                                    //     : accountDetails;
-                                  }
-                                  amount.text = accountDetails.toString();
-                                } else {
-                                  final getEthereumDetails =
-                                      await getEthereumFromMemnomic(
-                                    mnemonic,
-                                    widget.data['coinType'],
-                                  );
-                                  double accountDetails =
-                                      await getEthereumAddressBalance(
-                                    getEthereumDetails['eth_wallet_address'],
-                                    widget.data['rpc'],
-                                    coinType: widget.data['coinType'],
-                                  );
-
-                                  if (accountDetails != 0) {
-                                    final response =
-                                        await getEthereumFromMemnomic(
-                                      mnemonic,
-                                      widget.data['coinType'],
-                                    );
-                                    final transactionFee =
-                                        await getEtherTransactionFee(
-                                      widget.data['rpc'],
-                                      null,
-                                      web3.EthereumAddress.fromHex(
-                                        response['eth_wallet_address'],
-                                      ),
-                                      web3.EthereumAddress.fromHex(zeroAddress),
-                                      value: 1,
-                                    );
-
-                                    final maximumPayable = accountDetails -
-                                        (transactionFee /
-                                            pow(10, etherDecimals));
-
-                                    accountDetails = maximumPayable > 0
-                                        ? maximumPayable
-                                        : accountDetails;
-                                  }
-                                  amount.text = accountDetails.toString();
-                                }
-                              },
+                              onPressed: () async {},
                             ),
                       hintText: AppLocalizations.of(context).amount,
 
@@ -396,7 +233,7 @@ class _SendTokenState extends State<SendToken> {
                       }
                     },
                     controller: tokenId
-                      ..text = widget.data['tokenId'].toString(),
+                      ..text = widget.tokenData['tokenId'].toString(),
                     decoration: const InputDecoration(
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -483,11 +320,13 @@ class _SendTokenState extends State<SendToken> {
                         setState(() {
                           isLoading = true;
                         });
-                        if (widget.data['default'] == 'XLM' && iscryptoDomain) {
+                        if (widget.tokenData['default'] == 'XLM' &&
+                            iscryptoDomain) {
                           try {
                             stellar.FederationResponse response =
                                 await stellar.Federation.resolveStellarAddress(
-                                    recipient);
+                              recipient,
+                            );
                             cryptoDomain = recipient;
                             recipient = response.accountId;
                           } catch (_) {}
@@ -503,8 +342,8 @@ class _SendTokenState extends State<SendToken> {
                             Map unstoppableDomainAddr =
                                 await unstoppableDomainENS(
                               cryptoDomainName: recipient,
-                              currency: widget.data['rpc'] == null
-                                  ? widget.data['default']
+                              currency: widget.tokenData['rpc'] == null
+                                  ? widget.tokenData['default']
                                   : null,
                             );
                             cryptoDomain = unstoppableDomainAddr['success']
@@ -520,7 +359,7 @@ class _SendTokenState extends State<SendToken> {
                           isLoading = false;
                         });
 
-                        validateAddress(widget.data, recipient);
+                        validateAddress(widget.tokenData, recipient);
                       } catch (e) {
                         setState(() {
                           isLoading = false;
@@ -545,7 +384,7 @@ class _SendTokenState extends State<SendToken> {
                         return;
                       }
                       final data = {
-                        ...widget.data,
+                        ...widget.tokenData,
                         'amount': Decimal.parse(amount.text).toString(),
                         'recipient': recipient
                       };
@@ -556,7 +395,7 @@ class _SendTokenState extends State<SendToken> {
                         context,
                         MaterialPageRoute(
                           builder: (ctx) => TransferToken(
-                            data: data,
+                            tokenData: data,
                             cryptoDomain: cryptoDomain,
                           ),
                         ),

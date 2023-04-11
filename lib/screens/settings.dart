@@ -449,7 +449,7 @@ class _SettingsState extends State<Settings> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (ctx) => SendToken(
-                                    data: scannedData['msg'],
+                                    tokenData: scannedData['msg'],
                                   ),
                                 ),
                               );

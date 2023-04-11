@@ -47,7 +47,7 @@ Future<void> handleAllIntent(String value, BuildContext context) async {
     Map scannedData = await processEIP681(value);
     navigateWidget = scannedData['success']
         ? SendToken(
-            data: scannedData['msg'],
+            tokenData: scannedData['msg'],
           )
         : null;
   }
@@ -142,7 +142,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (ctx) => Token(data: bitcoinBlockchain),
+                  builder: (ctx) => Token(tokenData: bitcoinBlockchain),
                 ),
               );
             },
@@ -208,7 +208,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
               context,
               MaterialPageRoute(
                 builder: (ctx) => Token(
-                  data: evmBlockchain,
+                  tokenData: evmBlockchain,
                 ),
               ),
             );
@@ -279,7 +279,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
               context,
               MaterialPageRoute(
                 builder: (ctx) => Token(
-                  data: solanaBlockchain,
+                  tokenData: solanaBlockchain,
                 ),
               ),
             );
@@ -343,7 +343,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: stellarBlockChain,
+                    tokenData: stellarBlockChain,
                   ),
                 ),
               );
@@ -412,7 +412,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: filecoinBlockchain,
+                    tokenData: filecoinBlockchain,
                   ),
                 ),
               );
@@ -480,7 +480,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: cosmosBlockchain,
+                    tokenData: cosmosBlockchain,
                   ),
                 ),
               );
@@ -551,7 +551,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: algorandBlockchain,
+                    tokenData: algorandBlockchain,
                   ),
                 ),
               );
@@ -617,7 +617,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: nearBlockchains,
+                    tokenData: nearBlockchains,
                   ),
                 ),
               );
@@ -683,7 +683,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: tronBlockchain,
+                    tokenData: tronBlockchain,
                   ),
                 ),
               );
@@ -749,7 +749,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: cardanoBlockchain,
+                    tokenData: cardanoBlockchain,
                   ),
                 ),
               );
@@ -819,7 +819,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                 context,
                 MaterialPageRoute(
                   builder: (ctx) => Token(
-                    data: xrpBlockchain,
+                    tokenData: xrpBlockchain,
                   ),
                 ),
               );
@@ -885,7 +885,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (ctx) => Token(data: tezorBlockchain),
+                  builder: (ctx) => Token(tokenData: tezorBlockchain),
                 ),
               );
             },
@@ -1082,7 +1082,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                                         context,
                                         MaterialPageRoute(
                                           builder: (ctx) =>
-                                              Token(data: appToken),
+                                              Token(tokenData: appToken),
                                         ),
                                       );
                                     },

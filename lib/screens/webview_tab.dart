@@ -22,6 +22,7 @@ import 'package:wallet_connect/wallet_connect.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
+import '../coins/ethereum_coin.dart';
 import '../utils/app_config.dart';
 import '../utils/json_model_callback.dart';
 import '../utils/web_notifications.dart';
@@ -642,10 +643,10 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                         final blockChainDetails =
                             getEthereumDetailsFromChainId(chainId);
                         final rpc = blockChainDetails['rpc'];
-                        final web3Response = await getEthereumFromMemnomic(
-                          mnemonic,
-                          blockChainDetails['coinType'],
-                        );
+
+                        final web3Response =
+                            await EthereumCoin.fromJson(evmNetwork)
+                                .fromMnemonic(mnemonic);
 
                         final privateKey =
                             web3Response['eth_wallet_privateKey'];

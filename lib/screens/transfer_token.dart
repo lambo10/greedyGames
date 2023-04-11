@@ -5,6 +5,7 @@ import 'package:algorand_dart/algorand_dart.dart' as algoRan;
 import 'package:cryptowallet/api/notification_api.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/config/colors.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/format_money.dart';
@@ -27,10 +28,13 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import '../utils/filecoin_util.dart';
 
 class TransferToken extends StatefulWidget {
-  final Map data;
+  final Coin tokenData;
   final String cryptoDomain;
-  const TransferToken({Key key, this.data, this.cryptoDomain})
-      : super(key: key);
+  const TransferToken({
+    Key key,
+    this.tokenData,
+    this.cryptoDomain,
+  }) : super(key: key);
 
   @override
   _TransferTokenState createState() => _TransferTokenState();
@@ -64,19 +68,19 @@ class _TransferTokenState extends State<TransferToken> {
   void initState() {
     super.initState();
     mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-    isContract = widget.data['contractAddress'] != null;
-    isBitcoinType = widget.data['POSNetwork'] != null;
-    isSolana = widget.data['default'] == 'SOL';
-    isCardano = widget.data['default'] == 'ADA';
-    isFilecoin = widget.data['default'] == 'FIL';
-    isStellar = widget.data['default'] == 'XLM';
-    isCosmos = widget.data['default'] == 'ATOM';
-    isAlgorand = widget.data['default'] == 'ALGO';
-    isTron = widget.data['default'] == 'TRX';
-    isTezor = widget.data['default'] == 'XTZ';
-    isXRP = widget.data['default'] == 'XRP';
-    isNear = widget.data['default'] == 'NEAR';
-    isNFTTransfer = widget.data['isNFT'] != null;
+    isContract = widget.tokenData['contractAddress'] != null;
+    isBitcoinType = widget.tokenData['POSNetwork'] != null;
+    isSolana = widget.tokenData['default'] == 'SOL';
+    isCardano = widget.tokenData['default'] == 'ADA';
+    isFilecoin = widget.tokenData['default'] == 'FIL';
+    isStellar = widget.tokenData['default'] == 'XLM';
+    isCosmos = widget.tokenData['default'] == 'ATOM';
+    isAlgorand = widget.tokenData['default'] == 'ALGO';
+    isTron = widget.tokenData['default'] == 'TRX';
+    isTezor = widget.tokenData['default'] == 'XTZ';
+    isXRP = widget.tokenData['default'] == 'XRP';
+    isNear = widget.tokenData['default'] == 'NEAR';
+    isNFTTransfer = widget.tokenData['isNFT'] != null;
 
     getTransactionFee();
     timer = Timer.periodic(
@@ -97,13 +101,13 @@ class _TransferTokenState extends State<TransferToken> {
     try {
       if (isContract) {
         final client = web3.Web3Client(
-          widget.data['rpc'],
+          widget.tokenData['rpc'],
           Client(),
         );
 
         Map response = await getEthereumFromMemnomic(
           mnemonic,
-          widget.data['coinType'],
+          widget.tokenData['coinType'],
         );
 
         final sendingAddress = web3.EthereumAddress.fromHex(
@@ -115,12 +119,12 @@ class _TransferTokenState extends State<TransferToken> {
             erc20Abi,
             '',
           );
-        } else if (widget.data['tokenType'] == 'ERC721') {
+        } else if (widget.tokenData['tokenType'] == 'ERC721') {
           contrAbi = web3.ContractAbi.fromJson(
             erc721Abi,
             '',
           );
-        } else if (widget.data['tokenType'] == 'ERC1155') {
+        } else if (widget.tokenData['tokenType'] == 'ERC1155') {
           contrAbi = web3.ContractAbi.fromJson(
             erc1155Abi,
             '',
@@ -129,7 +133,7 @@ class _TransferTokenState extends State<TransferToken> {
 
         final contract = web3.DeployedContract(
           contrAbi,
-          web3.EthereumAddress.fromHex(widget.data['contractAddress']),
+          web3.EthereumAddress.fromHex(widget.tokenData['contractAddress']),
         );
 
         web3.ContractFunction decimalsFunction;
@@ -149,24 +153,25 @@ class _TransferTokenState extends State<TransferToken> {
 
         if (!isNFTTransfer) {
           _parameters = [
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
+            web3.EthereumAddress.fromHex(widget.tokenData['recipient']),
             BigInt.from(
-              double.parse(widget.data['amount']) * pow(10, decimals.toInt()),
+              double.parse(widget.tokenData['amount']) *
+                  pow(10, decimals.toInt()),
             )
           ];
-        } else if (widget.data['tokenType'] == 'ERC721') {
+        } else if (widget.tokenData['tokenType'] == 'ERC721') {
           _parameters = [
             sendingAddress,
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
-            widget.data['tokenId']
+            web3.EthereumAddress.fromHex(widget.tokenData['recipient']),
+            widget.tokenData['tokenId']
           ];
-        } else if (widget.data['tokenType'] == 'ERC1155') {
+        } else if (widget.tokenData['tokenType'] == 'ERC1155') {
           _parameters = [
             sendingAddress,
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
-            widget.data['tokenId'],
+            web3.EthereumAddress.fromHex(widget.tokenData['recipient']),
+            widget.tokenData['tokenId'],
             BigInt.from(
-              double.parse(widget.data['amount']),
+              double.parse(widget.tokenData['amount']),
             ),
             Uint8List(1)
           ];
@@ -175,11 +180,11 @@ class _TransferTokenState extends State<TransferToken> {
         Uint8List contractData = transfer.encodeCall(_parameters);
 
         final transactionFee = await getEtherTransactionFee(
-          widget.data['rpc'],
+          widget.tokenData['rpc'],
           contractData,
           sendingAddress,
           web3.EthereumAddress.fromHex(
-            widget.data['contractAddress'],
+            widget.tokenData['contractAddress'],
           ),
         );
         final etherAmountBalance = await client.getBalance(sendingAddress);
@@ -195,27 +200,27 @@ class _TransferTokenState extends State<TransferToken> {
       } else if (isBitcoinType) {
         final getBitcoinDetails = await getBitcoinFromMemnomic(
           mnemonic,
-          widget.data,
+          widget.tokenData,
         );
         final bitCoinBalance = await getBitcoinAddressBalance(
           getBitcoinDetails['address'],
-          widget.data['POSNetwork'],
+          widget.tokenData['POSNetwork'],
         );
 
         List getUnspentOutput;
         int fee = 0;
-        num satoshi = double.parse(widget.data['amount']) * pow(10, 8);
+        num satoshi = double.parse(widget.tokenData['amount']) * pow(10, 8);
         int satoshiToSend = satoshi.toInt();
 
-        if (widget.data['default'] == 'BCH') {
+        if (widget.tokenData['default'] == 'BCH') {
           fee = await getBCHNetworkFee(
             getBitcoinDetails['address'],
-            widget.data,
+            widget.tokenData,
             satoshiToSend,
           );
         } else {
           getUnspentOutput =
-              await getUnspentTransactionBitcoinType(widget.data);
+              await getUnspentTransactionBitcoinType(widget.tokenData);
           fee = await getBitcoinTypeNetworkFee(satoshiToSend, getUnspentOutput);
         }
 
@@ -229,7 +234,7 @@ class _TransferTokenState extends State<TransferToken> {
         final getTronDetails = await getTronFromMemnomic(mnemonic);
         final tronBalance = await getTronAddressBalance(
           getTronDetails['address'],
-          widget.data['api'],
+          widget.tokenData['api'],
         );
         transactionFeeMap = {
           'transactionFee': 0,
@@ -239,7 +244,7 @@ class _TransferTokenState extends State<TransferToken> {
         final getNearDetails = await getNearFromMemnomic(mnemonic);
         final nearBalance = await getNearAddressBalance(
           getNearDetails['address'],
-          widget.data['api'],
+          widget.tokenData['api'],
         );
         transactionFeeMap = {
           'transactionFee': 0,
@@ -247,10 +252,10 @@ class _TransferTokenState extends State<TransferToken> {
         };
       } else if (isTezor) {
         final getTrezorDetails =
-            await getTezorFromMemnomic(mnemonic, widget.data);
+            await getTezorFromMemnomic(mnemonic, widget.tokenData);
         final tezorBalance = await getTezorAddressBalance(
           getTrezorDetails['address'],
-          widget.data,
+          widget.tokenData,
         );
         transactionFeeMap = {
           'transactionFee': 0,
@@ -260,9 +265,9 @@ class _TransferTokenState extends State<TransferToken> {
         final getXRPDetails = await getXRPFromMemnomic(mnemonic);
         final xrpBalance = await getXRPAddressBalance(
           getXRPDetails['address'],
-          widget.data['ws'],
+          widget.tokenData['ws'],
         );
-        final fee = await getXrpFee(widget.data['ws']);
+        final fee = await getXrpFee(widget.tokenData['ws']);
         transactionFeeMap = {
           'transactionFee': double.parse(fee['Fee']) / pow(10, xrpDecimals),
           'userBalance': xrpBalance,
@@ -273,7 +278,7 @@ class _TransferTokenState extends State<TransferToken> {
         );
         final algorandBalance = await getAlgorandAddressBalance(
           getAlgorandDetials['address'],
-          widget.data['algoType'],
+          widget.tokenData['algoType'],
         );
 
         transactionFeeMap = {
@@ -284,10 +289,10 @@ class _TransferTokenState extends State<TransferToken> {
         final getSolanaDetails = await getSolanaFromMemnomic(mnemonic);
         final solanaCoinBalance = await getSolanaAddressBalance(
           getSolanaDetails['address'],
-          widget.data['solanaCluster'],
+          widget.tokenData['solanaCluster'],
         );
 
-        final fees = await getSolanaClient(widget.data['solanaCluster'])
+        final fees = await getSolanaClient(widget.tokenData['solanaCluster'])
             .rpcClient
             .getFees();
 
@@ -299,12 +304,12 @@ class _TransferTokenState extends State<TransferToken> {
       } else if (isCardano) {
         final getCardanoDetails = await getCardanoFromMemnomic(
           mnemonic,
-          widget.data['cardano_network'],
+          widget.tokenData['cardano_network'],
         );
         final cardanoCoinBalance = await getCardanoAddressBalance(
           getCardanoDetails['address'],
-          widget.data['cardano_network'],
-          widget.data['blockFrostKey'],
+          widget.tokenData['cardano_network'],
+          widget.tokenData['blockFrostKey'],
         );
 
         final fees = maxFeeGuessForCardano / pow(10, cardanoDecimals);
@@ -316,31 +321,31 @@ class _TransferTokenState extends State<TransferToken> {
       } else if (isFilecoin) {
         final getFileCoinDetails = await getFileCoinFromMemnomic(
           mnemonic,
-          widget.data['prefix'],
+          widget.tokenData['prefix'],
         );
         final fileCoinBalance = await getFileCoinAddressBalance(
           getFileCoinDetails['address'],
-          baseUrl: widget.data['baseUrl'],
+          baseUrl: widget.tokenData['baseUrl'],
         );
 
         final nonce = await getFileCoinNonce(
-          widget.data['prefix'],
-          widget.data['baseUrl'],
+          widget.tokenData['prefix'],
+          widget.tokenData['baseUrl'],
         );
-        final attoFIL = double.parse(widget.data['amount']) *
+        final attoFIL = double.parse(widget.tokenData['amount']) *
             pow(10, fileCoinDecimals.toInt());
 
         BigInt amounToSend = BigInt.from(attoFIL);
 
         final msg = constructFilecoinMsg(
-          widget.data['recipient'],
+          widget.tokenData['recipient'],
           getFileCoinDetails['address'],
           nonce,
           amounToSend,
         );
 
         final gasFromNetwork = await fileCoinEstimateGas(
-          widget.data['baseUrl'],
+          widget.tokenData['baseUrl'],
           msg,
         );
 
@@ -360,14 +365,14 @@ class _TransferTokenState extends State<TransferToken> {
 
         final stellarBalance = await getStellarAddressBalance(
           getStellarDetails['address'],
-          widget.data['sdk'],
-          widget.data['cluster'],
+          widget.tokenData['sdk'],
+          widget.tokenData['cluster'],
         );
 
         final fees = await getStellarGas(
-          widget.data['recipient'],
-          widget.data['amount'],
-          widget.data['sdk'],
+          widget.tokenData['recipient'],
+          widget.tokenData['amount'],
+          widget.tokenData['sdk'],
         );
 
         transactionFeeMap = {
@@ -377,13 +382,13 @@ class _TransferTokenState extends State<TransferToken> {
       } else if (isCosmos) {
         final getCosmosDetails = await getCosmosFromMemnomic(
           mnemonic,
-          widget.data['bech32Hrp'],
-          widget.data['lcdUrl'],
+          widget.tokenData['bech32Hrp'],
+          widget.tokenData['lcdUrl'],
         );
 
         final cosmosBalance = await getCosmosAddressBalance(
           getCosmosDetails['address'],
-          widget.data['lcdUrl'],
+          widget.tokenData['lcdUrl'],
         );
         transactionFeeMap = {
           'transactionFee': 0.001,
@@ -392,21 +397,21 @@ class _TransferTokenState extends State<TransferToken> {
       } else {
         final response = await getEthereumFromMemnomic(
           mnemonic,
-          widget.data['coinType'],
+          widget.tokenData['coinType'],
         );
         final client = web3.Web3Client(
-          widget.data['rpc'],
+          widget.tokenData['rpc'],
           Client(),
         );
 
         final transactionFee = await getEtherTransactionFee(
-          widget.data['rpc'],
+          widget.tokenData['rpc'],
           null,
           web3.EthereumAddress.fromHex(
             response['eth_wallet_address'],
           ),
           web3.EthereumAddress.fromHex(
-            widget.data['recipient'],
+            widget.tokenData['recipient'],
           ),
         );
 
@@ -451,7 +456,7 @@ class _TransferTokenState extends State<TransferToken> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '-${widget.data['amount'] ?? '1'} ${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']}',
+                    '-${widget.tokenData['amount'] ?? '1'} ${isContract ? ellipsify(str: widget.tokenData['symbol']) : widget.tokenData['symbol']}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -469,7 +474,7 @@ class _TransferTokenState extends State<TransferToken> {
                     height: 10,
                   ),
                   Text(
-                    '${isContract ? ellipsify(str: widget.data['name']) : widget.data['name']} (${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']})',
+                    '${isContract ? ellipsify(str: widget.tokenData['name']) : widget.tokenData['name']} (${isContract ? ellipsify(str: widget.tokenData['symbol']) : widget.tokenData['symbol']})',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(
@@ -488,7 +493,7 @@ class _TransferTokenState extends State<TransferToken> {
                       final getPOSblockchainDetails =
                           await getBitcoinFromMemnomic(
                         mnemonic,
-                        widget.data,
+                        widget.tokenData,
                       );
                       return {'address': getPOSblockchainDetails['address']};
                     } else if (isSolana) {
@@ -498,7 +503,7 @@ class _TransferTokenState extends State<TransferToken> {
                     } else if (isCardano) {
                       final getCardanoDetails = await getCardanoFromMemnomic(
                         mnemonic,
-                        widget.data['cardano_network'],
+                        widget.tokenData['cardano_network'],
                       );
                       return {'address': getCardanoDetails['address']};
                     } else if (isNear) {
@@ -508,7 +513,7 @@ class _TransferTokenState extends State<TransferToken> {
                     } else if (isTezor) {
                       final getTezorDetails = await getTezorFromMemnomic(
                         mnemonic,
-                        widget.data,
+                        widget.tokenData,
                       );
                       return {'address': getTezorDetails['address']};
                     } else if (isXRP) {
@@ -527,7 +532,7 @@ class _TransferTokenState extends State<TransferToken> {
                     } else if (isFilecoin) {
                       final getFileCoinDetails = await getFileCoinFromMemnomic(
                         mnemonic,
-                        widget.data['prefix'],
+                        widget.tokenData['prefix'],
                       );
                       return {'address': getFileCoinDetails['address']};
                     } else if (isStellar) {
@@ -537,15 +542,15 @@ class _TransferTokenState extends State<TransferToken> {
                     } else if (isCosmos) {
                       final getCosmosDetails = await getCosmosFromMemnomic(
                         mnemonic,
-                        widget.data['bech32Hrp'],
-                        widget.data['lcdUrl'],
+                        widget.tokenData['bech32Hrp'],
+                        widget.tokenData['lcdUrl'],
                       );
                       return {'address': getCosmosDetails['address']};
                     } else {
                       return {
                         'address': (await getEthereumFromMemnomic(
                           mnemonic,
-                          widget.data['coinType'],
+                          widget.tokenData['coinType'],
                         ))['eth_wallet_address']
                       };
                     }
@@ -570,8 +575,8 @@ class _TransferTokenState extends State<TransferToken> {
                   ),
                   Text(
                     widget.cryptoDomain != null
-                        ? '${widget.cryptoDomain} (${widget.data['recipient']})'
-                        : widget.data['recipient'],
+                        ? '${widget.cryptoDomain} (${widget.tokenData['recipient']})'
+                        : widget.tokenData['recipient'],
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(
@@ -587,7 +592,7 @@ class _TransferTokenState extends State<TransferToken> {
                       height: 10,
                     ),
                     Text(
-                      widget.data['tokenId'].toString(),
+                      widget.tokenData['tokenId'].toString(),
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(
@@ -602,15 +607,15 @@ class _TransferTokenState extends State<TransferToken> {
                   const SizedBox(
                     height: 10,
                   ),
-                  widget.data['default'] != null
+                  widget.tokenData['default'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.data['default']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.tokenData['default']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
-                  widget.data['network'] != null
+                  widget.tokenData['network'] != null
                       ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
+                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${getEVMBlockchains()[widget.tokenData['network']]['symbol']}',
                           style: const TextStyle(fontSize: 16),
                         )
                       : Container(),
@@ -667,14 +672,14 @@ class _TransferTokenState extends State<TransferToken> {
                                         String userTransactionsKey;
                                         if (isContract) {
                                           final client = web3.Web3Client(
-                                            widget.data['rpc'],
+                                            widget.tokenData['rpc'],
                                             Client(),
                                           );
 
                                           Map response =
                                               await getEthereumFromMemnomic(
                                             mnemonic,
-                                            widget.data['coinType'],
+                                            widget.tokenData['coinType'],
                                           );
                                           final credentials =
                                               EthPrivateKey.fromHex(
@@ -685,7 +690,8 @@ class _TransferTokenState extends State<TransferToken> {
                                               web3.DeployedContract(
                                             contrAbi,
                                             web3.EthereumAddress.fromHex(
-                                              widget.data['contractAddress'],
+                                              widget
+                                                  .tokenData['contractAddress'],
                                             ),
                                           );
 
@@ -724,7 +730,8 @@ class _TransferTokenState extends State<TransferToken> {
                                               function: transfer,
                                               parameters: _parameters,
                                             ),
-                                            chainId: widget.data['chainId'],
+                                            chainId:
+                                                widget.tokenData['chainId'],
                                           );
 
                                           transactionHash = await client
@@ -734,11 +741,10 @@ class _TransferTokenState extends State<TransferToken> {
                                               response['eth_wallet_address'];
 
                                           userTransactionsKey =
-                                              '${widget.data['contractAddress']}${widget.data['rpc']} Details';
+                                              '${widget.tokenData['contractAddress']}${widget.tokenData['rpc']} Details';
 
                                           await client.dispose();
                                         } else if (isBitcoinType) {
-                                          
                                           transactionHash = transaction['txid'];
 
                                           coinDecimals = bitCoinDecimals;
@@ -746,33 +752,32 @@ class _TransferTokenState extends State<TransferToken> {
                                               getBitCoinDetails['address'];
 
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isTezor) {
-                                          
                                           coinDecimals = tezorDecimals;
                                           userAddress =
                                               getTezorDetails['address'];
 
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isNear) {
-                                          
-
                                           coinDecimals = nearDecimals;
                                           userAddress =
                                               getNearDetails['address'];
 
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isXRP) {
                                           final getXRPDetails =
                                               await getXRPFromMemnomic(
                                             mnemonic,
                                           );
                                           Map transaction = await sendXRP(
-                                            ws: widget.data['ws'],
-                                            recipient: widget.data['recipient'],
-                                            amountInXrp: widget.data['amount'],
+                                            ws: widget.tokenData['ws'],
+                                            recipient:
+                                                widget.tokenData['recipient'],
+                                            amountInXrp:
+                                                widget.tokenData['amount'],
                                             mnemonic: mnemonic,
                                           );
                                           transactionHash = transaction['txid'];
@@ -781,18 +786,18 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getXRPDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isAlgorand) {
                                           final getAlgorandDetails =
                                               await getAlgorandFromMemnomic(
                                                   mnemonic);
 
                                           Map transaction = await sendAlgorand(
-                                            widget.data['recipient'],
-                                            widget.data['algoType'],
+                                            widget.tokenData['recipient'],
+                                            widget.tokenData['algoType'],
                                             algoRan.Algo.toMicroAlgos(
                                               double.parse(
-                                                widget.data['amount'],
+                                                widget.tokenData['amount'],
                                               ),
                                             ),
                                           );
@@ -802,18 +807,16 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getAlgorandDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isSolana) {
                                           final getSolanaDetails =
                                               await getSolanaFromMemnomic(
                                                   mnemonic);
 
-                                       
-
                                           final transaction = await sendSolana(
-                                            widget.data['recipient'],
+                                            widget.tokenData['recipient'],
                                             lamport.toInt(),
-                                            widget.data['solanaCluster'],
+                                            widget.tokenData['solanaCluster'],
                                           );
                                           transactionHash = transaction['txid'];
 
@@ -821,16 +824,16 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getSolanaDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isCardano) {
                                           final getCardanoDetails =
                                               await getCardanoFromMemnomic(
                                             mnemonic,
-                                            widget.data['cardano_network'],
+                                            widget.tokenData['cardano_network'],
                                           );
 
                                           final lovelace = double.parse(
-                                                widget.data['amount'],
+                                                widget.tokenData['amount'],
                                               ) *
                                               pow(10, cardanoDecimals);
 
@@ -839,9 +842,10 @@ class _TransferTokenState extends State<TransferToken> {
                                             sendCardano,
                                             {
                                               'cardanoNetwork': widget
-                                                  .data['cardano_network'],
+                                                  .tokenData['cardano_network'],
                                               'blockfrostForCardanoApiKey':
-                                                  widget.data['blockFrostKey'],
+                                                  widget.tokenData[
+                                                      'blockFrostKey'],
                                               'mnemonic': mnemonic,
                                               'lovelaceToSend': amountToSend,
                                               'senderAddress': cardano
@@ -850,7 +854,7 @@ class _TransferTokenState extends State<TransferToken> {
                                               ),
                                               'recipientAddress': cardano
                                                   .ShelleyAddress.fromBech32(
-                                                widget.data['recipient'],
+                                                widget.tokenData['recipient'],
                                               )
                                             },
                                           );
@@ -860,18 +864,17 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getCardanoDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isTron) {
                                           final getTronDetails =
                                               await getTronFromMemnomic(
                                                   mnemonic);
 
-
                                           final transaction = await sendTron(
-                                            widget.data['api'],
+                                            widget.tokenData['api'],
                                             microTron.toInt(),
                                             getTronDetails['address'],
-                                            widget.data['recipient'],
+                                            widget.tokenData['recipient'],
                                           );
                                           transactionHash = transaction['txid'];
 
@@ -879,16 +882,16 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getTronDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isFilecoin) {
                                           final getFileCoinDetails =
                                               await getFileCoinFromMemnomic(
                                             mnemonic,
-                                            widget.data['prefix'],
+                                            widget.tokenData['prefix'],
                                           );
 
                                           final attoFil = double.parse(
-                                                  widget.data['amount']) *
+                                                  widget.tokenData['amount']) *
                                               pow(10, fileCoinDecimals);
 
                                           BigInt amounToSend =
@@ -896,11 +899,12 @@ class _TransferTokenState extends State<TransferToken> {
 
                                           final transaction =
                                               await sendFilecoin(
-                                            widget.data['recipient'],
+                                            widget.tokenData['recipient'],
                                             amounToSend,
-                                            baseUrl: widget.data['baseUrl'],
+                                            baseUrl:
+                                                widget.tokenData['baseUrl'],
                                             addressPrefix:
-                                                widget.data['prefix'],
+                                                widget.tokenData['prefix'],
                                           );
                                           transactionHash = transaction['txid'];
 
@@ -908,7 +912,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getFileCoinDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isStellar) {
                                           Map getStellarDetails =
                                               await getStellarFromMemnomic(
@@ -916,10 +920,10 @@ class _TransferTokenState extends State<TransferToken> {
                                           );
 
                                           final transaction = await sendStellar(
-                                            widget.data['recipient'],
-                                            widget.data['amount'],
-                                            widget.data['sdk'],
-                                            widget.data['cluster'],
+                                            widget.tokenData['recipient'],
+                                            widget.tokenData['amount'],
+                                            widget.tokenData['sdk'],
+                                            widget.tokenData['cluster'],
                                           );
                                           transactionHash = transaction['txid'];
 
@@ -927,27 +931,28 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getStellarDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else if (isCosmos) {
                                           Map getCosmosDetails =
                                               await getCosmosFromMemnomic(
                                             mnemonic,
-                                            widget.data['bech32Hrp'],
-                                            widget.data['lcdUrl'],
+                                            widget.tokenData['bech32Hrp'],
+                                            widget.tokenData['lcdUrl'],
                                           );
 
                                           final uatomToSend = double.parse(
-                                                  widget.data['amount']) *
+                                                  widget.tokenData['amount']) *
                                               pow(10, cosmosDecimals);
 
                                           final transaction =
                                               await compute(sendCosmos, {
                                             'bech32Hrp':
-                                                widget.data['bech32Hrp'],
-                                            'lcdUrl': widget.data['lcdUrl'],
+                                                widget.tokenData['bech32Hrp'],
+                                            'lcdUrl':
+                                                widget.tokenData['lcdUrl'],
                                             'mnemonic': mnemonic,
                                             'recipientAddress':
-                                                widget.data['recipient'],
+                                                widget.tokenData['recipient'],
                                             'uatomToSend':
                                                 uatomToSend.toInt().toString()
                                           });
@@ -957,17 +962,17 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               getCosmosDetails['address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']} Details';
+                                              '${widget.tokenData['default']} Details';
                                         } else {
                                           final client = web3.Web3Client(
-                                            widget.data['rpc'],
+                                            widget.tokenData['rpc'],
                                             Client(),
                                           );
 
                                           final response =
                                               await getEthereumFromMemnomic(
                                             mnemonic,
-                                            widget.data['coinType'],
+                                            widget.tokenData['coinType'],
                                           );
 
                                           final credentials =
@@ -978,7 +983,7 @@ class _TransferTokenState extends State<TransferToken> {
                                               await client.getGasPrice();
 
                                           final wei = double.parse(
-                                                  widget.data['amount']) *
+                                                  widget.tokenData['amount']) *
                                               pow(10, etherDecimals);
 
                                           final trans =
@@ -989,13 +994,15 @@ class _TransferTokenState extends State<TransferToken> {
                                                   .fromHex(response[
                                                       'eth_wallet_address']),
                                               to: web3.EthereumAddress.fromHex(
-                                                  widget.data['recipient']),
+                                                  widget
+                                                      .tokenData['recipient']),
                                               value: web3.EtherAmount.inWei(
                                                 BigInt.from(wei),
                                               ),
                                               gasPrice: gasPrice,
                                             ),
-                                            chainId: widget.data['chainId'],
+                                            chainId:
+                                                widget.tokenData['chainId'],
                                           );
 
                                           transactionHash = await client
@@ -1005,7 +1012,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           userAddress =
                                               response['eth_wallet_address'];
                                           userTransactionsKey =
-                                              '${widget.data['default']}${widget.data['rpc']} Details';
+                                              '${widget.tokenData['default']}${widget.tokenData['rpc']} Details';
 
                                           await client.dispose();
                                         }
@@ -1024,14 +1031,15 @@ class _TransferTokenState extends State<TransferToken> {
                                         );
 
                                         String tokenSent = isNFTTransfer
-                                            ? widget.data['tokenId'].toString()
-                                            : widget.data['amount'];
+                                            ? widget.tokenData['tokenId']
+                                                .toString()
+                                            : widget.tokenData['amount'];
 
                                         NotificationApi.showNotification(
                                           title:
-                                              '${widget.data['symbol']} Sent',
+                                              '${widget.tokenData['symbol']} Sent',
                                           body:
-                                              '$tokenSent ${widget.data['symbol']} sent to ${widget.data['recipient']}',
+                                              '$tokenSent ${widget.tokenData['symbol']} sent to ${widget.tokenData['recipient']}',
                                         );
 
                                         if (isNFTTransfer) {
@@ -1059,9 +1067,9 @@ class _TransferTokenState extends State<TransferToken> {
                                         final mapData = {
                                           'time': formattedDate,
                                           'from': userAddress,
-                                          'to': widget.data['recipient'],
+                                          'to': widget.tokenData['recipient'],
                                           'value': double.parse(
-                                                widget.data['amount'],
+                                                widget.tokenData['amount'],
                                               ) *
                                               pow(10, coinDecimals),
                                           'decimal': coinDecimals,

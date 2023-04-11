@@ -13,7 +13,6 @@ import 'package:bech32/bech32.dart';
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/utils/json_viewer.dart';
-import 'package:cryptowallet/validate_tezos.dart';
 import 'package:dartez/dartez.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:eth_sig_util/util/utils.dart' hide hexToBytes, bytesToHex;
@@ -54,6 +53,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:bitbox/bitbox.dart' as bitbox;
 import 'package:hex/hex.dart';
 
+import '../coins/bitcoin_coin.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../eip/eip681.dart';
 import '../model/seed_phrase_root.dart';
@@ -68,16 +69,7 @@ import 'pos_networks.dart';
 
 // crypto decimals
 
-
-
-
-
-
-
 const satoshiDustAmount = 546;
-
-
-
 
 const int maxFeeGuessForCardano = 200000;
 
@@ -1104,9 +1096,6 @@ class NearRpcProvider extends RPCProvider {
   NearRpcProvider(this.endpoint) : super(endpoint);
 }
 
-
-
-
 Future<String> getCryptoPrice({
   bool skipNetworkRequest = false,
 }) async {
@@ -1361,7 +1350,6 @@ Future<String> etherPrivateKeyToAddress(String privateKey) async {
   final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
   return web3.EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
 }
-
 
 Future<String> getCurrencyJson() async {
   return await rootBundle.loadString('json/currencies.json');
@@ -1679,20 +1667,17 @@ Future<Map> get1InchUrlList(int chainId) async {
 }
 
 Map getEthereumDetailsFromChainId(int chainId) {
-  List blockChains = getEVMBlockchains().values.toList();
+  List blockChains = getEVMBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['chainId'] == chainId) {
-      return Map.from(blockChains[i])
-        ..addAll({
-          'name': getEVMBlockchains().keys.toList()[i],
-        });
+      return Map.from(blockChains[i]);
     }
   }
   return null;
 }
 
 Map getBitcoinDetailsFromNetwork(NetworkType network) {
-  List blockChains = getBitCoinPOSBlockchains().values.toList();
+  List blockChains = getBitCoinPOSBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['POSNetwork'] == network) {
       return blockChains[i];
@@ -1735,26 +1720,6 @@ bool seqEqual(Uint8List a, Uint8List b) {
     }
   }
   return true;
-}
-
-validateAddress(Map data, String recipient) {
-  if (data['default'] == 'XRP') {
-  } else if (data['default'] == 'ALGO') {
-  } else if (data['default'] == 'NEAR') {
-   
-  } else if (data['default'] == 'BCH') {
-    bitbox.Address.detectFormat(recipient);
-  } else if (data['default'] == 'XTZ') {
-  } else if (data['default'] == 'TRX') {
-  } else if (data['P2WPKH'] != null) {
-  } else if (data['default'] == 'SOL') {
-  } else if (data['default'] == 'ADA') {
-  } else if (data['default'] == 'XLM') {
-  } else if (data['default'] == 'FIL') {
-  } else if (data['default'] == 'ATOM') {
-  } else if (data['rpc'] != null) {
-    web3.EthereumAddress.fromHex(recipient);
-  }
 }
 
 addAddressBlockchain({

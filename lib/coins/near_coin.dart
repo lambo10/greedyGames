@@ -58,7 +58,35 @@ class NearCoin implements Coin {
 
     return data;
   }
+ @override
+  String address_() {
+    return address;
+  }
 
+  @override
+  String blockExplorer_() {
+    return blockExplorer;
+  }
+
+  @override
+  String default__() {
+    return default_;
+  }
+
+  @override
+  String image_() {
+    return image;
+  }
+
+  @override
+  String name_() {
+    return name;
+  }
+
+  @override
+  String symbol_() {
+    return symbol;
+  }
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'nearDetails$mnemonic';

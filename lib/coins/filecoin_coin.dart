@@ -48,7 +48,35 @@ class FilecoinCoin implements Coin {
     this.baseUrl,
     this.prefix,
     this.name,
-  });
+  }); @override
+  String address_() {
+    return address;
+  }
+
+  @override
+  String blockExplorer_() {
+    return blockExplorer;
+  }
+
+  @override
+  String default__() {
+    return default_;
+  }
+
+  @override
+  String image_() {
+    return image;
+  }
+
+  @override
+  String name_() {
+    return name;
+  }
+
+  @override
+  String symbol_() {
+    return symbol;
+  }
 
   FilecoinCoin.fromJson(Map<String, dynamic> json) {
     prefix = json['prefix'];

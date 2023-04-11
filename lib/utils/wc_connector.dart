@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -100,10 +101,9 @@ class WcConnector {
   setSigningDetails(int chainId) async {
     Map blockChainData = getEthereumDetailsFromChainId(chainId);
     final _mnemonic = _prefs.get(currentMmenomicKey);
-    final response = await getEthereumFromMemnomic(
-      _mnemonic,
-      blockChainData['coinType'],
-    );
+
+    final response =
+        await EthereumCoin.fromJson(blockChainData).fromMnemonic(_mnemonic);
     _walletAddress = response['eth_wallet_address'];
     _privateKey = response['eth_wallet_privateKey'];
     _web3client = Web3Client(

@@ -180,7 +180,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
                   context,
                   MaterialPageRoute(
                     builder: (ctx) => Token(
-                      data: userAddedToken[i],
+                      tokenData: userAddedToken[i],
                     ),
                   ),
                 );

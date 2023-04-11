@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
@@ -18,14 +19,14 @@ class AddCustomToken extends StatefulWidget {
 }
 
 class _AddCustomTokenState extends State<AddCustomToken> {
-  List networks = getEVMBlockchains().keys.toList();
-  String network;
+  List networks = getEVMBlockchains();
+  String networkName;
   String networkImage;
   @override
   void initState() {
     super.initState();
-    network = networks[0];
-    networkImage = getEVMBlockchains().values.toList()[0]['image'];
+    networkName = networks[0]['name'];
+    networkImage = networks[0]['image'];
     contractAddressController.addListener(() async {
       await autoFillNameDecimalSymbol(
         contractAddressController.text,
@@ -49,9 +50,11 @@ class _AddCustomTokenState extends State<AddCustomToken> {
     emptyInput();
     if (enteredContractAddress.isEmpty) return;
     try {
+      Map evnNetwork =
+          getEVMBlockchains().first((e) => e['name'] == networkName);
       Map erc20Details = await getERC20TokenNameSymbolDecimal(
         contractAddress: enteredContractAddress.trim(),
-        rpc: getEVMBlockchains()[network]['rpc'],
+        rpc: evnNetwork['rpc'],
       );
       if (erc20Details.isEmpty) return;
       nameAddressController.text = erc20Details['name'];
@@ -96,13 +99,15 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                     ),
                     GestureDetector(
                       onTap: () {
+                        Map evnNetwork = getEVMBlockchains()
+                            .first((e) => e['name'] == networkName);
                         showBlockChainDialog(
                           context: context,
                           onTap: (blockChainData) async {
                             Navigator.pop(context);
                             if (mounted) {
                               setState(() {
-                                network = blockChainData['name'];
+                                networkName = blockChainData['name'];
                                 networkImage = blockChainData['image'];
                               });
                               await autoFillNameDecimalSymbol(
@@ -110,8 +115,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                               );
                             }
                           },
-                          selectedChainId: getEVMBlockchains()[network]
-                              ['chainId'],
+                          selectedChainId: evnNetwork['chainId'],
                         );
                       },
                       child: CircleAvatar(
@@ -370,18 +374,20 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                       }
 
                       final userTokenListKey = getAddTokenKey();
+                      Map evnNetwork = getEVMBlockchains().first(
+                        (e) => e['name'] == networkName,
+                      );
 
                       final Map customTokenDetails = {
                         'contractAddress': contractAddr,
                         'name': contractName,
                         'symbol': contractSymbol,
                         'decimals': contractDecimals,
-                        'network': network,
-                        'chainId': getEVMBlockchains()[network]['chainId'],
-                        'rpc': getEVMBlockchains()[network]['rpc'],
-                        'blockExplorer': getEVMBlockchains()[network]
-                            ['blockExplorer'],
-                        'coinType': getEVMBlockchains()[network]['coinType'],
+                        'network': networkName,
+                        'chainId': evnNetwork['chainId'],
+                        'rpc': evnNetwork['rpc'],
+                        'blockExplorer': evnNetwork['blockExplorer'],
+                        'coinType': evnNetwork['coinType'],
                       };
 
                       List userTokenList = [];
@@ -397,7 +403,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                           bool sameContractAddress =
                               contractAddress.toLowerCase() ==
                                   contractAddr.toLowerCase();
-                          bool sameNetwork = contractNetwork == network;
+                          bool sameNetwork = contractNetwork == networkName;
 
                           if (sameNetwork && sameContractAddress) {
                             ScaffoldMessenger.of(context).showSnackBar(

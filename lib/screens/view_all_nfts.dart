@@ -464,7 +464,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (ctx) => SendToken(
-                                                data: {
+                                                tokenData: {
                                                   'name': name,
                                                   'symbol': symbol,
                                                   'isNFT': true,

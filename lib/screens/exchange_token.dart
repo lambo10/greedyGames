@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
@@ -31,7 +32,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   bool tokenGetLoading = false;
   String error = '';
   final amountPay = TextEditingController()..text = '1';
-  List networks = getEVMBlockchains().keys.toList();
+  List networks = getEVMBlockchains();
   String network;
   String currentSelectedTokenPay = 'ETH';
   String currentSelectedTokenGet = 'ETH';
@@ -84,7 +85,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
       httpPollingDelay,
       (Timer t) async => await getAllExchangeToken(),
     );
-    networkImage = getEVMBlockchains().values.toList()[0]['image'];
+    networkImage = getEVMBlockchains()[0]['image'];
   }
 
   Future userGetDetails() async {

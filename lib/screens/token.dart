@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/crypto_charts/crypto_chart.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/screens/receive_token.dart';
 import 'package:cryptowallet/screens/send_token.dart';
 import 'package:cryptowallet/screens/token_contract_info.dart';
@@ -20,8 +21,8 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:intl/intl.dart';
 
 class Token extends StatefulWidget {
-  final Map data;
-  const Token({this.data, Key key}) : super(key: key);
+  final Coin tokenData;
+  const Token({this.tokenData, Key key}) : super(key: key);
 
   @override
   _TokenState createState() => _TokenState();
@@ -60,8 +61,8 @@ class _TokenState extends State<Token> {
 
   Future getBlockchainPrice() async {
     try {
-      final bool priceNotavailble =
-          widget.data['noPrice'] != null && widget.data['noPrice'] == true;
+      final bool priceNotavailble = widget.tokenData['noPrice'] != null &&
+          widget.tokenData['noPrice'] == true;
       if (priceNotavailble) return;
 
       final currencyWithSymbol =
@@ -79,7 +80,7 @@ class _TokenState extends State<Token> {
       ) as Map;
 
       final Map cryptoMarket =
-          allCryptoPrice[coinGeckCryptoSymbolToID[widget.data['symbol']]];
+          allCryptoPrice[coinGeckCryptoSymbolToID[widget.tokenData['symbol']]];
 
       final double price =
           (cryptoMarket[defaultCurrency.toLowerCase()] as num).toDouble();
@@ -96,117 +97,117 @@ class _TokenState extends State<Token> {
   Future getBlockchainBalance() async {
     try {
       final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-      if (widget.data['contractAddress'] != null) {
+      if (widget.tokenData['contractAddress'] != null) {
         cryptoBalance = await getERC20TokenBalance(
-          widget.data,
+          widget.tokenData,
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['POSNetwork'] != null) {
+      } else if (widget.tokenData['POSNetwork'] != null) {
         final getBitcoinDetails = await getBitcoinFromMemnomic(
           mnemonic,
-          widget.data,
+          widget.tokenData,
         );
         cryptoBalance = await getBitcoinAddressBalance(
           getBitcoinDetails['address'],
-          widget.data['POSNetwork'],
+          widget.tokenData['POSNetwork'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'XRP') {
+      } else if (widget.tokenData['default'] == 'XRP') {
         final getXrpDetails = await getXRPFromMemnomic(mnemonic);
         cryptoBalance = await getXRPAddressBalance(
           getXrpDetails['address'],
-          widget.data['ws'],
+          widget.tokenData['ws'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'SOL') {
+      } else if (widget.tokenData['default'] == 'SOL') {
         final getSolanaDetails = await getSolanaFromMemnomic(mnemonic);
         cryptoBalance = await getSolanaAddressBalance(
           getSolanaDetails['address'],
-          widget.data['solanaCluster'],
+          widget.tokenData['solanaCluster'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'XTZ') {
+      } else if (widget.tokenData['default'] == 'XTZ') {
         final getTezorDetails =
-            await getTezorFromMemnomic(mnemonic, widget.data);
+            await getTezorFromMemnomic(mnemonic, widget.tokenData);
         cryptoBalance = await getTezorAddressBalance(
           getTezorDetails['address'],
-          widget.data,
+          widget.tokenData,
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'ALGO') {
+      } else if (widget.tokenData['default'] == 'ALGO') {
         final getAlgorandDetails = await getAlgorandFromMemnomic(mnemonic);
         cryptoBalance = await getAlgorandAddressBalance(
           getAlgorandDetails['address'],
-          widget.data['algoType'],
+          widget.tokenData['algoType'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'TRX') {
+      } else if (widget.tokenData['default'] == 'TRX') {
         final getTronDetails = await getTronFromMemnomic(mnemonic);
         cryptoBalance = await getTronAddressBalance(
           getTronDetails['address'],
-          widget.data['api'],
+          widget.tokenData['api'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'ADA') {
+      } else if (widget.tokenData['default'] == 'ADA') {
         final getCardanoDetails = await getCardanoFromMemnomic(
           mnemonic,
-          widget.data['cardano_network'],
+          widget.tokenData['cardano_network'],
         );
         cryptoBalance = await getCardanoAddressBalance(
           getCardanoDetails['address'],
-          widget.data['cardano_network'],
-          widget.data['blockFrostKey'],
+          widget.tokenData['cardano_network'],
+          widget.tokenData['blockFrostKey'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'NEAR') {
+      } else if (widget.tokenData['default'] == 'NEAR') {
         final getNearDetails = await getNearFromMemnomic(mnemonic);
         cryptoBalance = await getNearAddressBalance(
           getNearDetails['address'],
-          widget.data['api'],
+          widget.tokenData['api'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'FIL') {
+      } else if (widget.tokenData['default'] == 'FIL') {
         final getFileCoinDetails = await getFileCoinFromMemnomic(
           mnemonic,
-          widget.data['prefix'],
+          widget.tokenData['prefix'],
         );
         cryptoBalance = await getFileCoinAddressBalance(
           getFileCoinDetails['address'],
-          baseUrl: widget.data['baseUrl'],
+          baseUrl: widget.tokenData['baseUrl'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'XLM') {
+      } else if (widget.tokenData['default'] == 'XLM') {
         final getStellarDetails = await getStellarFromMemnomic(
           mnemonic,
         );
 
         cryptoBalance = await getStellarAddressBalance(
           getStellarDetails['address'],
-          widget.data['sdk'],
-          widget.data['cluster'],
+          widget.tokenData['sdk'],
+          widget.tokenData['cluster'],
           skipNetworkRequest: skipNetworkRequest,
         );
-      } else if (widget.data['default'] == 'ATOM') {
+      } else if (widget.tokenData['default'] == 'ATOM') {
         final getCosmosDetails = await getCosmosFromMemnomic(
           mnemonic,
-          widget.data['bech32Hrp'],
-          widget.data['lcdUrl'],
+          widget.tokenData['bech32Hrp'],
+          widget.tokenData['lcdUrl'],
         );
 
         cryptoBalance = await getCosmosAddressBalance(
           getCosmosDetails['address'],
-          widget.data['lcdUrl'],
+          widget.tokenData['lcdUrl'],
           skipNetworkRequest: skipNetworkRequest,
         );
       } else {
         final getEthereumDetails = await getEthereumFromMemnomic(
           mnemonic,
-          widget.data['coinType'],
+          widget.tokenData['coinType'],
         );
         final ethBalance = await getEthereumAddressBalance(
           getEthereumDetails['eth_wallet_address'],
-          widget.data['rpc'],
-          coinType: widget.data['coinType'],
+          widget.tokenData['rpc'],
+          coinType: widget.tokenData['coinType'],
           skipNetworkRequest: skipNetworkRequest,
         );
         cryptoBalance = ethBalance;
@@ -224,89 +225,89 @@ class _TokenState extends State<Token> {
 
       String mnemonic = pref.get(currentMmenomicKey);
 
-      if (widget.data['POSNetwork'] != null) {
+      if (widget.tokenData['POSNetwork'] != null) {
         currentAddress = (await getBitcoinFromMemnomic(
           mnemonic,
-          widget.data,
+          widget.tokenData,
         ))['address'];
-      } else if (widget.data['default'] == 'SOL') {
+      } else if (widget.tokenData['default'] == 'SOL') {
         currentAddress =
             (await getSolanaFromMemnomic(mnemonic))['address'].toString();
-      } else if (widget.data['default'] == 'XRP') {
+      } else if (widget.tokenData['default'] == 'XRP') {
         currentAddress = (await getXRPFromMemnomic(
           mnemonic,
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'NEAR') {
+      } else if (widget.tokenData['default'] == 'NEAR') {
         currentAddress = (await getNearFromMemnomic(
           mnemonic,
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'ADA') {
+      } else if (widget.tokenData['default'] == 'ADA') {
         currentAddress = (await getCardanoFromMemnomic(
           mnemonic,
-          widget.data['cardano_network'],
+          widget.tokenData['cardano_network'],
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'ALGO') {
+      } else if (widget.tokenData['default'] == 'ALGO') {
         currentAddress = (await getAlgorandFromMemnomic(
           mnemonic,
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'TRX') {
+      } else if (widget.tokenData['default'] == 'TRX') {
         currentAddress = (await getTronFromMemnomic(
           mnemonic,
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'XTZ') {
+      } else if (widget.tokenData['default'] == 'XTZ') {
         currentAddress = (await getTezorFromMemnomic(
           mnemonic,
-          widget.data,
+          widget.tokenData,
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'FIL') {
+      } else if (widget.tokenData['default'] == 'FIL') {
         currentAddress = (await getFileCoinFromMemnomic(
           mnemonic,
-          widget.data['prefix'],
+          widget.tokenData['prefix'],
         ))['address']
             .toString();
-      } else if (widget.data['default'] == 'XLM') {
+      } else if (widget.tokenData['default'] == 'XLM') {
         currentAddress =
             (await getStellarFromMemnomic(mnemonic))['address'].toString();
-      } else if (widget.data['default'] == 'ATOM') {
+      } else if (widget.tokenData['default'] == 'ATOM') {
         final getCosmosDetails = await getCosmosFromMemnomic(
           mnemonic,
-          widget.data['bech32Hrp'],
-          widget.data['lcdUrl'],
+          widget.tokenData['bech32Hrp'],
+          widget.tokenData['lcdUrl'],
         );
         currentAddress = getCosmosDetails['address'].toString();
       } else {
         final response = await getEthereumFromMemnomic(
           mnemonic,
-          widget.data['coinType'],
+          widget.tokenData['coinType'],
         );
         currentAddress = response['eth_wallet_address'].toString();
       }
 
-      rampName = rampSwap[widget.data['symbol']];
+      rampName = rampSwap[widget.tokenData['symbol']];
       rampCurrentAddress = currentAddress;
       currentAddress = currentAddress.toLowerCase();
       String contractAddrLookUpkey;
       String evmAddrLookUpkey;
 
-      if (widget.data['rpc'] != null) {
+      if (widget.tokenData['rpc'] != null) {
         contractAddrLookUpkey =
-            '${widget.data['contractAddress']}${widget.data['rpc']} Details';
+            '${widget.tokenData['contractAddress']}${widget.tokenData['rpc']} Details';
         evmAddrLookUpkey =
-            '${widget.data['default']}${widget.data['rpc']} Details';
+            '${widget.tokenData['default']}${widget.tokenData['rpc']} Details';
       }
 
-      final isContractAddress = widget.data['contractAddress'] != null;
-      final isEvmAddress = widget.data['rpc'] != null;
-      if (widget.data['default'] == 'ALGO') {
-        AlgorandTypes type = widget.data['algoType'];
+      final isContractAddress = widget.tokenData['contractAddress'] != null;
+      final isEvmAddress = widget.tokenData['rpc'] != null;
+      if (widget.tokenData['default'] == 'ALGO') {
+        AlgorandTypes type = widget.tokenData['algoType'];
         final userTransactionsKey =
-            pref.get('${widget.data['default']}${type.index} Details');
+            pref.get('${widget.tokenData['default']}${type.index} Details');
         if (userTransactionsKey != null) {
           tokenTransaction = {
             'trx': jsonDecode(userTransactionsKey),
@@ -318,18 +319,18 @@ class _TokenState extends State<Token> {
           'trx': jsonDecode(pref.get(contractAddrLookUpkey)),
           'currentUser': currentAddress
         };
-      } else if (widget.data['default'] != null &&
+      } else if (widget.tokenData['default'] != null &&
           isEvmAddress &&
           pref.get(evmAddrLookUpkey) != null) {
         tokenTransaction = {
           'trx': jsonDecode(pref.get(evmAddrLookUpkey)),
           'currentUser': currentAddress
         };
-      } else if (widget.data['default'] != null &&
+      } else if (widget.tokenData['default'] != null &&
           !isEvmAddress &&
-          pref.get('${widget.data['default']} Details') != null) {
+          pref.get('${widget.tokenData['default']} Details') != null) {
         tokenTransaction = {
-          'trx': jsonDecode(pref.get('${widget.data['default']} Details')),
+          'trx': jsonDecode(pref.get('${widget.tokenData['default']} Details')),
           'currentUser': currentAddress
         };
       } else {
@@ -364,7 +365,7 @@ class _TokenState extends State<Token> {
             onTap: () async {
               await navigateToDappBrowser(
                 context,
-                widget.data['blockExplorer'].toString().replaceFirst(
+                widget.tokenData['blockExplorer'].toString().replaceFirst(
                       transactionhashTemplateKey,
                       datum['transactionHash'],
                     ),
@@ -443,20 +444,20 @@ class _TokenState extends State<Token> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.data['contractAddress'] != null
-              ? ellipsify(str: widget.data['name'])
-              : widget.data['name'],
+          widget.tokenData['contractAddress'] != null
+              ? ellipsify(str: widget.tokenData['name'])
+              : widget.tokenData['name'],
         ),
         actions: [
           IconButton(
-            onPressed: widget.data['default'] != null
+            onPressed: widget.tokenData['default'] != null
                 ? () async {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (ctx) => CryptoChart(
-                          name: widget.data['name'],
-                          symbol: widget.data['default'],
+                          name: widget.tokenData['name'],
+                          symbol: widget.tokenData['default'],
                         ),
                       ),
                     );
@@ -464,14 +465,14 @@ class _TokenState extends State<Token> {
                 : null,
             icon: SvgPicture.asset(
               'assets/chart-mixed.svg',
-              color: widget.data['default'] != null
+              color: widget.tokenData['default'] != null
                   ? Colors.white
                   : const Color(0x00aaaaaa),
             ),
           ),
           if (rampName != null)
             IconButton(
-              onPressed: widget.data['default'] != null
+              onPressed: widget.tokenData['default'] != null
                   ? () async {
                       final buyLink = getRampLink(rampName, rampCurrentAddress);
                       await navigateToDappBrowser(context, buyLink);
@@ -479,19 +480,19 @@ class _TokenState extends State<Token> {
                   : null,
               icon: Icon(
                 Icons.shopping_bag,
-                color: widget.data['default'] != null
+                color: widget.tokenData['default'] != null
                     ? Colors.white
                     : const Color(0x00aaaaaa),
               ),
             ),
-          if (widget.data['contractAddress'] != null)
+          if (widget.tokenData['contractAddress'] != null)
             IconButton(
               onPressed: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => TokenContractInfo(
-                      tokenData: widget.data,
+                      tokenData: widget.tokenData,
                     ),
                   ),
                 );
@@ -534,18 +535,19 @@ class _TokenState extends State<Token> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        widget.data['contractAddress'] != null
-                                            ? widget.data['network']
+                                        widget.tokenData['contractAddress'] !=
+                                                null
+                                            ? widget.tokenData['network']
                                             : AppLocalizations.of(context).coin,
                                         style: const TextStyle(
                                             fontSize: 16, color: Colors.grey),
                                       ),
-                                      widget.data['noPrice'] != null
+                                      widget.tokenData['noPrice'] != null
                                           ? Text(
                                               '\$0',
                                               style: TextStyle(
                                                   fontSize: 16,
-                                                  color: widget.data[
+                                                  color: widget.tokenData[
                                                               'contractAddress'] !=
                                                           null
                                                       ? const Color(0x00ffffff)
@@ -556,7 +558,7 @@ class _TokenState extends State<Token> {
                                           ? Row(
                                               children: [
                                                 Text(
-                                                  '${widget.data['contractAddress'] != null ? ellipsify(str: blockchainPrice['symbol']) : (blockchainPrice)['symbol']}${formatMoney((blockchainPrice)['price'])}',
+                                                  '${widget.tokenData['contractAddress'] != null ? ellipsify(str: blockchainPrice['symbol']) : (blockchainPrice)['symbol']}${formatMoney((blockchainPrice)['price'])}',
                                                   style: const TextStyle(
                                                     fontSize: 16,
                                                     color: Colors.grey,
@@ -594,11 +596,11 @@ class _TokenState extends State<Token> {
                                   const SizedBox(
                                     height: 20,
                                   ),
-                                  widget.data['image'] != null
+                                  widget.tokenData['image'] != null
                                       ? CircleAvatar(
                                           radius: 30,
                                           backgroundImage: AssetImage(
-                                            widget.data['image'],
+                                            widget.tokenData['image'],
                                           ),
                                           backgroundColor:
                                               Theme.of(context).backgroundColor,
@@ -607,7 +609,7 @@ class _TokenState extends State<Token> {
                                           radius: 30,
                                           child: Text(
                                             ellipsify(
-                                                str: widget.data['symbol'],
+                                                str: widget.tokenData['symbol'],
                                                 maxLength: 3),
                                             textAlign: TextAlign.center,
                                             style: const TextStyle(
@@ -626,10 +628,12 @@ class _TokenState extends State<Token> {
                                           fontWeight: FontWeight.bold),
                                       balance: cryptoBalance,
                                       symbol:
-                                          widget.data['contractAddress'] != null
+                                          widget.tokenData['contractAddress'] !=
+                                                  null
                                               ? ellipsify(
-                                                  str: widget.data['symbol'])
-                                              : widget.data['symbol'],
+                                                  str: widget
+                                                      .tokenData['symbol'])
+                                              : widget.tokenData['symbol'],
                                     )
                                   else
                                     const Text(
@@ -659,7 +663,8 @@ class _TokenState extends State<Token> {
                                                     MaterialPageRoute(
                                                       builder: (ctx) =>
                                                           SendToken(
-                                                        data: widget.data,
+                                                        tokenData:
+                                                            widget.tokenData,
                                                       ),
                                                     ));
                                               },
@@ -698,7 +703,7 @@ class _TokenState extends State<Token> {
                                                   MaterialPageRoute(
                                                     builder: (ctx) =>
                                                         ReceiveToken(
-                                                      data: widget.data,
+                                                      data: widget.tokenData,
                                                       mnemonic: mnemonic,
                                                     ),
                                                   ),
