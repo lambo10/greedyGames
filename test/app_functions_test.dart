@@ -688,6 +688,13 @@ void main() async {
         seedRootKey: seedPhraseRoot,
       },
     );
+    final nearKey = await compute(
+      calculateNearKey,
+      {
+        mnemonicKey: mnemonic,
+        seedRootKey: seedPhraseRoot,
+      },
+    );
 
     if (enableTestNet) {
       final bitcoinKeyTest = await compute(
@@ -711,6 +718,8 @@ void main() async {
     expect(zcashKey['address'], 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
     expect(algorandKey['address'],
         'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
+    expect(nearKey['address'],
+        'a0c8aed1a106c99fa1b35858a1588e9504bde5fc38428358e6ceadb1c2b1850e');
     expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
     // expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
     expect(
