@@ -67,19 +67,18 @@ import 'filecoin_util.dart';
 import 'pos_networks.dart';
 
 // crypto decimals
-const etherDecimals = 18;
-const bitCoinDecimals = 8;
-const cardanoDecimals = 6;
-const tronDecimals = 6;
-const cosmosDecimals = 6;
-const xrpDecimals = 6;
-const fileCoinDecimals = 18;
-const solanaDecimals = 9;
+
+
+
+
+
+
+
 const satoshiDustAmount = 546;
-const stellarDecimals = 6;
-const algorandDecimals = 6;
-const tezorDecimals = 6;
-const nearDecimals = 24;
+
+
+
+
 const int maxFeeGuessForCardano = 200000;
 
 // time

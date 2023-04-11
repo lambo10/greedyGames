@@ -12,9 +12,9 @@ import 'package:http/http.dart';
 import '../interface/coin.dart';
 import '../utils/alt_ens.dart';
 import '../utils/app_config.dart';
-import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const cosmosDecimals = 6;
 
 class CosmosCoin implements Coin {
   String bech32Hrp;
@@ -203,6 +203,11 @@ class CosmosCoin implements Coin {
     if (sel.hrp != bech32Hrp) {
       throw Exception('not a valid cosmos address');
     }
+  }
+
+  @override
+  int decimals() {
+    return cosmosDecimals;
   }
 }
 

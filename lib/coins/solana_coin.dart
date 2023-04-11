@@ -13,9 +13,9 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const solanaDecimals = 9;
 
-class Solana
- implements Coin {
+class Solana implements Coin {
   SolanaClusters solanaCluster;
   String address;
   String blockExplorer;
@@ -24,8 +24,7 @@ class Solana
   String image;
   String name;
 
-  Solana
-  ({
+  Solana({
     this.blockExplorer,
     this.symbol,
     this.default_,
@@ -35,8 +34,7 @@ class Solana
     this.solanaCluster,
   });
 
-  Solana
-  .fromJson(Map<String, dynamic> json) {
+  Solana.fromJson(Map<String, dynamic> json) {
     solanaCluster = json['solanaCluster'];
     blockExplorer = json['blockExplorer'];
     default_ = json['default'];
@@ -156,6 +154,11 @@ class Solana
   @override
   validateAddress(String address) {
     solana.Ed25519HDPublicKey.fromBase58(address);
+  }
+
+  @override
+  int decimals() {
+    return solanaDecimals;
   }
 }
 

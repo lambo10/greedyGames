@@ -17,6 +17,7 @@ import '../utils/rpc_urls.dart';
 import '../xrp_transaction/xrp_transaction.dart';
 
 final pref = Hive.box(secureStorageKey);
+const xrpDecimals = 6;
 
 class XRPCoin implements Coin {
   String api;
@@ -248,6 +249,11 @@ class XRPCoin implements Coin {
     if (!seqEqual(computedCheckSum, expectedCheckSum)) {
       throw Exception('Invalid XRP address');
     }
+  }
+
+  @override
+  int decimals() {
+    return xrpDecimals;
   }
 }
 

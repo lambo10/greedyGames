@@ -13,6 +13,7 @@ import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const cardanoDecimals = 6;
 
 class CardanoCoin implements Coin {
   String blockFrostKey;
@@ -227,6 +228,11 @@ class CardanoCoin implements Coin {
   @override
   validateAddress(String address) {
     cardano.ShelleyAddress.fromBech32(address);
+  }
+
+  @override
+  int decimals() {
+    return cardanoDecimals;
   }
 }
 

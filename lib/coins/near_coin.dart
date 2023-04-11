@@ -15,6 +15,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const nearDecimals = 24;
 
 class NearCoin implements Coin {
   String api;
@@ -197,6 +198,11 @@ class NearCoin implements Coin {
     if (bytes.length != exceptedBytesLength) {
       throw Exception("Near address must have a decoded byte length of 32");
     }
+  }
+
+  @override
+  int decimals() {
+    return nearDecimals;
   }
 }
 

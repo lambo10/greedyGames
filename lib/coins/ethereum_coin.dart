@@ -13,6 +13,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const etherDecimals = 18;
 
 class EthereumCoin implements Coin {
   int coinType;
@@ -179,6 +180,11 @@ class EthereumCoin implements Coin {
   @override
   validateAddress(String address) {
     EthereumAddress.fromHex(address);
+  }
+
+  @override
+  int decimals() {
+    return etherDecimals;
   }
 }
 

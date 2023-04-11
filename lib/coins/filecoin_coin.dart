@@ -27,6 +27,7 @@ import '../model/seed_phrase_root.dart';
 
 final pref = Hive.box(secureStorageKey);
 const filecoinfaucet = 'https://faucet.calibration.fildev.network/';
+const fileCoinDecimals = 18;
 
 class FilecoinCoin implements Coin {
   String prefix;
@@ -76,7 +77,6 @@ class FilecoinCoin implements Coin {
 
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
-
     final keyName = 'fileCoinDetail$prefix';
     List mmenomicMapping = [];
     if (pref.get(keyName) != null) {
@@ -197,26 +197,6 @@ class FilecoinCoin implements Coin {
     if (!validateFilecoinAddress(address)) {
       throw Exception('not a valid filecoin address');
     }
-  }
-
-  Future<int> _getNetworkFee(int satoshiToSend, List userUnspentInput) async {
-    int inputCount = 0;
-    int outputCount = 2;
-    int transactionSize = 0;
-    int totalAmountAvailable = 0;
-    int fee = 0;
-
-    for (int i = 0; i < userUnspentInput.length; i++) {
-      transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
-      fee = transactionSize * 20;
-      int utxAvailable = (double.parse(userUnspentInput[i]['value']) *
-              pow(10, bitCoinDecimals))
-          .toInt();
-      totalAmountAvailable += utxAvailable;
-      inputCount += 1;
-      if (totalAmountAvailable - satoshiToSend - fee >= 0) break;
-    }
-    return fee;
   }
 
   Future<int> getFileCoinNonce(
@@ -467,6 +447,11 @@ class FilecoinCoin implements Coin {
     Map jsonDecodedBody = json.decode(responseBody) as Map;
 
     return jsonDecodedBody['result']['/'];
+  }
+
+  @override
+  int decimals() {
+    return fileCoinDecimals;
   }
 }
 

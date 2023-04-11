@@ -4,4 +4,5 @@ abstract class Coin {
   Future<double> getBalance(bool skipNetworkRequest);
   Future<String> transferToken(String amount, String to);
   Map getTransactions();
+  int decimals();
 }

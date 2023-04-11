@@ -14,6 +14,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
+const algorandDecimals = 6;
 
 class AlgorandCoin implements Coin {
   AlgorandTypes algoType;
@@ -163,6 +164,11 @@ class AlgorandCoin implements Coin {
     algo_rand.Address.fromAlgorandAddress(
       address: address,
     );
+  }
+
+  @override
+  int decimals() {
+    return algorandDecimals;
   }
 }
 

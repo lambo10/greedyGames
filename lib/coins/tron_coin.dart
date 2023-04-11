@@ -22,6 +22,8 @@ const TRX_FEE_LIMIT = 150000000;
 const TRX_ADDRESS_PREFIX = '41';
 const TRX_MESSAGE_HEADER = '\x19TRON Signed Message:\n32';
 
+const tronDecimals = 6;
+
 class TronCoin implements Coin {
   String api;
   String address;
@@ -68,7 +70,6 @@ class TronCoin implements Coin {
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'tronDetails$mnemonic';
-
 
     List mmenomicMapping = [];
     if (pref.get(key) != null) {
@@ -188,6 +189,11 @@ class TronCoin implements Coin {
     if (!wallet.isValidTronAddress(address)) {
       throw Exception('Invalid $default_ address');
     }
+  }
+
+  @override
+  int decimals() {
+    return tronDecimals;
   }
 }
 

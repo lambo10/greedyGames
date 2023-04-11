@@ -13,6 +13,7 @@ import '../utils/rpc_urls.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 
 final pref = Hive.box(secureStorageKey);
+const tezorDecimals = 6;
 
 class TezosCoin implements Coin {
   TezosTypes tezorType;
@@ -166,6 +167,11 @@ class TezosCoin implements Coin {
     if (!validateTezosAddress(address)) {
       throw Exception('Invalid $default_ address');
     }
+  }
+
+  @override
+  int decimals() {
+    return tezorDecimals;
   }
 }
 

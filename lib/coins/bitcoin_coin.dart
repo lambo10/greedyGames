@@ -27,6 +27,7 @@ import '../utils/app_config.dart';
 
 final pref = Hive.box(secureStorageKey);
 const sochainApi = 'https://sochain.com/api/v2/';
+const bitCoinDecimals = 8;
 
 class BitcoinCoin implements Coin {
   NetworkType POSNetwork;
@@ -360,6 +361,11 @@ class BitcoinCoin implements Coin {
       'address': address,
       'private_key': "0x${HEX.encode(node.privateKey)}"
     };
+  }
+
+  @override
+  int decimals() {
+    return bitCoinDecimals;
   }
 }
 

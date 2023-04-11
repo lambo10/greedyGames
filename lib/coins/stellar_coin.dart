@@ -11,10 +11,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar
 
 import '../interface/coin.dart';
 import '../utils/app_config.dart';
-import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
-
+const stellarDecimals = 6;
 class StellarCoin implements Coin {
   stellar.Network cluster;
   stellar.StellarSDK sdk;
@@ -209,6 +208,11 @@ class StellarCoin implements Coin {
       }
       return 0;
     }
+  }
+
+  @override
+  int decimals() {
+    return stellarDecimals;
   }
 }
 
