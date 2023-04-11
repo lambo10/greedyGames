@@ -80,7 +80,7 @@ const satoshiDustAmount = 546;
 const stellarDecimals = 6;
 const algorandDecimals = 6;
 const tezorDecimals = 6;
-const nearDecimals = 6;
+const nearDecimals = 24;
 const int maxFeeGuessForCardano = 200000;
 
 // time
@@ -2491,11 +2491,35 @@ Future<double> getNearAddressBalance(
   if (skipNetworkRequest) return savedBalance;
 
   try {
-    throw Exception("Not Implemented");
-    //FIXME:
-    // await pref.put(key, balanceInNear);
+    final request = await post(
+      Uri.parse(nearApi),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(
+        {
+          "jsonrpc": "2.0",
+          "id": "dontcare",
+          "method": "query",
+          "params": {
+            "request_type": "view_account",
+            "finality": "final",
+            "account_id": address
+          },
+        },
+      ),
+    );
 
-    // return balanceInNear;
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception('Request failed');
+    }
+    Map decodedData = jsonDecode(request.body);
+
+    final BigInt balance = BigInt.parse(decodedData['result']['amount']);
+
+    final balanceInNear =
+        (balance / BigInt.from(pow(10, nearDecimals))).toDouble();
+    await pref.put(key, balanceInNear);
+
+    return balanceInNear;
   } catch (e) {
     return savedBalance;
   }
