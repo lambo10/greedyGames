@@ -44,7 +44,7 @@ class _PrivateSaleState extends State<PrivateSale> {
   @override
   void initState() {
     super.initState();
-    coin = EthereumCoin.fromJson(networkDetails);
+    coin = EthereumCoin.fromJson(Map.from(networkDetails));
     callAllApi();
     timer = Timer.periodic(
       httpPollingDelay,
