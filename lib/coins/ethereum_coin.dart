@@ -154,15 +154,20 @@ class EthereumCoin extends Coin {
     try {
       final httpClient = Client();
       final ethClient = Web3Client(rpcUrl, httpClient);
+
       final userAddress = EthereumAddress.fromHex(address);
+
       final etherAmount = await ethClient.getBalance(userAddress);
+
       double ethBalance =
           etherAmount.getInWei.toDouble() / pow(10, etherDecimals);
 
       await pref.put(tokenKey, ethBalance);
 
       return ethBalance;
-    } catch (e) {
+    } catch (e, sk) {
+      // print(sk);
+
       return savedBalance;
     }
   }

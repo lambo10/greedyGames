@@ -634,9 +634,9 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                             getEthereumDetailsFromChainId(chainId);
                         final rpc = blockChainDetails['rpc'];
 
-                        final web3Response =
-                            await EthereumCoin.fromJson(blockChainDetails)
-                                .fromMnemonic(mnemonic);
+                        final web3Response = await EthereumCoin.fromJson(
+                                Map.from(blockChainDetails))
+                            .fromMnemonic(mnemonic);
 
                         final privateKey = web3Response['privateKey'];
                         final credentials = EthPrivateKey.fromHex(privateKey);
@@ -926,8 +926,9 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     'invalid asset symbol',
                                   );
                                 }
-                                EthereumCoin.fromJson(blockChainDetails)
-                                    .validateAddress(data.contract);
+                                EthereumCoin.fromJson(
+                                  Map.from(blockChainDetails),
+                                ).validateAddress(data.contract);
 
                                 final assetDetails = {
                                   'name': data.symbol,

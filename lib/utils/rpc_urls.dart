@@ -1172,7 +1172,7 @@ Future returnInitEvm(
   final mnemonic = pref.get(currentMmenomicKey);
   final evmDetails = getEthereumDetailsFromChainId(chainId);
   final response =
-      await EthereumCoin.fromJson(evmDetails).fromMnemonic(mnemonic);
+      await EthereumCoin.fromJson(Map.from(evmDetails)).fromMnemonic(mnemonic);
 
   final address = response['address'];
   return '''
