@@ -77,13 +77,17 @@ class _PrivateSaleState extends State<PrivateSale> {
 
   Future getWalletTokenBalance() async {
     try {
-      final getTokenBalance = await getERC20TokenBalance({
-        'contractAddress': tokenContractAddress,
-        'rpc': networkDetails['rpc'],
-        'chainId': networkDetails['chainId'],
-        'coinType': networkDetails['coinType'],
-      });
-      tokenBalance = getTokenBalance;
+      final EthContractCoin coin = EthContractCoin.fromJson(
+        Map.from(networkDetails)
+          ..addAll(
+            {
+              'contractAddress': tokenContractAddress,
+              'tokenType': EthTokenType.ERC20,
+            },
+          ),
+      );
+
+      tokenBalance = await coin.getBalance(false);
       if (mounted) {
         setState(() {});
       }
