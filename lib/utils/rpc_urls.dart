@@ -698,7 +698,7 @@ Future<void> initializeAllPrivateKeys(String mnemonic) async {
   seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
   for (int i = 0; i < getAllBlockchains.length; i++) {
-    getAllBlockchains[i].fromMnemonic(mnemonic);
+    await getAllBlockchains[i].fromMnemonic(mnemonic);
   }
 }
 
