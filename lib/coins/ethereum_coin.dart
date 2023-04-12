@@ -68,15 +68,17 @@ class EthereumCoin extends Coin {
     return symbol;
   }
 
-  EthereumCoin.fromJson(Map<String, dynamic> json) {
-    chainId = json['chainId'];
-    rpcUrl = json['rpcUrl'];
-    coinType = json['coinType'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory EthereumCoin.fromJson(Map<String, dynamic> json) {
+    return EthereumCoin(
+      chainId: json['chainId'],
+      rpcUrl: json['rpcUrl'],
+      coinType: json['coinType'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

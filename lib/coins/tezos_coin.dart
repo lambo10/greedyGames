@@ -64,14 +64,16 @@ class TezosCoin extends Coin {
     this.server,
   });
 
-  TezosCoin.fromJson(Map<String, dynamic> json) {
-    tezorType = json['tezorType'];
-    server = json['server'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory TezosCoin.fromJson(Map<String, dynamic> json) {
+    return TezosCoin(
+      tezorType: json['tezorType'],
+      server: json['server'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

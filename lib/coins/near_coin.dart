@@ -34,13 +34,15 @@ class NearCoin extends Coin {
     this.api,
   });
 
-  NearCoin.fromJson(Map<String, dynamic> json) {
-    api = json['api'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory NearCoin.fromJson(Map<String, dynamic> json) {
+    return NearCoin(
+      api: json['api'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

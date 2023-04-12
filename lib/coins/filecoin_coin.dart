@@ -79,14 +79,16 @@ class FilecoinCoin extends Coin {
     return symbol;
   }
 
-  FilecoinCoin.fromJson(Map<String, dynamic> json) {
-    prefix = json['prefix'];
-    baseUrl = json['baseUrl'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory FilecoinCoin.fromJson(Map<String, dynamic> json) {
+    return FilecoinCoin(
+      prefix: json['prefix'],
+      baseUrl: json['baseUrl'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

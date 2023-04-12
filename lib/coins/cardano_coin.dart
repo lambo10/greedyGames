@@ -34,14 +34,16 @@ class CardanoCoin extends Coin {
     this.cardano_network,
   });
 
-  CardanoCoin.fromJson(Map<String, dynamic> json) {
-    blockFrostKey = json['blockFrostKey'];
-    cardano_network = json['cardano_network'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory CardanoCoin.fromJson(Map<String, dynamic> json) {
+    return CardanoCoin(
+      blockFrostKey: json['blockFrostKey'],
+      cardano_network: json['cardano_network'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

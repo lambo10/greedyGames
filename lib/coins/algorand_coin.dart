@@ -33,14 +33,15 @@ class AlgorandCoin extends Coin {
     this.algoType,
   });
 
-  AlgorandCoin.fromJson(Map<String, dynamic> json) {
-    algoType = json['algoType'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-
-    name = json['name'];
+  factory AlgorandCoin.fromJson(Map<String, dynamic> json) {
+    return AlgorandCoin(
+      algoType: json['algoType'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

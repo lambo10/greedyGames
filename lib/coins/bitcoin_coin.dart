@@ -50,15 +50,17 @@ class BitcoinCoin extends Coin {
     this.name,
   });
 
-  BitcoinCoin.fromJson(Map<String, dynamic> json) {
-    POSNetwork = json['POSNetwork'];
-    derivationPath = json['derivationPath'];
-    P2WPKHType = json['P2WPKH'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory BitcoinCoin.fromJson(Map<String, dynamic> json) {
+    return BitcoinCoin(
+      POSNetwork: json['POSNetwork'],
+      derivationPath: json['derivationPath'],
+      P2WPKHType: json['P2WPKHType'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {

@@ -69,13 +69,15 @@ class XRPCoin extends Coin {
     return symbol;
   }
 
-  XRPCoin.fromJson(Map<String, dynamic> json) {
-    api = json['api'];
-    blockExplorer = json['blockExplorer'];
-    default_ = json['default'];
-    symbol = json['symbol'];
-    image = json['image'];
-    name = json['name'];
+  factory XRPCoin.fromJson(Map<String, dynamic> json) {
+    return XRPCoin(
+      api: json['api'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+    );
   }
 
   Map<String, dynamic> toJson() {
