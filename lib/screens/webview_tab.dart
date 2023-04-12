@@ -1243,7 +1243,9 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                   }
                 } catch (_) {}
 
-                widget.onStateUpdated.call();
+                if (mounted) {
+                  widget.onStateUpdated.call();
+                }
               },
               onConsoleMessage:
                   (InAppWebViewController controller, ConsoleMessage message) {
