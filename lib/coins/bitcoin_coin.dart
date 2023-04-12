@@ -54,7 +54,7 @@ class BitcoinCoin extends Coin {
     return BitcoinCoin(
       POSNetwork: json['POSNetwork'],
       derivationPath: json['derivationPath'],
-      P2WPKHType: json['P2WPKHType'],
+      P2WPKHType: json['P2WPKH'],
       blockExplorer: json['blockExplorer'],
       default_: json['default'],
       symbol: json['symbol'],
