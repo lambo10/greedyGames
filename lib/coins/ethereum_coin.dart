@@ -157,7 +157,7 @@ class EthereumCoin extends Coin {
       double ethBalance =
           etherAmount.getInWei.toDouble() / pow(10, etherDecimals);
 
-      pref.put(tokenKey, ethBalance);
+      await pref.put(tokenKey, ethBalance);
 
       return ethBalance;
     } catch (e) {
@@ -371,7 +371,7 @@ List<Map> getEVMBlockchains() {
       'coinType': 60
     },
     {
-      'name': 'xDai',
+      'name': 'XDAI',
       "rpc": 'https://rpc.xdaichain.com/',
       'chainId': 100,
       'blockExplorer':

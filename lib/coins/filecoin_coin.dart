@@ -486,7 +486,6 @@ class FilecoinCoin extends Coin {
   @override
   Future<double> getTransactionFee(String amount, String to) async {
     final getFileCoinDetails = await fromMnemonic(pref.get(currentMmenomicKey));
-    final fileCoinBalance = await getBalance(false);
 
     final nonce = await getFileCoinNonce(prefix, baseUrl);
     final attoFIL = double.parse(amount) * pow(10, fileCoinDecimals.toInt());

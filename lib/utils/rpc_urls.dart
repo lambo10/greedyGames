@@ -35,13 +35,15 @@ import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hex/hex.dart';
 
+import '../coins/algorand_coin.dart';
 import '../coins/bitcoin_coin.dart';
 import '../coins/cardano_coin.dart';
-import '../coins/cosmos_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../coins/filecoin_coin.dart';
 import '../coins/near_coin.dart';
+import '../coins/stellar_coin.dart';
 import '../coins/tezos_coin.dart';
+import '../coins/tron_coin.dart';
 import '../coins/xrp_coin.dart';
 import '../components/loader.dart';
 import '../eip/eip681.dart';
@@ -2498,11 +2500,11 @@ List<Coin> getAllBlockchains() {
     ...getXRPBlockChains().map((e) => XRPCoin.fromJson(Map.from(e))),
     ...getNearBlockChains().map((e) => NearCoin.fromJson(Map.from(e))),
     // ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
-    // ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
+    ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
     // ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
-    // ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
-    // ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
-  ];
+    ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
+    ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
+  ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 
 Map getInfoScheme(String coinScheme) {
