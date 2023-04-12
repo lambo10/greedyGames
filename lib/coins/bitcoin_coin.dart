@@ -341,50 +341,6 @@ class BitcoinCoin extends Coin {
     return json.decode(sendTransaction.body)['data']['txid'];
   }
 
-  Map calculateBitCoinKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    final node = seedRoot_.root.derivePath(derivationPath);
-
-    String address;
-    if (P2WPKHType) {
-      address = P2WPKH(
-        data: PaymentData(
-          pubkey: node.publicKey,
-        ),
-        network: POSNetwork,
-      ).data.address;
-    } else {
-      address = P2PKH(
-        data: PaymentData(
-          pubkey: node.publicKey,
-        ),
-        network: POSNetwork,
-      ).data.address;
-    }
-    if (default_ == 'BCH') {
-      if (bitbox.Address.detectFormat(address) == bitbox.Address.formatLegacy) {
-        address = bitbox.Address.toCashAddress(address).split(':')[1];
-      }
-    }
-
-    if (default_ == 'ZEC') {
-      final baddr = [...bs58check.decode(address)];
-      baddr.removeAt(0);
-
-      final taddr = Uint8List(22);
-
-      taddr.setAll(2, baddr);
-      taddr.setAll(0, [0x1c, 0xb8]);
-
-      address = bs58check.encode(taddr);
-    }
-
-    return {
-      'address': address,
-      'privateKey': "0x${HEX.encode(node.privateKey)}"
-    };
-  }
-
   @override
   int decimals() {
     return bitCoinDecimals;
@@ -491,4 +447,45 @@ List<Map> getBitCoinPOSBlockchains() {
   }
 
   return blockChains;
+}
+
+Map calculateBitCoinKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final node = seedRoot_.root.derivePath(config['derivationPath']);
+
+  String address;
+  if (config['P2WPKHType']) {
+    address = P2WPKH(
+      data: PaymentData(
+        pubkey: node.publicKey,
+      ),
+      network: config['POSNetwork'],
+    ).data.address;
+  } else {
+    address = P2PKH(
+      data: PaymentData(
+        pubkey: node.publicKey,
+      ),
+      network: config['POSNetwork'],
+    ).data.address;
+  }
+  if (config['default'] == 'BCH') {
+    if (bitbox.Address.detectFormat(address) == bitbox.Address.formatLegacy) {
+      address = bitbox.Address.toCashAddress(address).split(':')[1];
+    }
+  }
+
+  if (config['default'] == 'ZEC') {
+    final baddr = [...bs58check.decode(address)];
+    baddr.removeAt(0);
+
+    final taddr = Uint8List(22);
+
+    taddr.setAll(2, baddr);
+    taddr.setAll(0, [0x1c, 0xb8]);
+
+    address = bs58check.encode(taddr);
+  }
+
+  return {'address': address, 'privateKey': "0x${HEX.encode(node.privateKey)}"};
 }

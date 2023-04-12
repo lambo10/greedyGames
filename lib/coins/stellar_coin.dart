@@ -102,19 +102,15 @@ class StellarCoin extends Coin {
         }
       }
     }
-    final keys = await compute(calculateStellarKey, {mnemonicKey: mnemonic});
+    final keys = await compute(
+        calculateStellarKey,
+        Map.from(toJson())
+          ..addAll({
+            mnemonicKey: mnemonic,
+          }));
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Future<Map> calculateStellarKey(Map config) async {
-    final wallet = await stellar.Wallet.from(config[mnemonicKey]);
-    final userWalletAddress = await wallet.getKeyPair(index: 0);
-    return {
-      'address': userWalletAddress.accountId,
-      'private_key': userWalletAddress.secretSeed,
-    };
   }
 
   @override
@@ -285,4 +281,13 @@ Future<bool> isActiveStellarAccount(
     }
     return false;
   }
+}
+
+Future<Map> calculateStellarKey(Map config) async {
+  final wallet = await stellar.Wallet.from(config[mnemonicKey]);
+  final userWalletAddress = await wallet.getKeyPair(index: 0);
+  return {
+    'address': userWalletAddress.accountId,
+    'private_key': userWalletAddress.secretSeed,
+  };
 }

@@ -107,13 +107,15 @@ class EthereumCoin extends Coin {
         }
       }
     }
+
     final privatekeyStr = await compute(
       calculateEthereumKey,
-      {
-        mnemonicKey: mnemonic,
-        'coinType': coinType,
-        seedRootKey: seedPhraseRoot,
-      },
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          'coinType': coinType,
+          seedRootKey: seedPhraseRoot,
+        }),
     );
 
     final address = await etherPrivateKeyToAddress(privatekeyStr);
@@ -132,11 +134,6 @@ class EthereumCoin extends Coin {
     EthPrivateKey ethereumPrivateKey = EthPrivateKey.fromHex(privateKey);
     final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
     return EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
-  }
-
-  String calculateEthereumKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/$coinType'/0'/0/0").privateKey)}";
   }
 
   @override
@@ -549,4 +546,9 @@ Future<double> getEtherTransactionFee(
   }
 
   return gasPrice.getInWei.toDouble() * gasUnit.toDouble();
+}
+
+String calculateEthereumKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
 }

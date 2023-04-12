@@ -116,58 +116,18 @@ class FilecoinCoin extends Coin {
         }
       }
     }
-    final keys = await compute(calculateFileCoinKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-      'addressPrefix': prefix,
-    });
+    final keys = await compute(
+      calculateFileCoinKey,
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          seedRootKey: seedPhraseRoot,
+          'addressPrefix': prefix,
+        }),
+    );
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Uint8List _hexToU8a(String hex) {
-    RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
-    if (!hexRegex.hasMatch(hex)) {
-      throw ArgumentError('Provided string is not valid hex value');
-    }
-    final value = hex.startsWith('0x') ? hex.substring(2) : hex;
-    final valLength = value.length ~/ 2;
-
-    final bufLength = (valLength).ceil();
-
-    final result = Uint8List(bufLength);
-    final offset = (bufLength - valLength).clamp(0, bufLength);
-    for (var index = 0; index < bufLength; index++) {
-      result[index + offset] =
-          int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
-    }
-    return result;
-  }
-
-  Map calculateFileCoinKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
-    final rs0 = node.derive(0);
-
-    final pk = _hexToU8a(HEX.encode(rs0.privateKey));
-    final e = getSecp256k1();
-
-    final publickEy =
-        e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
-
-    final protocolByte = Leb128.encodeUnsigned(1);
-    final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
-
-    final addressBytes = [...protocolByte, ...payload];
-    final checksum = blake2bHash(addressBytes, digestSize: 4);
-    Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
-    final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
-
-    return {
-      "address": address.toLowerCase(),
-      'privateKey': HEX.encode(rs0.privateKey),
-    };
   }
 
   @override
@@ -534,4 +494,48 @@ List<Map> getFilecoinBlockChains() {
     });
   }
   return blockChains;
+}
+
+Map calculateFileCoinKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
+  final rs0 = node.derive(0);
+
+  final pk = _hexToU8a(HEX.encode(rs0.privateKey));
+  final e = getSecp256k1();
+
+  final publickEy =
+      e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
+
+  final protocolByte = Leb128.encodeUnsigned(1);
+  final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
+
+  final addressBytes = [...protocolByte, ...payload];
+  final checksum = blake2bHash(addressBytes, digestSize: 4);
+  Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
+  final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
+
+  return {
+    "address": address.toLowerCase(),
+    'privateKey': HEX.encode(rs0.privateKey),
+  };
+}
+
+Uint8List _hexToU8a(String hex) {
+  RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
+  if (!hexRegex.hasMatch(hex)) {
+    throw ArgumentError('Provided string is not valid hex value');
+  }
+  final value = hex.startsWith('0x') ? hex.substring(2) : hex;
+  final valLength = value.length ~/ 2;
+
+  final bufLength = (valLength).ceil();
+
+  final result = Uint8List(bufLength);
+  final offset = (bufLength - valLength).clamp(0, bufLength);
+  for (var index = 0; index < bufLength; index++) {
+    result[index + offset] =
+        int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
+  }
+  return result;
 }

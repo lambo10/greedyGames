@@ -108,41 +108,17 @@ class XRPCoin extends Coin {
       }
     }
 
-    final keys = await compute(calculateRippleKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-    });
+    final keys = await compute(
+        calculateRippleKey,
+        Map.from(toJson())
+          ..addAll({
+            mnemonicKey: mnemonic,
+            seedRootKey: seedPhraseRoot,
+          }));
 
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(key, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Map<String, String> calculateRippleKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
-
-    final pubKeyHash = computePublicKeyHash(node.publicKey);
-
-    final t = sha256
-        .convert(sha256.convert([0, ...pubKeyHash]).bytes)
-        .bytes
-        .sublist(0, 4);
-
-    String address =
-        xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
-    return {
-      'address': address,
-      'publicKey': HEX.encode(node.publicKey),
-      'privateKey': HEX.encode(node.privateKey),
-    };
-  }
-
-  Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
-    final hash256 = sha256.convert(publicKeyBytes).bytes;
-    final hash160 = RIPEMD160().update(hash256).digest();
-
-    return Uint8List.fromList(hash160);
   }
 
   @override
@@ -404,3 +380,30 @@ Future<bool> fundRippleTestnet(String address) async {
 
 final xrpBaseCodec =
     BaseXCodec('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');
+
+Map<String, String> calculateRippleKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
+
+  final pubKeyHash = computePublicKeyHash(node.publicKey);
+
+  final t = sha256
+      .convert(sha256.convert([0, ...pubKeyHash]).bytes)
+      .bytes
+      .sublist(0, 4);
+
+  String address =
+      xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
+  return {
+    'address': address,
+    'publicKey': HEX.encode(node.publicKey),
+    'privateKey': HEX.encode(node.privateKey),
+  };
+}
+
+Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
+  final hash256 = sha256.convert(publicKeyBytes).bytes;
+  final hash160 = RIPEMD160().update(hash256).digest();
+
+  return Uint8List.fromList(hash160);
+}
