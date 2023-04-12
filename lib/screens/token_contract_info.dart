@@ -1,3 +1,4 @@
+import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/blockie_widget.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -155,7 +156,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                           height: 10,
                         ),
                         Text(
-                          (widget.tokenData as EthereumCoin).name,
+                          (widget.tokenData as EthContractCoin).network,
                           style:
                               const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
