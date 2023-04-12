@@ -45,7 +45,7 @@ class _SendTokenState extends State<SendToken> {
   bool isLoading = false;
   EthTokenType tokenType;
   String rpc;
-  String tokenId;
+  BigInt tokenId;
   bool isNFT;
   Box pref;
 
@@ -249,7 +249,7 @@ class _SendTokenState extends State<SendToken> {
                         return null;
                       }
                     },
-                    controller: tokenIdContrl..text = tokenId,
+                    controller: tokenIdContrl..text = tokenId.toString(),
                     decoration: const InputDecoration(
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),

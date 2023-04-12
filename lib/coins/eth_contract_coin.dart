@@ -20,7 +20,7 @@ enum EthTokenType {
 
 class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
-  String tokenId;
+  BigInt tokenId;
   String contractAddress_;
   String network;
   List parameters_;
