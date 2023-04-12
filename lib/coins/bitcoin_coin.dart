@@ -454,7 +454,7 @@ Map calculateBitCoinKey(Map config) {
   final node = seedRoot_.root.derivePath(config['derivationPath']);
 
   String address;
-  if (config['P2WPKHType']) {
+  if (config['P2WPKH']) {
     address = P2WPKH(
       data: PaymentData(
         pubkey: node.publicKey,
