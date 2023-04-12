@@ -320,8 +320,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
                             if (snapshot.hasData) {
                               final appTokenWidget = <Widget>[];
 
-                              final Coin appToken =
+                              final EthContractCoin appToken =
                                   snapshot.data['appTokenDetails'];
+                              appToken.tokenType = EthTokenType.ERC20;
 
                               appTokenWidget.add(
                                 InkWell(
@@ -329,8 +330,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (ctx) =>
-                                            Token(tokenData: appToken),
+                                        builder: (ctx) => Token(
+                                          tokenData: appToken,
+                                        ),
                                       ),
                                     );
                                   },
@@ -409,7 +411,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
   }
 
   Future getWalletToken() async {
-    Coin appCoinInfo;
+    EthContractCoin appCoinInfo;
     const appTokenKey = 'appTokenDetails';
     final evmBlockchain = getEVMBlockchains().firstWhere(
       (element) => element['name'] == tokenContractNetwork,
@@ -435,15 +437,14 @@ class _WalletMainBodyState extends State<WalletMainBody>
           'noPrice': true,
           'isNFT': false,
           'isContract': true,
-          'tokenType': EthTokenType.ERC20,
         });
         await pref.put(
           appTokenKey,
-          jsonEncode(appCoinInfo),
+          jsonEncode(appCoinInfo.toJson()),
         );
       }
     } else {
-      appCoinInfo = jsonDecode(pref.get(appTokenKey));
+      appCoinInfo = EthContractCoin.fromJson(jsonDecode(pref.get(appTokenKey)));
     }
 
     final currencyWithSymbol =

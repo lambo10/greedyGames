@@ -16,7 +16,6 @@ import '../components/loader.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
 import '../utils/app_config.dart';
-import '../utils/slide_up_panel.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -33,7 +32,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   bool tokenGetLoading = false;
   String error = '';
   final amountPay = TextEditingController()..text = '1';
-  List networks = getEVMBlockchains();
+  final networks = getEVMBlockchains();
   String network;
   String currentSelectedTokenPay = 'ETH';
   String currentSelectedTokenGet = 'ETH';
@@ -81,7 +80,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   @override
   void initState() {
     super.initState();
-    network = networks[0];
+    network = networks[0]['Ethereum']['name'];
     getAllExchangeToken();
     timer = Timer.periodic(
       httpPollingDelay,
