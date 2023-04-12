@@ -128,7 +128,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
     nftNetworkInfo = getEVMBlockchains().firstWhere(
       (element) => element['name'] == widget.networkName,
     );
-    coin = EthereumCoin.fromJson(nftNetworkInfo);
+    coin = EthereumCoin.fromJson(Map.from(nftNetworkInfo));
     getAllNFTs();
     timer = Timer.periodic(
       httpPollingDelay,

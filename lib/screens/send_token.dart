@@ -45,8 +45,8 @@ class _SendTokenState extends State<SendToken> {
   bool isLoading = false;
   EthTokenType tokenType;
   String rpc;
-  String tokenId;
-  bool isNFT;
+  BigInt tokenId;
+
   Box pref;
 
   @override
@@ -187,7 +187,7 @@ class _SendTokenState extends State<SendToken> {
                     filled: true,
                   ),
                 ),
-                if (isNFT == null || tokenType == EthTokenType.ERC1155) ...[
+                if (tokenType == null || tokenType != EthTokenType.ERC721) ...[
                   const SizedBox(
                     height: 20,
                   ),
@@ -203,22 +203,22 @@ class _SendTokenState extends State<SendToken> {
                       }
                     },
                     inputFormatters: <TextInputFormatter>[
-                      if (isNFT ?? false) FilteringTextInputFormatter.digitsOnly
+                      tokenType == EthTokenType.ERC1155
+                          ? FilteringTextInputFormatter.digitsOnly
+                          : null
                     ],
                     controller: amountContrl..text = widget.amount,
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),
-                      suffixIcon: isNFT ?? false
-                          ? null
-                          : IconButton(
-                              alignment: Alignment.centerRight,
-                              icon: Text(
-                                AppLocalizations.of(context).max,
-                                textAlign: TextAlign.end,
-                              ),
-                              onPressed: () async {},
-                            ),
+                      suffixIcon: IconButton(
+                        alignment: Alignment.centerRight,
+                        icon: Text(
+                          AppLocalizations.of(context).max,
+                          textAlign: TextAlign.end,
+                        ),
+                        onPressed: () async {},
+                      ),
                       hintText: AppLocalizations.of(context).amount,
 
                       focusedBorder: const OutlineInputBorder(
@@ -234,7 +234,7 @@ class _SendTokenState extends State<SendToken> {
                     ),
                   ),
                 ],
-                if (isNFT != null) ...[
+                if (tokenType == EthTokenType.ERC1155) ...[
                   const SizedBox(
                     height: 20,
                   ),
@@ -249,7 +249,7 @@ class _SendTokenState extends State<SendToken> {
                         return null;
                       }
                     },
-                    controller: tokenIdContrl..text = tokenId,
+                    controller: tokenIdContrl..text = tokenId.toString(),
                     decoration: const InputDecoration(
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),

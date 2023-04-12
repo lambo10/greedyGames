@@ -16,7 +16,6 @@ import '../components/loader.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
 import '../utils/app_config.dart';
-import '../utils/slide_up_panel.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -33,7 +32,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   bool tokenGetLoading = false;
   String error = '';
   final amountPay = TextEditingController()..text = '1';
-  List networks = getEVMBlockchains();
+  final networks = getEVMBlockchains();
   String network;
   String currentSelectedTokenPay = 'ETH';
   String currentSelectedTokenGet = 'ETH';
@@ -81,7 +80,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   @override
   void initState() {
     super.initState();
-    network = networks[0];
+    network = networks[0]['name'];
     getAllExchangeToken();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -104,7 +103,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
       );
       if (selectedItemGet['address'].toString().toLowerCase() ==
           nativeTokenLCase) {
-        final EthereumCoin coin = EthereumCoin.fromJson(evmNetwork);
+        final EthereumCoin coin = EthereumCoin.fromJson(Map.from(evmNetwork));
         cryptoBalance = await coin.getBalance(false);
       } else {
         cryptoBalance = await getERC20TokenBalance({
@@ -129,7 +128,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
       final Map networkDetails = getEVMBlockchains().firstWhere(
         (e) => e['name'] == network,
       );
-      final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
+      final EthereumCoin coin = EthereumCoin.fromJson(Map.from(networkDetails));
       if (selectedItemPay.values.isEmpty) {
         tokenList = await get1InchUrlList(1);
         selectedItemPay = tokenList[nativeTokenLCase];
@@ -158,7 +157,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
     final Map networkDetails = getEVMBlockchains().firstWhere(
       (e) => e['name'] == network,
     );
-    final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
+    final EthereumCoin coin = EthereumCoin.fromJson(Map.from(networkDetails));
     try {
       if (selectedItemPay.values.isEmpty) {
         tokenList = await get1InchUrlList(1);
@@ -206,7 +205,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
     final Map networkDetails = getEVMBlockchains().firstWhere(
       (e) => e['name'] == network,
     );
-    final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
+    final EthereumCoin coin = EthereumCoin.fromJson(Map.from(networkDetails));
     try {
       final cryptoBalance = await coin.getBalance(false);
 
@@ -805,7 +804,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                             (e) => e['name'] == network,
                           );
                           final EthereumCoin coin =
-                              EthereumCoin.fromJson(evmDetails);
+                              EthereumCoin.fromJson(Map.from(evmDetails));
                           try {
                             setState(() {
                               isLoading = true;

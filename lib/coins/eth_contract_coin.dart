@@ -20,7 +20,7 @@ enum EthTokenType {
 
 class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
-  String tokenId;
+  BigInt tokenId;
   String contractAddress_;
   String network;
   List parameters_;
@@ -115,6 +115,7 @@ class EthContractCoin extends EthereumCoin {
 
   fillParameter(String amount, String to) async {
     final address = await address_();
+
     if (tokenType == EthTokenType.ERC20) {
       parameters_ = [
         EthereumAddress.fromHex(to),
@@ -124,13 +125,13 @@ class EthContractCoin extends EthereumCoin {
       ];
     } else if (tokenType == EthTokenType.ERC721) {
       parameters_ = [
-        address,
-        EthereumAddress.fromHex(amount),
+        EthereumAddress.fromHex(address),
+        EthereumAddress.fromHex(to),
         tokenId,
       ];
     } else if (tokenType == EthTokenType.ERC1155) {
       parameters_ = [
-        address,
+        EthereumAddress.fromHex(address),
         EthereumAddress.fromHex(to),
         tokenId,
         BigInt.from(
@@ -191,6 +192,9 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    if (tokenType != EthTokenType.ERC20) {
+      return 1;
+    }
     return await getERC20TokenBalance(
       toJson(),
       skipNetworkRequest: skipNetworkRequest,
@@ -287,6 +291,7 @@ Future<double> getERC20TokenBalance(
   );
 
   String mnemonic = pref.get(currentMmenomicKey);
+
   Map response =
       await EthereumCoin.fromJson(tokenDetails).fromMnemonic(mnemonic);
 

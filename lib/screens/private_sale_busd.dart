@@ -35,6 +35,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   Map privateSaleDetails;
   double networkBalance;
   double tokenBalance;
+  EthereumCoin coin;
   final Map networkDetails = getEVMBlockchains().firstWhere(
     (e) => e['name'] == tokenContractNetwork,
   );
@@ -43,6 +44,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   @override
   void initState() {
     super.initState();
+    coin = EthereumCoin.fromJson(Map.from(networkDetails));
     callAllApi();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -65,13 +67,16 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
   Future getEthereumBalance() async {
     try {
-      final cryptoBalance = await getERC20TokenBalance({
-        'contractAddress': busdAddress,
-        'rpc': networkDetails['rpc'],
-        'chainId': networkDetails['chainId'],
-        'coinType': networkDetails['coinType'],
-      });
-      networkBalance = cryptoBalance;
+      final EthContractCoin coin = EthContractCoin.fromJson(
+        Map.from(networkDetails)
+          ..addAll(
+            {
+              'contractAddress': busdAddress,
+              'tokenType': EthTokenType.ERC20,
+            },
+          ),
+      );
+      networkBalance = await coin.getBalance(false);
       if (mounted) {
         setState(() {});
       }
@@ -80,13 +85,16 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
   Future getWalletTokenBalance() async {
     try {
-      final getTokenBalance = await getERC20TokenBalance({
-        'contractAddress': tokenContractAddress,
-        'rpc': networkDetails['rpc'],
-        'chainId': networkDetails['chainId'],
-        'coinType': networkDetails['coinType'],
-      });
-      tokenBalance = getTokenBalance;
+      final EthContractCoin coin = EthContractCoin.fromJson(
+        Map.from(networkDetails)
+          ..addAll(
+            {
+              'contractAddress': tokenContractAddress,
+              'tokenType': EthTokenType.ERC20,
+            },
+          ),
+      );
+      tokenBalance = await coin.getBalance(false);
       if (mounted) {
         setState(() {});
       }
@@ -501,8 +509,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                 );
 
                                 final response =
-                                    await EthereumCoin.fromJson(networkDetails)
-                                        .fromMnemonic(mnemonic);
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
                                   response['privateKey'],
@@ -721,8 +728,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                 );
 
                                 final response =
-                                    await EthereumCoin.fromJson(networkDetails)
-                                        .fromMnemonic(mnemonic);
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
                                   response['privateKey'],
