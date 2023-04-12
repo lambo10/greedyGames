@@ -27,7 +27,6 @@ class Portfolio extends StatefulWidget {
 class _PortfolioState extends State<Portfolio> {
   Map userBalance;
   Timer timer;
-  final bool skipNetworkRequest = true;
 
   @override
   void initState() {
@@ -49,13 +48,11 @@ class _PortfolioState extends State<Portfolio> {
     try {
       final allCryptoPrice = jsonDecode(
         await getCryptoPrice(
-          skipNetworkRequest: skipNetworkRequest,
+          skipNetworkRequest: true,
         ),
       ) as Map;
 
       final pref = Hive.box(secureStorageKey);
-
-      final mnemonic = pref.get(currentMmenomicKey);
 
       final currencyWithSymbol =
           jsonDecode(await rootBundle.loadString('json/currency_symbol.json'));
@@ -65,10 +62,8 @@ class _PortfolioState extends State<Portfolio> {
       final symbol = currencyWithSymbol[defaultCurrency]['symbol'];
 
       double balance = await totalCryptoBalance(
-        mnemonic: mnemonic,
         defaultCurrency: defaultCurrency,
         allCryptoPrice: allCryptoPrice,
-        skipNetworkRequest: skipNetworkRequest,
       );
       if (mounted) {
         setState(() {

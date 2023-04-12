@@ -20,7 +20,7 @@ abstract class Coin {
   }
 
   Future<double> getMaxTransfer() async {
-    return 0.0;
+    return await getBalance(true);
   }
 
   String savedTransKey() => '${default__()} Details';

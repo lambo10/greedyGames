@@ -849,16 +849,14 @@ Future<String> getCurrencyJson() async {
 }
 
 Future<double> totalCryptoBalance({
-  String mnemonic,
   Map allCryptoPrice,
   String defaultCurrency,
-  bool skipNetworkRequest = false,
 }) async {
   double totalBalance = 0.0;
 
   for (int i = 0; i < getAllBlockchains.length; i++) {
     try {
-      final balance = await getAllBlockchains[i].getBalance(skipNetworkRequest);
+      final balance = await getAllBlockchains[i].getBalance(true);
       final priceDetails =
           allCryptoPrice[coinGeckoID[getAllBlockchains[i].symbol_()]];
       double price =
