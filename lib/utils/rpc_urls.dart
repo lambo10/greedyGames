@@ -52,6 +52,7 @@ import '../components/loader.dart';
 import '../eip/eip681.dart';
 import '../interface/coin.dart';
 import '../model/seed_phrase_root.dart';
+import '../screens/build_row.dart';
 import '../screens/dapp.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
@@ -1088,79 +1089,78 @@ showBlockChainDialog({
   BuildContext context,
   int selectedChainId,
 }) {
-  //FIXME:
-  // final ethEnabledBlockChain = <Widget>[];
-  // for (String i in getEVMBlockchains().keys) {
-  //   Map blockChainDetails = getEVMBlockchains()[i];
-  //   bool isSelected = false;
-  //   if (selectedChainId != null &&
-  //       blockChainDetails['chainId'] == selectedChainId) {
-  //     isSelected = true;
-  //   }
+  final ethEnabledBlockChain = <Widget>[];
+  List evmBlockchain = getEVMBlockchains();
+  for (int i = 0; i < evmBlockchain.length; i++) {
+    bool isSelected = false;
+    if (selectedChainId != null &&
+        evmBlockchain[i]['chainId'] == selectedChainId) {
+      isSelected = true;
+    }
 
-  //   ethEnabledBlockChain.add(
-  //     InkWell(
-  //       onTap: () {
-  //         blockChainDetails['name'] = i;
-  //         onTap(blockChainDetails);
-  //       },
-  //       child: buildRow(
-  //         blockChainDetails['image'],
-  //         i,
-  //         isSelected: isSelected,
-  //       ),
-  //     ),
-  //   );
-  // }
-  // slideUpPanel(
-  //   context,
-  //   Container(
-  //     color: Colors.transparent,
-  //     child: ListView(
-  //       shrinkWrap: true,
-  //       children: <Widget>[
-  //         const SizedBox(height: 20),
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             const Align(
-  //               alignment: Alignment.centerRight,
-  //               child: IconButton(
-  //                 onPressed: null,
-  //                 icon: Icon(
-  //                   Icons.close,
-  //                   color: Colors.transparent,
-  //                 ),
-  //               ),
-  //             ),
-  //             Text(
-  //               AppLocalizations.of(context).selectBlockchains,
-  //               style: const TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 20.0,
-  //               ),
-  //             ),
-  //             Align(
-  //               alignment: Alignment.centerRight,
-  //               child: IconButton(
-  //                 onPressed: () {
-  //                   if (Navigator.canPop(context)) {
-  //                     Navigator.pop(context);
-  //                   }
-  //                 },
-  //                 icon: const Icon(Icons.close),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         const SizedBox(height: 20),
-  //         ...ethEnabledBlockChain,
-  //         const SizedBox(height: 20),
-  //       ],
-  //     ),
-  //   ),
-  //   canDismiss: false,
-  // );
+    ethEnabledBlockChain.add(
+      InkWell(
+        onTap: () {
+          onTap(evmBlockchain[i]);
+        },
+        child: buildRow(
+          evmBlockchain[i]['image'],
+          evmBlockchain[i]['name'],
+          isSelected: isSelected,
+        ),
+      ),
+    );
+  }
+
+  slideUpPanel(
+    context,
+    Container(
+      color: Colors.transparent,
+      child: ListView(
+        shrinkWrap: true,
+        children: <Widget>[
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  onPressed: null,
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.transparent,
+                  ),
+                ),
+              ),
+              Text(
+                AppLocalizations.of(context).selectBlockchains,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  onPressed: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...ethEnabledBlockChain,
+          const SizedBox(height: 20),
+        ],
+      ),
+    ),
+    canDismiss: false,
+  );
 }
 
 Future returnInitEvm(

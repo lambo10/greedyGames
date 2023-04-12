@@ -28,23 +28,23 @@ class _AddCustomTokenState extends State<AddCustomToken> {
     super.initState();
     networkName = networks[0]['name'];
     networkImage = networks[0]['image'];
-    contractAddressController.addListener(() async {
+    contractAddrContrl.addListener(() async {
       await autoFillNameDecimalSymbol(
-        contractAddressController.text,
+        contractAddrContrl.text,
       );
     });
   }
 
-  final contractAddressController = TextEditingController();
-  final nameAddressController = TextEditingController();
-  final symbolAddressController = TextEditingController();
-  final decimalsAddressController = TextEditingController();
+  final contractAddrContrl = TextEditingController();
+  final nameContrl = TextEditingController();
+  final symbolCtrl = TextEditingController();
+  final decimalCtrl = TextEditingController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   emptyInput() {
-    nameAddressController.text = '';
-    symbolAddressController.text = '';
-    decimalsAddressController.text = '';
+    nameContrl.text = '';
+    symbolCtrl.text = '';
+    decimalCtrl.text = '';
   }
 
   autoFillNameDecimalSymbol(String enteredContractAddress) async {
@@ -58,18 +58,18 @@ class _AddCustomTokenState extends State<AddCustomToken> {
         rpc: evnNetwork['rpc'],
       );
       if (erc20Details.isEmpty) return;
-      nameAddressController.text = erc20Details['name'];
-      symbolAddressController.text = erc20Details['symbol'];
-      decimalsAddressController.text = erc20Details['decimals'];
+      nameContrl.text = erc20Details['name'];
+      symbolCtrl.text = erc20Details['symbol'];
+      decimalCtrl.text = erc20Details['decimals'];
     } catch (_) {}
   }
 
   @override
   void dispose() {
-    contractAddressController.dispose();
-    nameAddressController.dispose();
-    symbolAddressController.dispose();
-    decimalsAddressController.dispose();
+    contractAddrContrl.dispose();
+    nameContrl.dispose();
+    symbolCtrl.dispose();
+    decimalCtrl.dispose();
     super.dispose();
   }
 
@@ -113,7 +113,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                                 networkImage = blockChainData['image'];
                               });
                               await autoFillNameDecimalSymbol(
-                                contractAddressController.text,
+                                contractAddrContrl.text,
                               );
                             }
                           },
@@ -133,7 +133,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                   height: 40,
                 ),
                 TextFormField(
-                  controller: contractAddressController,
+                  controller: contractAddrContrl,
                   decoration: InputDecoration(
                     suffixIcon: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,7 +151,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                               ),
                             );
                             if (contractAddr == null) return;
-                            contractAddressController.text = contractAddr;
+                            contractAddrContrl.text = contractAddr;
                           },
                         ),
                         InkWell(
@@ -160,7 +160,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                                 await Clipboard.getData(Clipboard.kTextPlain);
                             if (cdata == null) return;
                             if (cdata.text == null) return;
-                            contractAddressController.text = cdata.text;
+                            contractAddrContrl.text = cdata.text;
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -193,7 +193,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: nameAddressController,
+                  controller: nameContrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).name,
                     focusedBorder: const OutlineInputBorder(
@@ -213,7 +213,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: symbolAddressController,
+                  controller: symbolCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).symbol,
                     focusedBorder: const OutlineInputBorder(
@@ -237,7 +237,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
-                  controller: decimalsAddressController,
+                  controller: decimalCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).decimals,
                     focusedBorder: const OutlineInputBorder(
@@ -313,13 +313,10 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                       FocusManager.instance.primaryFocus?.unfocus();
                       final pref = Hive.box(secureStorageKey);
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      final contractAddr =
-                          contractAddressController.text.trim();
-                      final contractName = nameAddressController.text.trim();
-                      final contractSymbol =
-                          symbolAddressController.text.trim();
-                      final contractDecimals =
-                          decimalsAddressController.text.trim();
+                      final contractAddr = contractAddrContrl.text.trim();
+                      final contractName = nameContrl.text.trim();
+                      final contractSymbol = symbolCtrl.text.trim();
+                      final contractDecimals = decimalCtrl.text.trim();
 
                       if (contractName.isEmpty ||
                           contractSymbol.isEmpty ||

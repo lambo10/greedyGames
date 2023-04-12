@@ -43,7 +43,7 @@ class EthContractCoin extends EthereumCoin {
     String default_,
     String image,
     int coinType,
-    String rpcUrl,
+    String rpc,
     String name,
     this.tokenType,
     this.tokenId,
@@ -56,7 +56,7 @@ class EthContractCoin extends EthereumCoin {
           default_: default_,
           image: image,
           coinType: coinType,
-          rpc: rpcUrl,
+          rpc: rpc,
           name: name,
         ) {
     if (tokenType == EthTokenType.ERC20) {
@@ -80,7 +80,7 @@ class EthContractCoin extends EthereumCoin {
   factory EthContractCoin.fromJson(Map<String, dynamic> json) {
     return EthContractCoin(
       chainId: json['chainId'],
-      rpcUrl: json['rpcUrl'],
+      rpc: json['rpc'],
       coinType: json['coinType'],
       blockExplorer: json['blockExplorer'],
       default_: json['default'],
@@ -98,7 +98,7 @@ class EthContractCoin extends EthereumCoin {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['chainId'] = chainId;
-    data['rpcUrl'] = rpc;
+    data['rpc'] = rpc;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -187,7 +187,10 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    return await getERC20TokenBalance(toJson());
+    return await getERC20TokenBalance(
+      toJson(),
+      skipNetworkRequest: skipNetworkRequest,
+    );
   }
 
   @override
@@ -339,7 +342,7 @@ Future<double> getERC20TokenBalance(
     await client.dispose();
 
     return double.parse(balance) / pow(10, double.parse(decimals));
-  } catch (e) {
+  } catch (e, sk) {
     return savedBalance;
   }
 }
@@ -404,7 +407,7 @@ Future<Map> getERC20TokenDetails({
   return {
     'name': name.first,
     'symbol': symbol.first,
-    'decimals': int.parse(decimals.first.toString())
+    'decimals': decimals.first.toString()
   };
 }
 
