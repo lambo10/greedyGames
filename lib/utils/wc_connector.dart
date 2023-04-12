@@ -99,7 +99,7 @@ class WcConnector {
   }
 
   setSigningDetails(int chainId) async {
-    Map blockChainData = getEthereumDetailsFromChainId(chainId);
+    Map blockChainData = evmFromChainId(chainId);
     final _mnemonic = _prefs.get(currentMmenomicKey);
 
     final response =
@@ -338,8 +338,8 @@ class WcConnector {
   }
 
   _onSwitchNetwork(int id, int chainIdNew) async {
-    final currentChainIdData = getEthereumDetailsFromChainId(wcClient.chainId);
-    final switchChainIdData = getEthereumDetailsFromChainId(chainIdNew);
+    final currentChainIdData = evmFromChainId(wcClient.chainId);
+    final switchChainIdData = evmFromChainId(chainIdNew);
 
     if (_chainId == chainIdNew) {
       wcClient.rejectRequest(id: id);

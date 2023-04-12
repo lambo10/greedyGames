@@ -482,7 +482,7 @@ class _DappState extends State<Dapp> {
                                                 Hive.box(secureStorageKey);
                                             final chainId =
                                                 pref.get(dappChainIdKey);
-                                            return getEthereumDetailsFromChainId(
+                                            return evmFromChainId(
                                                 chainId)['symbol'];
                                           }(), builder: (context, snapshot) {
                                             return Text(

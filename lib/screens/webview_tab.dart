@@ -630,8 +630,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                       } else if (jsData.network == 'ethereum') {
                         int chainId = pref.get(dappChainIdKey);
 
-                        final blockChainDetails =
-                            getEthereumDetailsFromChainId(chainId);
+                        final blockChainDetails = evmFromChainId(chainId);
                         final rpc = blockChainDetails['rpc'];
                         final coin =
                             EthereumCoin.fromJson(Map.from(blockChainDetails));
@@ -961,11 +960,10 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     BigInt.parse(data.chainId).toInt();
 
                                 final currentChainIdData =
-                                    getEthereumDetailsFromChainId(chainId);
+                                    evmFromChainId(chainId);
 
                                 Map switchChainIdData =
-                                    getEthereumDetailsFromChainId(
-                                        switchChainId);
+                                    evmFromChainId(switchChainId);
 
                                 if (chainId == switchChainId) {
                                   _sendNull(
@@ -1121,11 +1119,10 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     BigInt.parse(data.chainId).toInt();
 
                                 final currentChainIdData =
-                                    getEthereumDetailsFromChainId(chainId);
+                                    evmFromChainId(chainId);
 
                                 final switchChainIdData =
-                                    getEthereumDetailsFromChainId(
-                                        switchChainId);
+                                    evmFromChainId(switchChainId);
 
                                 if (chainId == switchChainId) {
                                   _sendNull(

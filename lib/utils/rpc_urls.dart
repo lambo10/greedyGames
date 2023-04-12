@@ -942,7 +942,7 @@ Future<Map> get1InchUrlList(int chainId) async {
   return jsonResponse;
 }
 
-Map getEthereumDetailsFromChainId(int chainId) {
+Map evmFromChainId(int chainId) {
   List blockChains = getEVMBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['chainId'] == chainId) {
@@ -952,7 +952,7 @@ Map getEthereumDetailsFromChainId(int chainId) {
   return null;
 }
 
-Map getBitcoinDetailsFromNetwork(NetworkType network) {
+Map bitcoinFromNetwork(NetworkType network) {
   List blockChains = getBitCoinPOSBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['POSNetwork'] == network) {
@@ -1170,7 +1170,7 @@ Future returnInitEvm(
   final pref = Hive.box(secureStorageKey);
   await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
-  final evmDetails = getEthereumDetailsFromChainId(chainId);
+  final evmDetails = evmFromChainId(chainId);
   final response =
       await EthereumCoin.fromJson(Map.from(evmDetails)).fromMnemonic(mnemonic);
 
@@ -1229,7 +1229,7 @@ Future navigateToDappBrowser(
   }
 
   int chainId = pref.get(dappChainIdKey);
-  final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
+  final rpc = evmFromChainId(chainId)['rpc'];
 
   final init = await returnInitEvm(
     chainId,
@@ -1627,7 +1627,7 @@ signTransaction({
   String title,
   int chainId,
 }) async {
-  final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
+  final rpc = evmFromChainId(chainId)['rpc'];
   final _wcClient = web3.Web3Client(
     rpc,
     Client(),
@@ -1820,7 +1820,7 @@ signTransaction({
                     String from_;
                     Map tokenDetails = await getERC20TokenDetails(
                       contractAddress: to,
-                      rpc: getEthereumDetailsFromChainId(chainId)['rpc'],
+                      rpc: evmFromChainId(chainId)['rpc'],
                     );
 
                     final decimals = tokenDetails['decimals'];
@@ -2250,7 +2250,7 @@ Future<Map> processEIP681(String eip681URL) async {
 
     final chainId = int.parse(parsedUrl['chainId'] ?? '1');
 
-    final cryptoBlock = getEthereumDetailsFromChainId(chainId);
+    final cryptoBlock = evmFromChainId(chainId);
 
     Map sendToken = {
       "rpc": cryptoBlock['rpc'],
