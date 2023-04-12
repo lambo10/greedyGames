@@ -21,6 +21,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:upgrader/upgrader.dart';
 import '../coins/ethereum_coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/get_blockchain_widget.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -122,8 +123,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
   void initializeBlockchains() {
     blockChainsArray = <Widget>[];
 
-    final allBlockchains = getAllBlockchains();
-    for (int i = 0; i < allBlockchains.length; i++) {
+    for (int i = 0; i < getAllBlockchains.length; i++) {
       final notifier = ValueNotifier<double>(null);
 
       cryptoNotifiers.add(notifier);
@@ -135,22 +135,22 @@ class _WalletMainBodyState extends State<WalletMainBody>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (ctx) => Token(tokenData: allBlockchains[i]),
+                  builder: (ctx) => Token(tokenData: getAllBlockchains[i]),
                 ),
               );
             },
             child: GetBlockChainWidget(
-              name_: allBlockchains[i].name_(),
-              symbol_: allBlockchains[i].symbol_(),
+              name_: getAllBlockchains[i].name_(),
+              symbol_: getAllBlockchains[i].symbol_(),
               hasPrice_: true,
-              image_: AssetImage(allBlockchains[i].image_()),
+              image_: AssetImage(getAllBlockchains[i].image_()),
               cryptoAmount_: ValueListenableBuilder(
                 valueListenable: notifier,
                 builder: ((_, double value, Widget __) {
                   if (value == null) {
                     () async {
                       try {
-                        notifier.value = await allBlockchains[i].getBalance(
+                        notifier.value = await getAllBlockchains[i].getBalance(
                           notifier.value == null,
                         );
                       } catch (_) {}
@@ -158,7 +158,8 @@ class _WalletMainBodyState extends State<WalletMainBody>
                       cryptoBalancesTimer.add(
                         Timer.periodic(httpPollingDelay, (timer) async {
                           try {
-                            notifier.value = await allBlockchains[i].getBalance(
+                            notifier.value =
+                                await getAllBlockchains[i].getBalance(
                               notifier.value == null,
                             );
                           } catch (_) {}
@@ -169,7 +170,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                   }
 
                   return UserBalance(
-                    symbol: allBlockchains[i].symbol_(),
+                    symbol: getAllBlockchains[i].symbol_(),
                     balance: value,
                   );
                 }),

@@ -695,9 +695,8 @@ Future<Map> ensToAddress({String cryptoDomainName}) async {
 Future<void> initializeAllPrivateKeys(String mnemonic) async {
   seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
-  final blockchains = getAllBlockchains();
-  for (int i = 0; i < blockchains.length; i++) {
-    blockchains[i].fromMnemonic(mnemonic);
+  for (int i = 0; i < getAllBlockchains.length; i++) {
+    getAllBlockchains[i].fromMnemonic(mnemonic);
   }
 }
 
@@ -1032,12 +1031,11 @@ Future<double> totalCryptoBalance({
 }) async {
   double totalBalance = 0.0;
 
-  final blockchains = getAllBlockchains();
-  for (int i = 0; i < blockchains.length; i++) {
+  for (int i = 0; i < getAllBlockchains.length; i++) {
     try {
-      final balance = await blockchains[i].getBalance(skipNetworkRequest);
+      final balance = await getAllBlockchains[i].getBalance(skipNetworkRequest);
       final priceDetails =
-          allCryptoPrice[coinGeckoID[blockchains[i].symbol_()]];
+          allCryptoPrice[coinGeckoID[getAllBlockchains[i].symbol_()]];
       double price =
           (priceDetails[defaultCurrency.toLowerCase()] as num).toDouble();
       totalBalance += balance * price;
@@ -2490,23 +2488,6 @@ Future<Map> processEIP681(String eip681URL) async {
   } catch (e) {
     return {'success': false, 'msg': e.toString()};
   }
-}
-
-List<Coin> getAllBlockchains() {
-  return [
-    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
-    ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
-    ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(Map.from(e))),
-    ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(Map.from(e))),
-    ...getTezosBlockchains().map((e) => TezosCoin.fromJson(Map.from(e))),
-    ...getXRPBlockChains().map((e) => XRPCoin.fromJson(Map.from(e))),
-    ...getNearBlockChains().map((e) => NearCoin.fromJson(Map.from(e))),
-    ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
-    ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
-    ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
-    ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
-    ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
-  ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 
 Map getInfoScheme(String coinScheme) {
