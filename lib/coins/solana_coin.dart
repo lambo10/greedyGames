@@ -188,6 +188,12 @@ class SolanaCoin extends Coin {
   int decimals() {
     return solanaDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    final fees = await getSolanaClient(solanaCluster).rpcClient.getFees();
+    return fees.feeCalculator.lamportsPerSignature / pow(10, solanaDecimals);
+  }
 }
 
 List getSolanaBlockChains() {

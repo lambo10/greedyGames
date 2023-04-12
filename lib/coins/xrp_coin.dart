@@ -281,6 +281,12 @@ class XRPCoin extends Coin {
   int decimals() {
     return xrpDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    final fee = await getXrpFee(api);
+    return double.parse(fee['Fee']) / pow(10, xrpDecimals);
+  }
 }
 
 List getXRPBlockChains() {

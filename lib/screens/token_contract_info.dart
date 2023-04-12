@@ -1,3 +1,4 @@
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/blockie_widget.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +9,11 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../coins/ethereum_coin.dart';
 import '../utils/app_config.dart';
 
 class TokenContractInfo extends StatefulWidget {
-  final Map tokenData;
+  final Coin tokenData;
   const TokenContractInfo({Key key, this.tokenData}) : super(key: key);
 
   @override
@@ -59,14 +61,14 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                               height: 25,
                               child: BlockieWidget(
                                 size: .6,
-                                data: widget.tokenData['contractAddress'],
+                                data: widget.tokenData.contractAddress(),
                               ),
                             ),
                             const SizedBox(
                               width: 10,
                             ),
                             Text(
-                              widget.tokenData['symbol'],
+                              widget.tokenData.symbol_(),
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.grey),
                             ),
@@ -86,7 +88,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                           children: [
                             Text(
                               ellipsify(
-                                str: widget.tokenData['contractAddress'],
+                                str: widget.tokenData.contractAddress(),
                                 maxLength: 24,
                               ),
                               style: const TextStyle(
@@ -98,7 +100,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                             GestureDetector(
                               onTap: () async {
                                 await Clipboard.setData(ClipboardData(
-                                  text: widget.tokenData['contractAddress'],
+                                  text: widget.tokenData.contractAddress(),
                                 ));
 
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -126,7 +128,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                           height: 10,
                         ),
                         Text(
-                          widget.tokenData['symbol'],
+                          widget.tokenData.symbol_(),
                           style:
                               const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
@@ -141,7 +143,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                           height: 10,
                         ),
                         Text(
-                          '${widget.tokenData['decimals']}',
+                          '${widget.tokenData.decimals()}',
                           style:
                               const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
@@ -156,7 +158,7 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                           height: 10,
                         ),
                         Text(
-                          '${widget.tokenData['network']}',
+                          (widget.tokenData as EthereumCoin).name,
                           style:
                               const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
@@ -189,10 +191,10 @@ class _TokenContractInfoState extends State<TokenContractInfo> {
                             ),
                             onPressed: () async {
                               String blockExplorer =
-                                  widget.tokenData['blockExplorer'];
+                                  widget.tokenData.blockExplorer_();
                               blockExplorer = blockExplorer.replaceFirst(
                                   '/tx/$transactionhashTemplateKey',
-                                  '/token/${widget.tokenData['contractAddress']}');
+                                  '/token/${widget.tokenData.contractAddress()}');
                               await launchUrl(Uri.parse(blockExplorer));
                             },
                           ),

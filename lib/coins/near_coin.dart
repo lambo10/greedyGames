@@ -233,6 +233,11 @@ class NearCoin extends Coin {
   int decimals() {
     return nearDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return 0;
+  }
 }
 
 List getNearBlockChains() {

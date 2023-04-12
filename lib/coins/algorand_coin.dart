@@ -201,6 +201,11 @@ class AlgorandCoin extends Coin {
   String symbol_() {
     return symbol;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return 0.001;
+  }
 }
 
 List getAlgorandBlockchains() {

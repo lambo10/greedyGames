@@ -216,6 +216,19 @@ class EthereumCoin extends Coin {
   int decimals() {
     return etherDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    final response = await fromMnemonic(pref.get(currentMmenomicKey));
+    final transactionFee = await getEtherTransactionFee(
+      rpcUrl,
+      null,
+      EthereumAddress.fromHex(response['address']),
+      EthereumAddress.fromHex(to),
+    );
+
+    return transactionFee / pow(10, etherDecimals);
+  }
 }
 
 List<Map> getEVMBlockchains() {

@@ -396,6 +396,21 @@ class BitcoinCoin extends Coin {
   int decimals() {
     return bitCoinDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    List getUnspentOutput;
+    int fee = 0;
+    num satoshi = double.parse(amount) * pow(10, 8);
+    int satoshiToSend = satoshi.toInt();
+
+    getUnspentOutput = await _getUnspentTXs(toJson());
+    fee = await _getNetworkFee(satoshiToSend, getUnspentOutput);
+
+    double feeInBitcoin = fee / pow(10, bitCoinDecimals);
+
+    return feeInBitcoin;
+  }
 }
 
 List getBitCoinPOSBlockchains() {

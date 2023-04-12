@@ -201,6 +201,11 @@ class TezosCoin extends Coin {
   int decimals() {
     return tezorDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return 0;
+  }
 }
 
 List getTezosBlockchains() {

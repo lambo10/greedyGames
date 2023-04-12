@@ -14,6 +14,7 @@ import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
 const cardanoDecimals = 6;
+const int maxFeeGuessForCardano = 200000;
 
 class CardanoCoin extends Coin {
   String blockFrostKey;
@@ -262,6 +263,11 @@ class CardanoCoin extends Coin {
   @override
   int decimals() {
     return cardanoDecimals;
+  }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return maxFeeGuessForCardano / pow(10, cardanoDecimals);
   }
 }
 

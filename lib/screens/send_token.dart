@@ -1,3 +1,4 @@
+import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/eip/eip681.dart';
@@ -23,31 +24,47 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 class SendToken extends StatefulWidget {
   final Coin tokenData;
-
-  const SendToken({this.tokenData, Key key}) : super(key: key);
+  final String amount;
+  final String recipient;
+  const SendToken({
+    this.tokenData,
+    Key key,
+    this.amount,
+    this.recipient,
+  }) : super(key: key);
 
   @override
   _SendTokenState createState() => _SendTokenState();
 }
 
 class _SendTokenState extends State<SendToken> {
-  final recipientAddressController = TextEditingController();
-  final amount = TextEditingController();
-  final tokenId = TextEditingController();
+  final recipientContrl = TextEditingController();
+  final amountContrl = TextEditingController();
+  final tokenIdContrl = TextEditingController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isLoading = false;
+  EthTokenType tokenType;
+  String rpc;
+  String tokenId;
+  bool isNFT;
   Box pref;
 
   @override
   void initState() {
     super.initState();
+    if (widget.tokenData is EthContractCoin) {
+      tokenType = (widget.tokenData as EthContractCoin).tokenType;
+      rpc = (widget.tokenData as EthContractCoin).rpcUrl;
+      isNFT = (widget.tokenData as EthContractCoin).isNFT;
+      tokenId = (widget.tokenData as EthContractCoin).tokenId;
+    }
     pref = Hive.box(secureStorageKey);
   }
 
   @override
   void dispose() {
-    amount.dispose();
-    recipientAddressController.dispose();
+    amountContrl.dispose();
+    recipientContrl.dispose();
     super.dispose();
   }
 
@@ -76,7 +93,7 @@ class _SendTokenState extends State<SendToken> {
                       return null;
                     }
                   },
-                  controller: recipientAddressController..text = recipient,
+                  controller: recipientContrl..text = widget.recipient,
                   decoration: InputDecoration(
                     suffixIcon: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,14 +114,14 @@ class _SendTokenState extends State<SendToken> {
                             if (recipientAddr == null) return;
 
                             if (!recipientAddr.contains(':')) {
-                              recipientAddressController.text = recipientAddr;
+                              recipientContrl.text = recipientAddr;
                             }
 
                             try {
                               if (widget.tokenData.contractAddress() != null) {
                                 Map data = EIP681.parse(recipientAddr);
 
-                                recipientAddressController.text =
+                                recipientContrl.text =
                                     data['parameters']['address'];
                                 return;
                               }
@@ -112,8 +129,8 @@ class _SendTokenState extends State<SendToken> {
 
                             try {
                               CoinPay data = CoinPay.parseUri(recipientAddr);
-                              recipientAddressController.text = data.recipient;
-                              amount.text = data?.amount?.toString();
+                              recipientContrl.text = data.recipient;
+                              amountContrl.text = data?.amount?.toString();
                             } catch (_) {}
                           },
                         ),
@@ -134,7 +151,7 @@ class _SendTokenState extends State<SendToken> {
                               );
 
                               if (userAddr == null) return;
-                              recipientAddressController.text = userAddr;
+                              recipientContrl.text = userAddr;
                             },
                           ),
                         InkWell(
@@ -143,7 +160,7 @@ class _SendTokenState extends State<SendToken> {
                                 await Clipboard.getData(Clipboard.kTextPlain);
                             if (cdata == null) return;
                             if (cdata.text == null) return;
-                            recipientAddressController.text = cdata.text;
+                            recipientContrl.text = cdata.text;
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -171,7 +188,7 @@ class _SendTokenState extends State<SendToken> {
                     filled: true,
                   ),
                 ),
-                if (isNFT == null || tokenType == 'ERC1155') ...[
+                if (isNFT == null || tokenType == EthTokenType.ERC1155) ...[
                   const SizedBox(
                     height: 20,
                   ),
@@ -189,7 +206,7 @@ class _SendTokenState extends State<SendToken> {
                     inputFormatters: <TextInputFormatter>[
                       if (isNFT ?? false) FilteringTextInputFormatter.digitsOnly
                     ],
-                    controller: amount..text = widget.tokenData['amount'],
+                    controller: amountContrl..text = widget.amount,
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),
@@ -233,8 +250,7 @@ class _SendTokenState extends State<SendToken> {
                         return null;
                       }
                     },
-                    controller: tokenId
-                      ..text = widget.tokenData['tokenId'].toString(),
+                    controller: tokenIdContrl..text = tokenId,
                     decoration: const InputDecoration(
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -283,11 +299,11 @@ class _SendTokenState extends State<SendToken> {
                       // hide snackbar if it is showing
                       ScaffoldMessenger.of(context).clearSnackBars();
                       FocusManager.instance.primaryFocus?.unfocus();
-                      if (tokenType == 'ERC721') {
-                        amount.text = '1';
+                      if (tokenType == EthTokenType.ERC721) {
+                        amountContrl.text = '1';
                       }
-                      if (tokenType == 'ERC1155') {
-                        if (int.tryParse(amount.text.trim()) == null) {
+                      if (tokenType == EthTokenType.ERC1155) {
+                        if (int.tryParse(amountContrl.text.trim()) == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red,
@@ -301,7 +317,7 @@ class _SendTokenState extends State<SendToken> {
                         }
                       }
 
-                      if (double.tryParse(amount.text.trim()) == null) {
+                      if (double.tryParse(amountContrl.text.trim()) == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             backgroundColor: Colors.red,
@@ -314,7 +330,7 @@ class _SendTokenState extends State<SendToken> {
                         return;
                       }
 
-                      String recipient = recipientAddressController.text.trim();
+                      String recipient = recipientContrl.text.trim();
                       String cryptoDomain;
                       bool iscryptoDomain = recipient.contains('.');
 
@@ -386,14 +402,9 @@ class _SendTokenState extends State<SendToken> {
                         );
                         return;
                       }
-                      if (amount.text.trim() == "" || recipient == "") {
+                      if (amountContrl.text.trim() == "" || recipient == "") {
                         return;
                       }
-                      final data = {
-                        ...widget.tokenData,
-                        'amount': Decimal.parse(amount.text).toString(),
-                        'recipient': recipient
-                      };
 
                       ScaffoldMessenger.of(context).clearSnackBars();
                       await reInstianteSeedRoot();
@@ -401,7 +412,9 @@ class _SendTokenState extends State<SendToken> {
                         context,
                         MaterialPageRoute(
                           builder: (ctx) => TransferToken(
-                            tokenData: data,
+                            amount: Decimal.parse(amountContrl.text).toString(),
+                            recipient: recipient,
+                            tokenData: widget.tokenData,
                             cryptoDomain: cryptoDomain,
                           ),
                         ),

@@ -12,9 +12,14 @@ abstract class Coin {
   String blockExplorer_();
   String default__();
   Future<String> address_();
+  Future<double> getTransactionFee(String amount, String to);
 
   String image_();
   String contractAddress() {
+    return null;
+  }
+
+  bool noPrice() {
     return null;
   }
 }

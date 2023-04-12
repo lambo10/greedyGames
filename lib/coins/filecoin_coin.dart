@@ -482,6 +482,38 @@ class FilecoinCoin extends Coin {
   int decimals() {
     return fileCoinDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    final getFileCoinDetails = await fromMnemonic(pref.get(currentMmenomicKey));
+    final fileCoinBalance = await getBalance(false);
+
+    final nonce = await getFileCoinNonce(prefix, baseUrl);
+    final attoFIL = double.parse(amount) * pow(10, fileCoinDecimals.toInt());
+
+    BigInt amounToSend = BigInt.from(attoFIL);
+
+    final msg = constructFilecoinMsg(
+      to,
+      getFileCoinDetails['address'],
+      nonce,
+      amounToSend,
+    );
+
+    final gasFromNetwork = await fileCoinEstimateGas(
+      baseUrl,
+      msg,
+    );
+
+    // Transaction Fee = GasLimit * GasFeeCap + GasPremium
+    final gasLimit = gasFromNetwork['GasLimit'];
+    final gasFeeCap = double.parse(gasFromNetwork['GasFeeCap']);
+    final gasPremium = double.parse(gasFromNetwork['GasPremium']);
+    final fees =
+        ((gasLimit * gasFeeCap) + gasPremium) / pow(10, fileCoinDecimals);
+
+    return fees;
+  }
 }
 
 List getFilecoinBlockChains() {

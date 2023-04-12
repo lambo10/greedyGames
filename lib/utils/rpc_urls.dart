@@ -2,10 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import 'package:base_x/base_x.dart';
-import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/security.dart';
 import 'package:cryptowallet/utils/json_viewer.dart';
@@ -14,7 +11,6 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:hive/hive.dart';
-import 'package:near_api_flutter/near_api_flutter.dart' hide PrivateKey;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
@@ -36,7 +32,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:solana/solana.dart' as solana;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hex/hex.dart';
 
@@ -64,8 +59,6 @@ import 'app_config.dart';
 // crypto decimals
 
 const satoshiDustAmount = 546;
-
-const int maxFeeGuessForCardano = 200000;
 
 // time
 const Duration networkTimeOutDuration = Duration(seconds: 15);
@@ -621,7 +614,9 @@ Future<web3.DeployedContract> getEnsResolverContract(
 
 Future ensToContentHashAndIPFS({String cryptoDomainName}) async {
   try {
-    final rpcUrl = getEVMBlockchains()['Ethereum']['rpc'];
+    final rpcUrl = getEVMBlockchains().firstWhere(
+      (element) => element['name'] == 'Ethereum',
+    )['rpc'];
     final client = web3.Web3Client(rpcUrl, Client());
     final nameHash_ = nameHash(cryptoDomainName);
     web3.DeployedContract ensResolverContract =
@@ -1188,84 +1183,83 @@ addAddressBlockchain({
   String blockchainName,
   Map excludeBlockchains,
 }) {
-  final blockchains = <Widget>[];
-  List<Coin> allBlockchains = getAllBlockchains();
+  //FIXME:
+  // final blockchains = <Widget>[];
+  // List<Coin> allBlockchains = getAllBlockchains();
 
-  for (int i = 0; i < allBlockchains.length; i++) {
-    
-  }
+  // for (int i = 0; i < allBlockchains.length; i++) {}
 
-  for (String i in allBlockchains.keys) {
-    if (excludeBlockchains[i] != null) continue;
-    Map blockChainDetails = allBlockchains[i];
-    bool isSelected = false;
-    if (blockchainName != null && i == blockchainName) {
-      isSelected = true;
-    }
+  // for (String i in allBlockchains.keys) {
+  //   if (excludeBlockchains[i] != null) continue;
+  //   Map blockChainDetails = allBlockchains[i];
+  //   bool isSelected = false;
+  //   if (blockchainName != null && i == blockchainName) {
+  //     isSelected = true;
+  //   }
 
-    blockchains.add(
-      InkWell(
-        onTap: () {
-          blockChainDetails['name'] = i;
-          onTap(blockChainDetails);
-        },
-        child: buildRow(
-          blockChainDetails['image'],
-          i,
-          isSelected: isSelected,
-        ),
-      ),
-    );
-  }
-  slideUpPanel(
-    context,
-    Container(
-      color: Colors.transparent,
-      child: ListView(
-        shrinkWrap: true,
-        children: <Widget>[
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: null,
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-              Text(
-                AppLocalizations.of(context).selectBlockchains,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ...blockchains,
-          const SizedBox(height: 20),
-        ],
-      ),
-    ),
-    canDismiss: false,
-  );
+  //   blockchains.add(
+  //     InkWell(
+  //       onTap: () {
+  //         blockChainDetails['name'] = i;
+  //         onTap(blockChainDetails);
+  //       },
+  //       child: buildRow(
+  //         blockChainDetails['image'],
+  //         i,
+  //         isSelected: isSelected,
+  //       ),
+  //     ),
+  //   );
+  // }
+  // slideUpPanel(
+  //   context,
+  //   Container(
+  //     color: Colors.transparent,
+  //     child: ListView(
+  //       shrinkWrap: true,
+  //       children: <Widget>[
+  //         const SizedBox(height: 20),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             const Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: null,
+  //                 icon: Icon(
+  //                   Icons.close,
+  //                   color: Colors.transparent,
+  //                 ),
+  //               ),
+  //             ),
+  //             Text(
+  //               AppLocalizations.of(context).selectBlockchains,
+  //               style: const TextStyle(
+  //                 fontWeight: FontWeight.bold,
+  //                 fontSize: 20.0,
+  //               ),
+  //             ),
+  //             Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: () {
+  //                   if (Navigator.canPop(context)) {
+  //                     Navigator.pop(context);
+  //                   }
+  //                 },
+  //                 icon: const Icon(Icons.close),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 20),
+  //         ...blockchains,
+  //         const SizedBox(height: 20),
+  //       ],
+  //     ),
+  //   ),
+  //   canDismiss: false,
+  // );
 }
 
 showBlockChainDialog({
@@ -1273,78 +1267,79 @@ showBlockChainDialog({
   BuildContext context,
   int selectedChainId,
 }) {
-  final ethEnabledBlockChain = <Widget>[];
-  for (String i in getEVMBlockchains().keys) {
-    Map blockChainDetails = getEVMBlockchains()[i];
-    bool isSelected = false;
-    if (selectedChainId != null &&
-        blockChainDetails['chainId'] == selectedChainId) {
-      isSelected = true;
-    }
+  //FIXME:
+  // final ethEnabledBlockChain = <Widget>[];
+  // for (String i in getEVMBlockchains().keys) {
+  //   Map blockChainDetails = getEVMBlockchains()[i];
+  //   bool isSelected = false;
+  //   if (selectedChainId != null &&
+  //       blockChainDetails['chainId'] == selectedChainId) {
+  //     isSelected = true;
+  //   }
 
-    ethEnabledBlockChain.add(
-      InkWell(
-        onTap: () {
-          blockChainDetails['name'] = i;
-          onTap(blockChainDetails);
-        },
-        child: buildRow(
-          blockChainDetails['image'],
-          i,
-          isSelected: isSelected,
-        ),
-      ),
-    );
-  }
-  slideUpPanel(
-    context,
-    Container(
-      color: Colors.transparent,
-      child: ListView(
-        shrinkWrap: true,
-        children: <Widget>[
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: null,
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-              Text(
-                AppLocalizations.of(context).selectBlockchains,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ...ethEnabledBlockChain,
-          const SizedBox(height: 20),
-        ],
-      ),
-    ),
-    canDismiss: false,
-  );
+  //   ethEnabledBlockChain.add(
+  //     InkWell(
+  //       onTap: () {
+  //         blockChainDetails['name'] = i;
+  //         onTap(blockChainDetails);
+  //       },
+  //       child: buildRow(
+  //         blockChainDetails['image'],
+  //         i,
+  //         isSelected: isSelected,
+  //       ),
+  //     ),
+  //   );
+  // }
+  // slideUpPanel(
+  //   context,
+  //   Container(
+  //     color: Colors.transparent,
+  //     child: ListView(
+  //       shrinkWrap: true,
+  //       children: <Widget>[
+  //         const SizedBox(height: 20),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             const Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: null,
+  //                 icon: Icon(
+  //                   Icons.close,
+  //                   color: Colors.transparent,
+  //                 ),
+  //               ),
+  //             ),
+  //             Text(
+  //               AppLocalizations.of(context).selectBlockchains,
+  //               style: const TextStyle(
+  //                 fontWeight: FontWeight.bold,
+  //                 fontSize: 20.0,
+  //               ),
+  //             ),
+  //             Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: () {
+  //                   if (Navigator.canPop(context)) {
+  //                     Navigator.pop(context);
+  //                   }
+  //                 },
+  //                 icon: const Icon(Icons.close),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 20),
+  //         ...ethEnabledBlockChain,
+  //         const SizedBox(height: 20),
+  //       ],
+  //     ),
+  //   ),
+  //   canDismiss: false,
+  // );
 }
 
 Future changeBlockChainAndReturnInit(
@@ -1354,8 +1349,9 @@ Future changeBlockChainAndReturnInit(
   final pref = Hive.box(secureStorageKey);
   await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
-  final coinType = getEthereumDetailsFromChainId(chainId)['coinType'];
-  final response = await getEthereumFromMemnomic(mnemonic, coinType);
+  final evmDetails = getEthereumDetailsFromChainId(chainId);
+  final response =
+      await EthereumCoin.fromJson(evmDetails).fromMnemonic(mnemonic);
 
   final address = response['address'];
   return '''
@@ -1405,7 +1401,9 @@ Future navigateToDappBrowser(
   if (pref.get(dappChainIdKey) == null) {
     await pref.put(
       dappChainIdKey,
-      getEVMBlockchains()[tokenContractNetwork]['chainId'],
+      getEVMBlockchains().firstWhere(
+        (element) => element['name'] == tokenContractNetwork,
+      )['chainId'],
     );
   }
 
@@ -1790,19 +1788,6 @@ signMessage({
     ),
     canDismiss: false,
   );
-}
-
-String decodeSolidityAbi(String dataStr) {
-  final Uint8List data = txDataToUintList(dataStr);
-  final String dataHex = '0x${HEX.encode(data)}'.trim();
-  final List knownMethodId = getKnownMethodId()['data'];
-
-  for (int i = 0; i < knownMethodId.length; i++) {
-    final contractFunction = knownMethodId[i];
-    final functionSig = solidityFunctionSig(contractFunction['methodId']);
-    if (dataHex.startsWith(functionSig)) return contractFunction['methodId'];
-  }
-  return null;
 }
 
 signTransaction({
@@ -2455,8 +2440,8 @@ Future<Map> processEIP681(String eip681URL) async {
     bool isContractTransfer =
         (parsedUrl['functionName'] ?? '').toString().toLowerCase() ==
             'transfer';
-    final networkName = getEVMBlockchains().keys.firstWhere((element) {
-      return (getEVMBlockchains()[element]['chainId'] == chainId);
+    final networkName = getEVMBlockchains().firstWhere((element) {
+      return element['chainId'] == chainId;
     });
     if (isContractTransfer) {
       Map erc20Details = await getERC20TokenNameSymbolDecimal(
@@ -2527,19 +2512,19 @@ List<Coin> getAllBlockchains() {
 
 Map getInfoScheme(String coinScheme) {
   String symbol = '';
-  for (String key in requestPaymentScheme.keys) {
-    if (requestPaymentScheme[key] == coinScheme) {
-      symbol = key;
-      break;
-    }
-  }
-  Map allBlockchains = getAllBlockchains();
-  for (String i in allBlockchains.keys) {
-    Map value = allBlockchains[i];
-    if (value['symbol'] == symbol) {
-      return Map.from(value)..addAll({'name': i});
-    }
-  }
+  // for (String key in requestPaymentScheme.keys) {
+  //   if (requestPaymentScheme[key] == coinScheme) {
+  //     symbol = key;
+  //     break;
+  //   }
+  // }
+  // Map allBlockchains = getAllBlockchains();
+  // for (String i in allBlockchains.keys) {
+  //   Map value = allBlockchains[i];
+  //   if (value['symbol'] == symbol) {
+  //     return Map.from(value)..addAll({'name': i});
+  //   }
+  // }
   return null;
 }
 

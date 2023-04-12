@@ -243,6 +243,11 @@ class StellarCoin extends Coin {
   int decimals() {
     return stellarDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return await getStellarGas(to, amount, sdk);
+  }
 }
 
 List getStellarBlockChains() {

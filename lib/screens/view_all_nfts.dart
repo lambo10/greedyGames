@@ -1,18 +1,14 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/screens/nft_image_webview.dart';
 import 'package:cryptowallet/screens/send_token.dart';
-import 'package:cryptowallet/screens/video_player.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import 'package:jovial_svg/jovial_svg.dart';
-import 'package:mime/mime.dart';
+
+import '../coins/ethereum_coin.dart';
 
 class ViewAllNFTs extends StatefulWidget {
   const ViewAllNFTs({Key key}) : super(key: key);
@@ -70,12 +66,16 @@ class _ViewAllNFTsState extends State<ViewAllNFTs>
                               );
                       },
                     ),
-                    for (String nft in getAlchemyNFTs())
+                    for (String nftNetwork in getAlchemyNFTs())
                       BlockChainNFTs(
                         nftLoaded: nftLoaded,
-                        chainId: getEVMBlockchains()[nft]['chainId'],
-                        coinType: getEVMBlockchains()[nft]['coinType'],
-                        networkName: nft,
+                        chainId: getEVMBlockchains().firstWhere(
+                          (element) => element['name'] == nftNetwork,
+                        )['chainId'],
+                        coinType: getEVMBlockchains().firstWhere(
+                          (element) => element['name'] == nftNetwork,
+                        )['coinType'],
+                        networkName: nftNetwork,
                         controller: controller,
                       )
                   ],
@@ -116,12 +116,18 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
   List nftData;
 
   bool skipNetworkRequest = true;
+  Map nftNetworkInfo;
+  EthereumCoin coin;
   ScrollController controller;
   @override
   void initState() {
     super.initState();
     controller = widget.controller;
     networkName = widget.networkName;
+    nftNetworkInfo = getEVMBlockchains().firstWhere(
+      (element) => element['name'] == widget.networkName,
+    );
+    coin = EthereumCoin.fromJson(nftNetworkInfo);
     getAllNFTs();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -138,10 +144,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
   Future getAllNFTs() async {
     try {
       final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-      final response = await getEthereumFromMemnomic(
-        mnemonic,
-        widget.coinType,
-      );
+      final response = await coin.fromMnemonic(mnemonic);
       final data = await viewUserTokens(
         widget.chainId,
         response['address'],
@@ -188,7 +191,6 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                     itemCount: nftData.length,
                     itemBuilder: (BuildContext context, int index) {
                       Map nftDetails = nftData[index];
-                      Map nftEvmDetails = getEVMBlockchains()[networkName];
                       String name =
                           nftDetails['contractMetadata']['name'] ?? 'NFT';
                       String symbol =
@@ -198,9 +200,9 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                       );
                       String contractAddress =
                           nftDetails['contract']['address'];
-                      String rpc = nftEvmDetails['rpc'];
-                      int chainId = nftEvmDetails['chainId'];
-                      int coinType = nftEvmDetails['coinType'];
+                      String rpc = nftNetworkInfo['rpc'];
+                      int chainId = nftNetworkInfo['chainId'];
+                      int coinType = nftNetworkInfo['coinType'];
                       String tokenType =
                           nftDetails['contractMetadata']['tokenType'] ?? '';
                       String description = nftDetails['description'] ?? '';
@@ -460,26 +462,27 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                                       ),
                                       onPressed: () async {
                                         try {
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (ctx) => SendToken(
-                                                tokenData: {
-                                                  'name': name,
-                                                  'symbol': symbol,
-                                                  'isNFT': true,
-                                                  'tokenId': tokenId,
-                                                  'contractAddress':
-                                                      contractAddress,
-                                                  'network': networkName,
-                                                  'rpc': rpc,
-                                                  'chainId': chainId,
-                                                  'coinType': coinType,
-                                                  'tokenType': tokenType,
-                                                },
-                                              ),
-                                            ),
-                                          );
+                                          //FIXME:
+                                          // await Navigator.push(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder: (ctx) => SendToken(
+                                          //       tokenData: {
+                                          //         'name': name,
+                                          //         'symbol': symbol,
+                                          //         'isNFT': true,
+                                          //         'tokenId': tokenId,
+                                          //         'contractAddress':
+                                          //             contractAddress,
+                                          //         'network': networkName,
+                                          //         'rpc': rpc,
+                                          //         'chainId': chainId,
+                                          //         'coinType': coinType,
+                                          //         'tokenType': tokenType,
+                                          //       },
+                                          //     ),
+                                          //   ),
+                                          // );
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(

@@ -228,6 +228,11 @@ class TronCoin extends Coin {
   int decimals() {
     return tronDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return 0;
+  }
 }
 
 List getTronBlockchains() {

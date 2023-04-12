@@ -238,6 +238,11 @@ class CosmosCoin extends Coin {
   int decimals() {
     return cosmosDecimals;
   }
+
+  @override
+  Future<double> getTransactionFee(String amount, String to) async {
+    return 0.001;
+  }
 }
 
 List getCosmosBlockChains() {
