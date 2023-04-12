@@ -46,7 +46,7 @@ class _SendTokenState extends State<SendToken> {
   EthTokenType tokenType;
   String rpc;
   BigInt tokenId;
-  bool isNFT;
+
   Box pref;
 
   @override
@@ -187,7 +187,7 @@ class _SendTokenState extends State<SendToken> {
                     filled: true,
                   ),
                 ),
-                if (isNFT == null || tokenType == EthTokenType.ERC1155) ...[
+                if (tokenType == null || tokenType != EthTokenType.ERC721) ...[
                   const SizedBox(
                     height: 20,
                   ),
@@ -203,22 +203,20 @@ class _SendTokenState extends State<SendToken> {
                       }
                     },
                     inputFormatters: <TextInputFormatter>[
-                      if (isNFT ?? false) FilteringTextInputFormatter.digitsOnly
+                      FilteringTextInputFormatter.digitsOnly
                     ],
                     controller: amountContrl..text = widget.amount,
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),
-                      suffixIcon: isNFT ?? false
-                          ? null
-                          : IconButton(
-                              alignment: Alignment.centerRight,
-                              icon: Text(
-                                AppLocalizations.of(context).max,
-                                textAlign: TextAlign.end,
-                              ),
-                              onPressed: () async {},
-                            ),
+                      suffixIcon: IconButton(
+                        alignment: Alignment.centerRight,
+                        icon: Text(
+                          AppLocalizations.of(context).max,
+                          textAlign: TextAlign.end,
+                        ),
+                        onPressed: () async {},
+                      ),
                       hintText: AppLocalizations.of(context).amount,
 
                       focusedBorder: const OutlineInputBorder(
@@ -234,7 +232,7 @@ class _SendTokenState extends State<SendToken> {
                     ),
                   ),
                 ],
-                if (isNFT != null) ...[
+                if (tokenType == EthTokenType.ERC1155) ...[
                   const SizedBox(
                     height: 20,
                   ),

@@ -191,6 +191,9 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    if (tokenType != EthTokenType.ERC20) {
+      return 1;
+    }
     return await getERC20TokenBalance(
       toJson(),
       skipNetworkRequest: skipNetworkRequest,
@@ -312,7 +315,7 @@ Future<double> getERC20TokenBalance(
   }
 
   if (skipNetworkRequest) return savedBalance;
- 
+
   try {
     final contract = DeployedContract(
       ContractAbi.fromJson(erc20Abi, ''),
