@@ -20,6 +20,7 @@ import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:upgrader/upgrader.dart';
+import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../main.dart';
 import '../utils/app_config.dart';
@@ -422,7 +423,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
       (element) => element['name'] == tokenContractNetwork,
     );
     if (pref.get(appTokenKey) == null) {
-      final Map erc20AppTokenDetails = await getERC20TokenNameSymbolDecimal(
+      final Map erc20AppTokenDetails = await savedERC20Details(
         contractAddress: tokenContractAddress,
         rpc: evmBlockchain['rpc'],
       );

@@ -491,3 +491,64 @@ List<Map> getEVMBlockchains() {
 
   return blockChains;
 }
+
+Future<double> getEtherTransactionFee(
+  String rpc,
+  Uint8List data,
+  EthereumAddress sender,
+  EthereumAddress to, {
+  double value,
+  EtherAmount gasPrice,
+}) async {
+  final client = Web3Client(
+    rpc,
+    Client(),
+  );
+
+  final etherValue = value != null
+      ? EtherAmount.inWei(
+          BigInt.from(value),
+        )
+      : null;
+
+  if (gasPrice == null || gasPrice.getInWei == BigInt.from(0)) {
+    gasPrice = await client.getGasPrice();
+  }
+
+  BigInt gasUnit;
+
+  try {
+    gasUnit = await client.estimateGas(
+      sender: sender,
+      to: to,
+      data: data,
+      value: etherValue,
+    );
+  } catch (_) {}
+
+  if (gasUnit == null) {
+    try {
+      gasUnit = await client.estimateGas(
+        sender: EthereumAddress.fromHex(zeroAddress),
+        to: to,
+        data: data,
+        value: etherValue,
+      );
+    } catch (_) {}
+  }
+
+  if (gasUnit == null) {
+    try {
+      gasUnit = await client.estimateGas(
+        sender: EthereumAddress.fromHex(deadAddress),
+        to: to,
+        data: data,
+        value: etherValue,
+      );
+    } catch (e) {
+      gasUnit = BigInt.from(0);
+    }
+  }
+
+  return gasPrice.getInWei.toDouble() * gasUnit.toDouble();
+}

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/crypto_charts/crypto_chart.dart';
 import 'package:cryptowallet/interface/coin.dart';
@@ -35,10 +36,15 @@ class _TokenState extends State<Token> {
   Timer timer;
   ValueNotifier trxOpen = ValueNotifier(true);
   final pref = Hive.box(secureStorageKey);
+  String rampName;
+  String currentAddress;
+  String rampCurrentAddress;
+  String description;
 
   @override
   void initState() {
     super.initState();
+
     callTokenApi();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -99,9 +105,6 @@ class _TokenState extends State<Token> {
     } catch (_) {}
   }
 
-  String rampName;
-  String currentAddress;
-  String rampCurrentAddress;
   Future getTokenTransactions() async {
     try {
       currentAddress = await widget.tokenData.address_();
@@ -117,6 +120,12 @@ class _TokenState extends State<Token> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.tokenData is EthContractCoin) {
+      final ethCoin = widget.tokenData as EthContractCoin;
+      description = ethCoin.network;
+    } else {
+      description = AppLocalizations.of(context).coin;
+    }
     final listTransactions = <Widget>[];
     if (tokenTransaction != null) {
       List data = tokenTransaction['trx'] as List;
@@ -307,10 +316,7 @@ class _TokenState extends State<Token> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        widget.tokenData.contractAddress() !=
-                                                null
-                                            ? widget.tokenData.name_()
-                                            : AppLocalizations.of(context).coin,
+                                        description,
                                         style: const TextStyle(
                                             fontSize: 16, color: Colors.grey),
                                       ),

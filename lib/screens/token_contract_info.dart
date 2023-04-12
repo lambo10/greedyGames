@@ -3,9 +3,6 @@ import 'package:cryptowallet/utils/blockie_widget.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 

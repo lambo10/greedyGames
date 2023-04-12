@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
+import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../components/user_balance.dart';
@@ -118,7 +119,7 @@ class _PrivateSaleState extends State<PrivateSale> {
 
       double tokenPriceDouble = double.parse(tokenPrice[0].toString());
 
-      Map tokenDetails = await getERC20TokenNameSymbolDecimal(
+      Map tokenDetails = await savedERC20Details(
         contractAddress: tokenContractAddress,
         rpc: networkDetails['rpc'],
       );

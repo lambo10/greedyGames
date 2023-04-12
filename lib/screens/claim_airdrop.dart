@@ -12,6 +12,7 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import '../../config/colors.dart';
 import '../../config/styles.dart';
+import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../utils/slide_up_panel.dart';
@@ -65,7 +66,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
           await EthereumCoin.fromJson(evmNetwork).fromMnemonic(mnemonic);
       final sendingAddress = web3.EthereumAddress.fromHex(response['address']);
 
-      Map tokenDetails = await getERC20TokenNameSymbolDecimal(
+      Map tokenDetails = await savedERC20Details(
         contractAddress: tokenContractAddress,
         rpc: evmNetwork['rpc'],
       );

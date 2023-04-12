@@ -39,6 +39,7 @@ import '../coins/algorand_coin.dart';
 import '../coins/bitcoin_coin.dart';
 import '../coins/cardano_coin.dart';
 import '../coins/cosmos_coin.dart';
+import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../coins/filecoin_coin.dart';
 import '../coins/near_coin.dart';
@@ -838,185 +839,8 @@ Future<String> getCryptoPrice({
   }
 }
 
-Future<String> contractDetailsKey(String rpc, String contractAddress) async {
-  String mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-  final ethereumDetails = getEVMBlockchains().firstWhere(
-    (element) => element['name'] == 'Ethereum',
-  );
-  final userDetails =
-      await EthereumCoin.fromJson(ethereumDetails).fromMnemonic(mnemonic);
-  return '${rpc.toString().toLowerCase()}${contractAddress.toString().toLowerCase()}${userDetails['address']}|usertoken';
-}
-
-Future getErc20Allowance({
-  String owner,
-  String spender,
-  String rpc,
-  String contractAddress,
-}) async {
-  web3.Web3Client client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final contract = web3.DeployedContract(
-      web3.ContractAbi.fromJson(erc20Abi, ''),
-      web3.EthereumAddress.fromHex(contractAddress));
-
-  final allowanceFunction = contract.function('allowance');
-
-  final allowance = (await client.call(
-    contract: contract,
-    function: allowanceFunction,
-    params: [
-      web3.EthereumAddress.fromHex(owner),
-      web3.EthereumAddress.fromHex(spender),
-    ],
-  ))
-      .first;
-
-  return allowance;
-}
-
-Future<double> getERC20TokenBalance(
-  Map tokenDetails, {
-  bool skipNetworkRequest = false,
-}) async {
-  web3.Web3Client client = web3.Web3Client(
-    tokenDetails['rpc'],
-    Client(),
-  );
-
-  final pref = Hive.box(secureStorageKey);
-  String mnemonic = pref.get(currentMmenomicKey);
-  Map response =
-      await EthereumCoin.fromJson(tokenDetails).fromMnemonic(mnemonic);
-
-  final sendingAddress = web3.EthereumAddress.fromHex(
-    response['address'],
-  );
-  String elementDetailsKey = await contractDetailsKey(
-    tokenDetails['rpc'],
-    tokenDetails['contractAddress'],
-  );
-
-  String balanceKey = sha3('${elementDetailsKey}balance');
-
-  final storedBalance = pref.get(balanceKey);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    final crytoBalance = jsonDecode(pref.get(balanceKey));
-    savedBalance = double.parse(crytoBalance['balance']) /
-        pow(10, double.parse(crytoBalance['decimals']));
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final contract = web3.DeployedContract(
-      web3.ContractAbi.fromJson(erc20Abi, ''),
-      web3.EthereumAddress.fromHex(
-        tokenDetails['contractAddress'],
-      ),
-    );
-
-    final balanceFunction = contract.function('balanceOf');
-
-    final decimalsFunction = contract.function('decimals');
-
-    final decimals = (await client
-            .call(contract: contract, function: decimalsFunction, params: []))
-        .first
-        .toString();
-
-    final balance = (await client.call(
-      contract: contract,
-      function: balanceFunction,
-      params: [sendingAddress],
-    ))
-        .first
-        .toString();
-    await pref.put(
-      balanceKey,
-      jsonEncode({
-        'balance': balance,
-        'decimals': decimals,
-      }),
-    );
-    return double.parse(balance) / pow(10, double.parse(decimals));
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getEtherTransactionFee(
-  String rpc,
-  Uint8List data,
-  web3.EthereumAddress sender,
-  web3.EthereumAddress to, {
-  double value,
-  EtherAmount gasPrice,
-}) async {
-  final client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final etherValue = value != null
-      ? web3.EtherAmount.inWei(
-          BigInt.from(value),
-        )
-      : null;
-
-  if (gasPrice == null || gasPrice.getInWei == BigInt.from(0)) {
-    gasPrice = await client.getGasPrice();
-  }
-
-  BigInt gasUnit;
-
-  try {
-    gasUnit = await client.estimateGas(
-      sender: sender,
-      to: to,
-      data: data,
-      value: etherValue,
-    );
-  } catch (_) {}
-
-  if (gasUnit == null) {
-    try {
-      gasUnit = await client.estimateGas(
-        sender: EthereumAddress.fromHex(zeroAddress),
-        to: to,
-        data: data,
-        value: etherValue,
-      );
-    } catch (_) {}
-  }
-
-  if (gasUnit == null) {
-    try {
-      gasUnit = await client.estimateGas(
-        sender: EthereumAddress.fromHex(deadAddress),
-        to: to,
-        data: data,
-        value: etherValue,
-      );
-    } catch (e) {
-      gasUnit = BigInt.from(0);
-    }
-  }
-
-  return gasPrice.getInWei.toDouble() * gasUnit.toDouble();
-}
-
-Future<String> etherPrivateKeyToAddress(String privateKey) async {
-  web3.EthPrivateKey ethereumPrivateKey =
-      web3.EthPrivateKey.fromHex(privateKey);
-  final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
-  return web3.EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
+String contractDetailsKey(String rpc, String contractAddress) {
+  return '$rpc$contractAddress';
 }
 
 Future<String> getCurrencyJson() async {
@@ -2441,7 +2265,7 @@ Future<Map> processEIP681(String eip681URL) async {
       return element['chainId'] == chainId;
     });
     if (isContractTransfer) {
-      Map erc20Details = await getERC20TokenNameSymbolDecimal(
+      Map erc20Details = await savedERC20Details(
         contractAddress: parsedUrl['target_address'],
         rpc: sendToken['rpc'],
       );
@@ -2506,67 +2330,6 @@ Map getInfoScheme(String coinScheme) {
   //   }
   // }
   return null;
-}
-
-Future<Map> getERC20TokenDetails({
-  String contractAddress,
-  String rpc,
-}) async {
-  final client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final contract = web3.DeployedContract(
-    web3.ContractAbi.fromJson(erc20Abi, ''),
-    web3.EthereumAddress.fromHex(contractAddress),
-  );
-
-  final nameFunction = contract.function('name');
-  final symbolFunction = contract.function('symbol');
-  final decimalsFunction = contract.function('decimals');
-
-  final name =
-      await client.call(contract: contract, function: nameFunction, params: []);
-
-  final symbol = await client
-      .call(contract: contract, function: symbolFunction, params: []);
-  final decimals = await client
-      .call(contract: contract, function: decimalsFunction, params: []);
-
-  return {
-    'name': name.first,
-    'symbol': symbol.first,
-    'decimals': int.parse(decimals.first.toString())
-  };
-}
-
-Future<Map> getERC20TokenNameSymbolDecimal({
-  String contractAddress,
-  String rpc,
-  int chainId,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-  String tokenDetailsKey = await contractDetailsKey(
-    rpc,
-    contractAddress,
-  );
-
-  String tokenDetailsSaved = pref.get(tokenDetailsKey);
-  Map erc20TokenDetails = {};
-  try {
-    erc20TokenDetails = await getERC20TokenDetails(
-      contractAddress: contractAddress,
-      rpc: rpc,
-    );
-  } catch (e) {
-    if (tokenDetailsSaved != null) {
-      erc20TokenDetails = json.decode(tokenDetailsSaved);
-    }
-  }
-
-  await pref.put(tokenDetailsKey, json.encode(erc20TokenDetails));
-  return erc20TokenDetails;
 }
 
 selectImage({

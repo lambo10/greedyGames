@@ -108,7 +108,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
               final userTokenListKey = getAddTokenKey();
 
               if (tokenList.isEmpty) return false;
-              String customTokenDetailsKey = await contractDetailsKey(
+              String customTokenDetailsKey = contractDetailsKey(
                 tokenList[i].rpcUrl,
                 tokenList[i].contractAddress_,
               );
@@ -144,7 +144,9 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
                             try {
                               notifier.value = await tokenList[i]
                                   .getBalance(notifier.value == null);
-                            } catch (_) {}
+                            } catch (_, sk) {
+                              print(sk);
+                            }
                             addedTokensTimer.add(
                               Timer.periodic(httpPollingDelay, (timer) async {
                                 try {

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../coins/eth_contract_coin.dart';
 import '../utils/app_config.dart';
 import '../utils/qr_scan_view.dart';
 
@@ -52,7 +53,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
     try {
       Map evnNetwork =
           getEVMBlockchains().firstWhere((e) => e['name'] == networkName);
-      Map erc20Details = await getERC20TokenNameSymbolDecimal(
+      Map erc20Details = await savedERC20Details(
         contractAddress: enteredContractAddress.trim(),
         rpc: evnNetwork['rpc'],
       );
