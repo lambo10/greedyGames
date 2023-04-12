@@ -203,7 +203,9 @@ class _SendTokenState extends State<SendToken> {
                       }
                     },
                     inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly
+                      tokenType == EthTokenType.ERC1155
+                          ? FilteringTextInputFormatter.digitsOnly
+                          : null
                     ],
                     controller: amountContrl..text = widget.amount,
                     decoration: InputDecoration(
