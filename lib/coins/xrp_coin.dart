@@ -292,8 +292,8 @@ class XRPCoin extends Coin {
   }
 }
 
-List getXRPBlockChains() {
-  List blockChains = [
+List<Map> getXRPBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'XRP',
       'symbol': 'XRP',

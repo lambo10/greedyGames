@@ -1,23 +1,16 @@
 import 'dart:async';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'dart:math';
-import 'package:algorand_dart/algorand_dart.dart' as algoRan;
 import 'package:cryptowallet/api/notification_api.dart';
-import 'package:cryptowallet/coins/eth_contract_coin.dart';
-import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/config/colors.dart';
 import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:web3dart/web3dart.dart' as web3;
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -137,15 +130,11 @@ class _TransferTokenState extends State<TransferToken> {
                   const SizedBox(
                     height: 10,
                   ),
-                  FutureBuilder(future: () async {
-                    return {
-                      'address': await widget.tokenData.address_(),
-                    };
+                  FutureBuilder<String>(future: () async {
+                    return await widget.tokenData.address_();
                   }(), builder: (context, snapshot) {
                     return Text(
-                      snapshot.hasData
-                          ? (snapshot.data as Map)['address']
-                          : 'Loading...',
+                      snapshot.hasData ? snapshot.data : 'Loading...',
                       style: const TextStyle(fontSize: 16),
                     );
                   }),
@@ -253,20 +242,19 @@ class _TransferTokenState extends State<TransferToken> {
                                       try {
                                         final pref = Hive.box(secureStorageKey);
 
-                                        String userAddress;
-                                        String transactionHash;
-                                        int coinDecimals;
-                                        String userTransactionsKey;
-                                        transactionHash = await widget.tokenData
-                                            .transferToken(widget.amount,
-                                                widget.recipient);
+                                        String transactionHash = await widget
+                                            .tokenData
+                                            .transferToken(
+                                          widget.amount,
+                                          widget.recipient,
+                                        );
 
-                                        coinDecimals =
+                                        int coinDecimals =
                                             widget.tokenData.decimals();
-                                        userAddress =
+                                        String userAddress =
                                             await widget.tokenData.address_();
 
-                                        userTransactionsKey =
+                                        String userTransactionsKey =
                                             '${widget.tokenData.default__()} Details';
 
                                         if (transactionHash == null) {

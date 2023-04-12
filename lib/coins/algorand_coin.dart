@@ -208,8 +208,8 @@ class AlgorandCoin extends Coin {
   }
 }
 
-List getAlgorandBlockchains() {
-  List blockChains = [
+ List<Map> getAlgorandBlockchains() {
+   List<Map> blockChains = [
     {
       'blockExplorer': 'https://algoexplorer.io/tx/$transactionhashTemplateKey',
       'symbol': 'ALGO',

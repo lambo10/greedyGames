@@ -44,7 +44,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
   }
 
   Future _getDetails() async {
-    return {'address': await widget.tokenData.address_()};
+    return await widget.tokenData.address_();
   }
 
   @override
@@ -55,7 +55,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
             '${AppLocalizations.of(context).receive} ${widget.tokenData.contractAddress() != null ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()}'),
       ),
       key: scaffoldKey,
-      body: FutureBuilder(
+      body: FutureBuilder<String>(
         future: _getDetails(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -64,7 +64,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
             }
           }
           if (snapshot.hasData) {
-            if (!isRequestingPayment) userAddress = snapshot.data['address'];
+            if (!isRequestingPayment) userAddress = snapshot.data;
             return SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -99,7 +99,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                         onTap: () async {
                           // copy to clipboard
                           await Clipboard.setData(ClipboardData(
-                            text: (snapshot.data as Map)['address'],
+                            text: snapshot.data,
                           ));
 
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +121,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  (snapshot.data as Map)['address'],
+                                  snapshot.data,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 14,
@@ -160,7 +160,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                   onTap: () async {
                                     // copy to clipboard
                                     await Clipboard.setData(ClipboardData(
-                                      text: (snapshot.data as Map)['address'],
+                                      text: snapshot.data,
                                     ));
 
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -192,7 +192,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                               GestureDetector(
                                   onTap: () async {
                                     await Share.share(
-                                        '${AppLocalizations.of(context).publicAddressToReceive} ${widget.tokenData.symbol_()} ${(snapshot.data as Map)['address']}');
+                                        '${AppLocalizations.of(context).publicAddressToReceive} ${widget.tokenData.symbol_()} ${snapshot.data}');
                                   },
                                   child: Container(
                                       width: 40,
@@ -344,8 +344,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                       : null;
                                                   amountField.text = '';
                                                   userAddress = requestUrl ??
-                                                      (snapshot.data
-                                                          as Map)['address'];
+                                                      snapshot.data;
                                                 });
                                               },
                                             )

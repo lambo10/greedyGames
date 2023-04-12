@@ -271,8 +271,8 @@ class CardanoCoin extends Coin {
   }
 }
 
-List getCardanoBlockChains() {
-  List blockChains = [
+List<Map> getCardanoBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'Cardano',
       'symbol': 'ADA',

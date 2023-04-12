@@ -250,8 +250,8 @@ class StellarCoin extends Coin {
   }
 }
 
-List getStellarBlockChains() {
-  List blockChains = [
+List<Map> getStellarBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'Stellar',
       'symbol': 'XLM',

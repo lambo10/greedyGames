@@ -196,8 +196,8 @@ class SolanaCoin extends Coin {
   }
 }
 
-List getSolanaBlockChains() {
-  List blockChains = [
+List<Map> getSolanaBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'Solana',
       'symbol': 'SOL',
@@ -210,15 +210,13 @@ List getSolanaBlockChains() {
   ];
   if (enableTestNet) {
     blockChains.add({
-      {
-        'nae': 'Solana(Devnet)',
-        'symbol': 'SOL',
-        'default': 'SOL',
-        'blockExplorer':
-            'https://explorer.solana.com/tx/$transactionhashTemplateKey?cluster=devnet',
-        'image': 'assets/solana.webp',
-        'solanaCluster': SolanaClusters.devNet,
-      }
+      'nae': 'Solana(Devnet)',
+      'symbol': 'SOL',
+      'default': 'SOL',
+      'blockExplorer':
+          'https://explorer.solana.com/tx/$transactionhashTemplateKey?cluster=devnet',
+      'image': 'assets/solana.webp',
+      'solanaCluster': SolanaClusters.devNet,
     });
   }
   return blockChains;

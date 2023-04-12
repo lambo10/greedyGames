@@ -235,8 +235,8 @@ class TronCoin extends Coin {
   }
 }
 
-List getTronBlockchains() {
-  List blockChains = [
+List<Map> getTronBlockchains() {
+  List<Map> blockChains = [
     {
       'blockExplorer':
           'https://tronscan.org/#/transaction/$transactionhashTemplateKey',

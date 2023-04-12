@@ -38,9 +38,11 @@ import 'package:hex/hex.dart';
 import '../coins/algorand_coin.dart';
 import '../coins/bitcoin_coin.dart';
 import '../coins/cardano_coin.dart';
+import '../coins/cosmos_coin.dart';
 import '../coins/ethereum_coin.dart';
 import '../coins/filecoin_coin.dart';
 import '../coins/near_coin.dart';
+import '../coins/solana_coin.dart';
 import '../coins/stellar_coin.dart';
 import '../coins/tezos_coin.dart';
 import '../coins/tron_coin.dart';
@@ -2499,9 +2501,9 @@ List<Coin> getAllBlockchains() {
     ...getTezosBlockchains().map((e) => TezosCoin.fromJson(Map.from(e))),
     ...getXRPBlockChains().map((e) => XRPCoin.fromJson(Map.from(e))),
     ...getNearBlockChains().map((e) => NearCoin.fromJson(Map.from(e))),
-    // ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
+    ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
     ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
-    // ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
+    ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
     ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));

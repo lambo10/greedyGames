@@ -245,9 +245,9 @@ class CosmosCoin extends Coin {
   }
 }
 
-List getCosmosBlockChains() {
+List<Map> getCosmosBlockChains() {
   // change lcdurl for cosmos to sdk 0.37.9 / cosmoshub-3
-  List blockChains = [
+  List<Map> blockChains = [
     {
       'blockExplorer':
           'https://atomscan.com/transactions/$transactionhashTemplateKey',
@@ -262,16 +262,14 @@ List getCosmosBlockChains() {
 
   if (enableTestNet) {
     blockChains.add({
-      {
-        'blockExplorer':
-            'https://explorer.theta-testnet.polypore.xyz/transactions/$transactionhashTemplateKey',
-        'symbol': 'ATOM',
-        'name': 'Cosmos(Test)',
-        'default': 'ATOM',
-        'image': 'assets/cosmos.png',
-        'bech32Hrp': 'cosmos',
-        'lcdUrl': 'https://rest.state-sync-02.theta-testnet.polypore.xyz'
-      }
+      'blockExplorer':
+          'https://explorer.theta-testnet.polypore.xyz/transactions/$transactionhashTemplateKey',
+      'symbol': 'ATOM',
+      'name': 'Cosmos(Test)',
+      'default': 'ATOM',
+      'image': 'assets/cosmos.png',
+      'bech32Hrp': 'cosmos',
+      'lcdUrl': 'https://rest.state-sync-02.theta-testnet.polypore.xyz'
     });
   }
   return blockChains;

@@ -240,8 +240,8 @@ class NearCoin extends Coin {
   }
 }
 
-List getNearBlockChains() {
-  List blockChains = [
+List<Map> getNearBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'NEAR',
       'symbol': 'NEAR',

@@ -208,8 +208,8 @@ class TezosCoin extends Coin {
   }
 }
 
-List getTezosBlockchains() {
-  List blockChains = [
+List<Map> getTezosBlockchains() {
+  List<Map> blockChains = [
     {
       'blockExplorer': 'https://tzkt.io/$transactionhashTemplateKey',
       'symbol': 'XTZ',

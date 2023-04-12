@@ -515,8 +515,8 @@ class FilecoinCoin extends Coin {
   }
 }
 
-List getFilecoinBlockChains() {
-  List blockChains = [
+List<Map> getFilecoinBlockChains() {
+  List<Map> blockChains = [
     {
       'name': 'Filecoin',
       'symbol': 'FIL',

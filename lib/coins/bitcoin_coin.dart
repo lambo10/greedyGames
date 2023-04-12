@@ -413,8 +413,8 @@ class BitcoinCoin extends Coin {
   }
 }
 
-List getBitCoinPOSBlockchains() {
-  List blockChains = [
+List<Map> getBitCoinPOSBlockchains() {
+  List<Map> blockChains = [
     {
       'name': 'Bitcoin',
       'symbol': 'BTC',
