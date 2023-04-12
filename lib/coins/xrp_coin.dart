@@ -39,7 +39,10 @@ class XRPCoin extends Coin {
   });
 
   @override
-  Future<String> address_() async {}
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
+  }
 
   @override
   String blockExplorer_() {

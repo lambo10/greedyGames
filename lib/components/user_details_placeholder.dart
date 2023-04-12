@@ -32,8 +32,8 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
       Map ethereumMap =
           getEVMBlockchains().firstWhere((e) => e['name'] == 'Ethereum');
 
-      final web3Response =
-          await EthereumCoin.fromJson(ethereumMap).fromMnemonic(mnemonic);
+      final web3Response = await EthereumCoin.fromJson(Map.from(ethereumMap))
+          .fromMnemonic(mnemonic);
 
       Map userDetails = {
         'user_address': web3Response['address'].toLowerCase(),
@@ -45,9 +45,10 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
           userDetails_ = userDetails;
         });
       }
-    } catch (e) {
+    } catch (e, stak) {
       if (kDebugMode) {
         print(e.toString());
+        print(stak.toString());
       }
       return {};
     }
