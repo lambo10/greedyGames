@@ -137,16 +137,20 @@ class AlgorandCoin extends Coin {
       'getAlgorandKeys': true,
       seedRootKey: seedPhraseRoot,
     });
-
-    String signature = await getAlgorandClient(algoType).sendPayment(
-      account: keyPair,
-      recipient: algo_rand.Address.fromAlgorandAddress(
-        address: to,
-      ),
-      amount: algo_rand.Algo.toMicroAlgos(
-        double.parse(amount),
-      ),
-    );
+    String signature;
+    try {
+      signature = await getAlgorandClient(algoType).sendPayment(
+        account: keyPair,
+        recipient: algo_rand.Address.fromAlgorandAddress(
+          address: to,
+        ),
+        amount: algo_rand.Algo.toMicroAlgos(
+          double.parse(amount),
+        ),
+      );
+    } on algo_rand.AlgorandException catch (e) {
+      throw e.message;
+    }
 
     return signature;
   }
