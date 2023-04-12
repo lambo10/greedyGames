@@ -19,10 +19,12 @@ class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
   String tokenId;
   bool isNFT;
+  bool isContract;
   EthContractCoin({
     this.tokenType,
     this.tokenId,
     this.isNFT,
+    this.isContract,
   });
 
   @override

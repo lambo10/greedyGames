@@ -10,7 +10,6 @@ import 'package:http/http.dart';
 import '../interface/coin.dart';
 import '../utils/app_config.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
-import '../utils/rpc_urls.dart';
 
 final pref = Hive.box(secureStorageKey);
 const cardanoDecimals = 6;

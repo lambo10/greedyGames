@@ -57,11 +57,12 @@ List<Coin> _getAllBlockchains() {
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
-   getAllBlockchains = _getAllBlockchains();
+
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([
@@ -101,6 +102,7 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
+  getAllBlockchains = _getAllBlockchains();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),

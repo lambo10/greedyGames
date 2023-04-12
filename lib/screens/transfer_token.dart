@@ -40,8 +40,8 @@ class _TransferTokenState extends State<TransferToken> {
   Map transactionFeeMap;
 
   ContractAbi contrAbi;
-  bool isContract;
-  bool isNFT;
+  bool isContract = false;
+  bool isNFT = false;
   String tokenId;
   String mnemonic;
 

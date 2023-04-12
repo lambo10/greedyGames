@@ -43,7 +43,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
     super.dispose();
   }
 
-  Future _getDetails() async {
+  Future<String> _getDetails() async {
     return await widget.tokenData.address_();
   }
 
