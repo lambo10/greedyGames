@@ -1,0 +1,10 @@
+{
+  "Algorand": {
+    "default": "ALGO",
+    "symbol": "ALGO",
+    "name": "Algorand",
+    "blockExplorer": "https://algoexplorer.io/tx/{{TransactionHash}}",
+    "image": "assets/algorand.png",
+    "address": "KMLF3TPWWFRBIUKY26ZKYUYQPAYXHU3KUXFQC75FKF7OX6UASU2VITWHNY"
+  }
+}
