@@ -210,7 +210,7 @@ List<Map> getSolanaBlockChains() {
   ];
   if (enableTestNet) {
     blockChains.add({
-      'nae': 'Solana(Devnet)',
+      'name': 'Solana(Devnet)',
       'symbol': 'SOL',
       'default': 'SOL',
       'blockExplorer':

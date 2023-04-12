@@ -34,6 +34,7 @@ class _TokenState extends State<Token> {
   bool skipNetworkRequest = true;
   Timer timer;
   ValueNotifier trxOpen = ValueNotifier(true);
+  final pref = Hive.box(secureStorageKey);
 
   @override
   void initState() {
@@ -63,12 +64,10 @@ class _TokenState extends State<Token> {
       final bool priceNotavailble = widget.tokenData.noPrice() != null &&
           widget.tokenData.noPrice() == true;
       if (priceNotavailble) return;
-
-      final currencyWithSymbol =
-          jsonDecode(await rootBundle.loadString('json/currency_symbol.json'))
-              as Map;
-      final String defaultCurrency =
-          Hive.box(secureStorageKey).get('defaultCurrency') ?? "USD";
+      final currencyJson =
+          await rootBundle.loadString('json/currency_symbol.json');
+      final currencyWithSymbol = jsonDecode(currencyJson) as Map;
+      final String defaultCurrency = pref.get('defaultCurrency') ?? "USD";
 
       final symbol = (currencyWithSymbol[defaultCurrency]['symbol']);
 
@@ -105,8 +104,6 @@ class _TokenState extends State<Token> {
   String rampCurrentAddress;
   Future getTokenTransactions() async {
     try {
-      final pref = Hive.box(secureStorageKey);
-
       currentAddress = await widget.tokenData.address_();
 
       rampName = rampSwap[widget.tokenData.symbol_()];
@@ -469,8 +466,7 @@ class _TokenState extends State<Token> {
                                             GestureDetector(
                                               onTap: () async {
                                                 final mnemonic =
-                                                    Hive.box(secureStorageKey)
-                                                        .get('mmemonic');
+                                                    pref.get('mmemonic');
 
                                                 Navigator.push(
                                                   context,
