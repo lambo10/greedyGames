@@ -336,6 +336,8 @@ Future<double> getERC20TokenBalance(
         'decimals': decimals,
       }),
     );
+    await client.dispose();
+
     return double.parse(balance) / pow(10, double.parse(decimals));
   } catch (e) {
     return savedBalance;
