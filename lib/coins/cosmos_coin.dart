@@ -176,15 +176,6 @@ class CosmosCoin extends Coin {
   }
 
   @override
-  Future<Map> getTransactions() async {
-    final address = await address_();
-    return {
-      'trx': jsonDecode(pref.get('$default_ Details')),
-      'currentUser': address
-    };
-  }
-
-  @override
   Future<String> transferToken(String amount, String to) async {
     final networkInfo = cosmos.NetworkInfo(
       bech32Hrp: bech32Hrp,

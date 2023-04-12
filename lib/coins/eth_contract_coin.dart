@@ -142,17 +142,21 @@ class EthContractCoin extends EthereumCoin {
   }
 
   @override
+  String savedTransKey() {
+    return '$contractAddress_$rpc Details';
+  }
+
+  @override
   Future<String> transferToken(String amount, String to) async {
     await fillParameter(amount, to);
+
     final client = Web3Client(
       rpc,
       Client(),
     );
 
     Map response = await fromMnemonic(pref.get(currentMmenomicKey));
-    final credentials = EthPrivateKey.fromHex(
-      response['eth_wallet_privateKey'],
-    );
+    final credentials = EthPrivateKey.fromHex(response['privateKey']);
 
     final contract = DeployedContract(
       contrAbi,

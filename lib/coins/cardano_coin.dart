@@ -146,15 +146,6 @@ class CardanoCoin extends Coin {
   }
 
   @override
-  Future<Map> getTransactions() async {
-    final address = await address_();
-    return {
-      'trx': jsonDecode(pref.get('$default_ Details')),
-      'currentUser': address
-    };
-  }
-
-  @override
   Future<String> address_() async {
     final details = await fromMnemonic(pref.get(currentMmenomicKey));
     return details['address'];

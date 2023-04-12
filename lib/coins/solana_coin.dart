@@ -156,15 +156,6 @@ class SolanaCoin extends Coin {
   }
 
   @override
-  Future<Map> getTransactions() async {
-    final address = await address_();
-    return {
-      'trx': jsonDecode(pref.get('$default_ Details')),
-      'currentUser': address
-    };
-  }
-
-  @override
   Future<String> transferToken(String amount, String to) async {
     final lamportToSend = double.parse(amount) * pow(10, solanaDecimals);
     final keyPair = await compute(calculateSolanaKey, {

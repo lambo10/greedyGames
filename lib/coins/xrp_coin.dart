@@ -195,15 +195,6 @@ class XRPCoin extends Coin {
   }
 
   @override
-  Future<Map> getTransactions() async {
-    final address = await address_();
-    return {
-      'trx': jsonDecode(pref.get('$default_ Details')),
-      'currentUser': address
-    };
-  }
-
-  @override
   Future<String> transferToken(String amount, String to) async {
     final getXRPDetails = await fromMnemonic(pref.get(currentMmenomicKey));
 

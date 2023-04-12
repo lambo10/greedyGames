@@ -248,8 +248,8 @@ class _TransferTokenState extends State<TransferToken> {
                                         String userAddress =
                                             await widget.tokenData.address_();
 
-                                        String userTransactionsKey =
-                                            '${widget.tokenData.default__()} Details';
+                                        String trnxKey =
+                                            widget.tokenData.savedTransKey();
 
                                         if (transactionHash == null) {
                                           throw Exception('Sending failed');
@@ -310,7 +310,7 @@ class _TransferTokenState extends State<TransferToken> {
 
                                         List userTransactions = [];
                                         String jsonEncodedUsrTrx =
-                                            pref.get(userTransactionsKey);
+                                            pref.get(trnxKey);
 
                                         if (jsonEncodedUsrTrx != null) {
                                           userTransactions = json.decode(
@@ -322,7 +322,7 @@ class _TransferTokenState extends State<TransferToken> {
                                         userTransactions.length =
                                             maximumTransactionToSave;
                                         await pref.put(
-                                          userTransactionsKey,
+                                          trnxKey,
                                           jsonEncode(userTransactions),
                                         );
                                         if (mounted) {
