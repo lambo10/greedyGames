@@ -111,7 +111,7 @@ class _TransferTokenState extends State<TransferToken> {
         );
 
         final sendingAddress = web3.EthereumAddress.fromHex(
-          response['eth_wallet_address'],
+          response['address'],
         );
 
         if (!isNFTTransfer) {
@@ -408,15 +408,14 @@ class _TransferTokenState extends State<TransferToken> {
           widget.tokenData['rpc'],
           null,
           web3.EthereumAddress.fromHex(
-            response['eth_wallet_address'],
+            response['address'],
           ),
           web3.EthereumAddress.fromHex(
             widget.tokenData['recipient'],
           ),
         );
 
-        final senderAddress =
-            EthereumAddress.fromHex(response['eth_wallet_address']);
+        final senderAddress = EthereumAddress.fromHex(response['address']);
 
         final getSenderBalance = await client.getBalance(senderAddress);
 
@@ -551,7 +550,7 @@ class _TransferTokenState extends State<TransferToken> {
                         'address': (await getEthereumFromMemnomic(
                           mnemonic,
                           widget.tokenData['coinType'],
-                        ))['eth_wallet_address']
+                        ))['address']
                       };
                     }
                   }(), builder: (context, snapshot) {
@@ -683,7 +682,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           );
                                           final credentials =
                                               EthPrivateKey.fromHex(
-                                            response['eth_wallet_privateKey'],
+                                            response['privateKey'],
                                           );
 
                                           final contract =
@@ -737,8 +736,7 @@ class _TransferTokenState extends State<TransferToken> {
                                           transactionHash = await client
                                               .sendRawTransaction(trans);
 
-                                          userAddress =
-                                              response['eth_wallet_address'];
+                                          userAddress = response['address'];
 
                                           userTransactionsKey =
                                               '${widget.tokenData['contractAddress']}${widget.tokenData['rpc']} Details';
@@ -977,7 +975,7 @@ class _TransferTokenState extends State<TransferToken> {
 
                                           final credentials =
                                               EthPrivateKey.fromHex(
-                                            response['eth_wallet_privateKey'],
+                                            response['privateKey'],
                                           );
                                           final gasPrice =
                                               await client.getGasPrice();
@@ -990,9 +988,9 @@ class _TransferTokenState extends State<TransferToken> {
                                               await client.signTransaction(
                                             credentials,
                                             web3.Transaction(
-                                              from: web3.EthereumAddress
-                                                  .fromHex(response[
-                                                      'eth_wallet_address']),
+                                              from:
+                                                  web3.EthereumAddress.fromHex(
+                                                      response['address']),
                                               to: web3.EthereumAddress.fromHex(
                                                   widget
                                                       .tokenData['recipient']),
@@ -1009,8 +1007,7 @@ class _TransferTokenState extends State<TransferToken> {
                                               .sendRawTransaction(trans);
 
                                           coinDecimals = etherDecimals;
-                                          userAddress =
-                                              response['eth_wallet_address'];
+                                          userAddress = response['address'];
                                           userTransactionsKey =
                                               '${widget.tokenData['default']}${widget.tokenData['rpc']} Details';
 

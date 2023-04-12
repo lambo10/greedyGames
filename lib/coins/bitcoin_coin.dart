@@ -33,7 +33,6 @@ class BitcoinCoin extends Coin {
   NetworkType POSNetwork;
   bool P2WPKHType;
   String derivationPath;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -46,7 +45,6 @@ class BitcoinCoin extends Coin {
     this.default_,
     this.image,
     this.P2WPKHType,
-    this.address,
     this.derivationPath,
     this.POSNetwork,
     this.name,
@@ -60,7 +58,6 @@ class BitcoinCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -68,7 +65,6 @@ class BitcoinCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['POSNetwork'] = POSNetwork;
     data['P2WPKH'] = P2WPKHType;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -107,6 +103,7 @@ class BitcoinCoin extends Coin {
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final sochainType = _abrFromNetwork(POSNetwork);
+    final address = await address_();
 
     final key = '${sochainType}AddressBalance$address';
     final storedBalance = pref.get(key);
@@ -140,8 +137,9 @@ class BitcoinCoin extends Coin {
   }
 
   @override
-  String address_() {
-    return address;
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -170,7 +168,8 @@ class BitcoinCoin extends Coin {
   }
 
   @override
-  Map getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -284,7 +283,7 @@ class BitcoinCoin extends Coin {
     final mmemomic = pref.get(currentMmenomicKey);
     final bitcoinDetails = await fromMnemonic(mmemomic);
     final sender = ECPair.fromPrivateKey(
-      txDataToUintList(bitcoinDetails['private_key']),
+      txDataToUintList(bitcoinDetails['privateKey']),
       network: bitcoinNetworkType,
     );
 
@@ -314,7 +313,7 @@ class BitcoinCoin extends Coin {
     if (totalAmountAvailable - satoshiToSend - fee < 0) {
       throw Exception('not enough fee for transfer');
     }
-
+    final address = await address_();
     txb.addOutput(destinationAddress, satoshiToSend);
     txb.addOutput(address, totalAmountAvailable - satoshiToSend - fee);
 
@@ -389,7 +388,7 @@ class BitcoinCoin extends Coin {
 
     return {
       'address': address,
-      'private_key': "0x${HEX.encode(node.privateKey)}"
+      'privateKey': "0x${HEX.encode(node.privateKey)}"
     };
   }
 

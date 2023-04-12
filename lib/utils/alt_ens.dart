@@ -25,8 +25,9 @@ Future<Map> unstoppableDomainENS({
         web3.ContractAbi.fromJson(unstoppableDomainAbi, ''),
         proxyReader,
       );
-      Map evmDetails = getEVMBlockchains()
-          .first((e) => e['name'] == udResolvers[contractAddr]);
+      Map evmDetails = getEVMBlockchains().firstWhere(
+        (e) => e['name'] == udResolvers[contractAddr],
+      );
 
       final rpcUrl = evmDetails['rpc'];
 

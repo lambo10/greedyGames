@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/coin_pay.dart';
@@ -15,11 +16,13 @@ import 'package:share/share.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 import '../components/loader.dart';
+import '../interface/coin.dart';
 
 class ReceiveToken extends StatefulWidget {
-  final Map data;
+  final Coin tokenData;
   final String mnemonic;
-  const ReceiveToken({Key key, this.data, this.mnemonic}) : super(key: key);
+  const ReceiveToken({Key key, this.tokenData, this.mnemonic})
+      : super(key: key);
 
   @override
   _ReceiveTokenState createState() => _ReceiveTokenState();
@@ -41,70 +44,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
   }
 
   Future _getDetails() async {
-    final pref = Hive.box(secureStorageKey);
-    String mnemonic = pref.get(currentMmenomicKey);
-    if (widget.data['POSNetwork'] != null) {
-      final getBitCoinDetails = await getBitcoinFromMemnomic(
-        mnemonic,
-        widget.data,
-      );
-
-      return {'address': getBitCoinDetails['address']};
-    } else if (widget.data['default'] == 'SOL') {
-      final solanaDetails = await getSolanaFromMemnomic(mnemonic);
-      return {'address': solanaDetails['address']};
-    } else if (widget.data['default'] == 'ADA') {
-      final cardano = await getCardanoFromMemnomic(
-        mnemonic,
-        widget.data['cardano_network'],
-      );
-      return {'address': cardano['address']};
-    } else if (widget.data['default'] == 'NEAR') {
-      final near = await getNearFromMemnomic(mnemonic);
-      return {'address': near['address']};
-    } else if (widget.data['default'] == 'ALGO') {
-      final algorand = await getAlgorandFromMemnomic(
-        mnemonic,
-      );
-      return {'address': algorand['address']};
-    } else if (widget.data['default'] == 'XRP') {
-      final xrpDetails = await getXRPFromMemnomic(mnemonic);
-      return {'address': xrpDetails['address']};
-    } else if (widget.data['default'] == 'TRX') {
-      final tronDetails = await getTronFromMemnomic(
-        mnemonic,
-      );
-      return {'address': tronDetails['address']};
-    } else if (widget.data['default'] == 'FIL') {
-      final filecoin = await getFileCoinFromMemnomic(
-        mnemonic,
-        widget.data['prefix'],
-      );
-      return {'address': filecoin['address']};
-    } else if (widget.data['default'] == 'XTZ') {
-      final tezor = await getTezorFromMemnomic(
-        mnemonic,
-        widget.data,
-      );
-      return {'address': tezor['address']};
-    } else if (widget.data['default'] == 'XLM') {
-      final stellar = await getStellarFromMemnomic(mnemonic);
-      return {'address': stellar['address']};
-    } else if (widget.data['default'] == 'ATOM') {
-      final cosmos = await getCosmosFromMemnomic(
-        mnemonic,
-        widget.data['bech32Hrp'],
-        widget.data['lcdUrl'],
-      );
-      return {'address': cosmos['address']};
-    }
-    final response = await getEthereumFromMemnomic(
-      mnemonic,
-      widget.data['coinType'],
-    );
-    return {
-      'address': response['eth_wallet_address'],
-    };
+    return {'address': await widget.tokenData.address_()};
   }
 
   @override
@@ -112,7 +52,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            '${AppLocalizations.of(context).receive} ${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']}'),
+            '${AppLocalizations.of(context).receive} ${widget.tokenData.contractAddress() != null ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()}'),
       ),
       key: scaffoldKey,
       body: FutureBuilder(
@@ -203,7 +143,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                           TextSpan(children: [
                             TextSpan(
                               text: AppLocalizations.of(context).sendOnly(
-                                '${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['name']) : widget.data['name']} (${widget.data['contractAddress'] != null ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']})',
+                                '${widget.tokenData.contractAddress() != null ? ellipsify(str: widget.tokenData.name_()) : widget.tokenData.name_()} (${widget.tokenData.contractAddress() != null ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()})',
                               ),
                             ),
                           ]),
@@ -252,7 +192,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                               GestureDetector(
                                   onTap: () async {
                                     await Share.share(
-                                        '${AppLocalizations.of(context).publicAddressToReceive} ${widget.data['symbol']} ${(snapshot.data as Map)['address']}');
+                                        '${AppLocalizations.of(context).publicAddressToReceive} ${widget.tokenData.symbol_()} ${(snapshot.data as Map)['address']}');
                                   },
                                   child: Container(
                                       width: 40,
@@ -342,14 +282,14 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                           .text
                                                           .trim());
                                                   try {
-                                                    if (widget
-                                                            .data['default'] !=
+                                                    if (widget.tokenData
+                                                            .default__() !=
                                                         null) {
                                                       requestUrl = CoinPay(
                                                         coinScheme:
                                                             requestPaymentScheme[
-                                                                widget.data[
-                                                                    'symbol']],
+                                                                widget.tokenData
+                                                                    .symbol_()],
                                                         amount: amountEntered
                                                             .toDouble(),
                                                         recipient:
@@ -359,20 +299,26 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                     } else {
                                                       requestUrl = EIP681.build(
                                                           targetAddress: widget
-                                                                  .data[
-                                                              'contractAddress'],
-                                                          chainId: widget
-                                                              .data['chainId']
+                                                              .tokenData
+                                                              .contractAddress(),
+                                                          chainId: (widget
+                                                                      .tokenData
+                                                                  as EthereumCoin)
+                                                              .chainId
                                                               .toString(),
                                                           functionName:
                                                               'transfer',
                                                           parameters: {
-                                                            'uint256': (amountEntered *
-                                                                    Decimal.parse(pow(
-                                                                            10,
-                                                                            double.parse(widget.data['decimals']))
-                                                                        .toString()))
-                                                                .toString(),
+                                                            'uint256':
+                                                                (amountEntered *
+                                                                        Decimal.parse(
+                                                                            pow(
+                                                                          10,
+                                                                          widget
+                                                                              .tokenData
+                                                                              .decimals(),
+                                                                        ).toString()))
+                                                                    .toString(),
                                                             'address':
                                                                 (snapshot.data
                                                                         as Map)[
@@ -394,7 +340,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                   isRequestingPayment = true;
                                                   amountRequested = requestUrl !=
                                                           null
-                                                      ? "+${amountField.text.trim()} ${widget.data['symbol']}"
+                                                      ? "+${amountField.text.trim()} ${widget.tokenData.symbol_()}"
                                                       : null;
                                                   amountField.text = '';
                                                   userAddress = requestUrl ??

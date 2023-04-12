@@ -30,7 +30,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
   bool isClaiming = false;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   Map airdropDetails;
-  Map evmNetwork = getEVMBlockchains().first(
+  Map evmNetwork = getEVMBlockchains().firstWhere(
     (e) => e['name'] == tokenSaleContractNetwork,
   );
 
@@ -63,8 +63,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
     try {
       final response =
           await EthereumCoin.fromJson(evmNetwork).fromMnemonic(mnemonic);
-      final sendingAddress =
-          web3.EthereumAddress.fromHex(response['eth_wallet_address']);
+      final sendingAddress = web3.EthereumAddress.fromHex(response['address']);
 
       Map tokenDetails = await getERC20TokenNameSymbolDecimal(
         contractAddress: tokenContractAddress,
@@ -203,7 +202,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
                                     await EthereumCoin.fromJson(evmNetwork)
                                         .fromMnemonic(mnemonic);
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final contract = web3.DeployedContract(

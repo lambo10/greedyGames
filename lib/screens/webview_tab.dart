@@ -555,16 +555,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
 
                       final mnemonic = pref.get(currentMmenomicKey);
                       if (jsData.network == 'solana') {
-                        final solanaResponse =
-                            await getSolanaFromMemnomic(mnemonic);
-                        final sendingAddress = solanaResponse['address'];
-
-                        final keyPair = await compute(calculateSolanaKey, {
-                          mnemonicKey: mnemonic,
-                          'getSolanaKeys': true,
-                          seedRootKey: seedPhraseRoot,
-                        });
-                        solana.Ed25519HDKeyPair solanaKeyPair = keyPair;
                         switch (jsData.name) {
                           case "signMessage":
                             {
@@ -619,15 +609,15 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                           case "requestAccounts":
                             {
                               try {
-                                final setAddress =
-                                    "trustwallet.solana.setAddress(\"$sendingAddress\");";
+                                // final setAddress =
+                                //     "trustwallet.solana.setAddress(\"$sendingAddress\");";
 
-                                String callback =
-                                    "trustwallet.solana.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
+                                // String callback =
+                                //     "trustwallet.solana.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
 
-                                await _sendCustomResponse(setAddress);
+                                // await _sendCustomResponse(setAddress);
 
-                                await _sendCustomResponse(callback);
+                                // await _sendCustomResponse(callback);
                               } catch (e) {
                                 final error =
                                     e.toString().replaceAll('"', '\'');
@@ -645,15 +635,13 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                         final rpc = blockChainDetails['rpc'];
 
                         final web3Response =
-                            await EthereumCoin.fromJson(evmNetwork)
+                            await EthereumCoin.fromJson(blockChainDetails)
                                 .fromMnemonic(mnemonic);
 
-                        final privateKey =
-                            web3Response['eth_wallet_privateKey'];
+                        final privateKey = web3Response['privateKey'];
                         final credentials = EthPrivateKey.fromHex(privateKey);
 
-                        final sendingAddress =
-                            web3Response['eth_wallet_address'];
+                        final sendingAddress = web3Response['address'];
                         switch (jsData.name) {
                           case "signTransaction":
                             {
@@ -938,10 +926,9 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     'invalid asset symbol',
                                   );
                                 }
-                                validateAddress(
-                                  {'rpc': blockChainDetails['rpc']},
-                                  data.contract,
-                                );
+                                EthereumCoin.fromJson(blockChainDetails)
+                                    .validateAddress(data.contract);
+
                                 final assetDetails = {
                                   'name': data.symbol,
                                   'symbol': data.symbol,

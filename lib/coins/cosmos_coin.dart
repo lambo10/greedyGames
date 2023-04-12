@@ -19,15 +19,16 @@ const cosmosDecimals = 6;
 class CosmosCoin extends Coin {
   String bech32Hrp;
   String lcdUrl;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
   String image;
   String name;
+
   @override
-  String address_() {
-    return address;
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -60,7 +61,6 @@ class CosmosCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.bech32Hrp,
     this.lcdUrl,
@@ -73,7 +73,6 @@ class CosmosCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -81,7 +80,6 @@ class CosmosCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['lcdUrl'] = lcdUrl;
     data['bech32Hrp'] = bech32Hrp;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -132,6 +130,7 @@ class CosmosCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'cosmosAddressBalance$address$lcdUrl';
 
     final storedBalance = pref.get(key);
@@ -175,7 +174,8 @@ class CosmosCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address

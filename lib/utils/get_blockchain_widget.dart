@@ -84,8 +84,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
           Hive.box(secureStorageKey).get('defaultCurrency') ?? "USD";
       final symbol = currencyWithSymbol[defaultCurrency]['symbol'];
 
-      final Map cryptoMarket =
-          allCryptoPrice[coinGeckCryptoSymbolToID[widget.symbol]];
+      final Map cryptoMarket = allCryptoPrice[coinGeckoID[widget.symbol]];
 
       final double cryptoWidgetPrice =
           (cryptoMarket[defaultCurrency.toLowerCase()] as num).toDouble();

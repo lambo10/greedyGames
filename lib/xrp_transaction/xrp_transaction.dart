@@ -14,6 +14,8 @@ import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hex/hex.dart';
 import 'package:web3dart/crypto.dart';
 
+import '../coins/xrp_coin.dart';
+
 Uint8List decodeClassicAddress(String classicAddress) {
   return _decode(classicAddress, _CLASSIC_ADDRESS_PREFIX);
 }

@@ -18,15 +18,15 @@ const tezorDecimals = 6;
 class TezosCoin extends Coin {
   TezosTypes tezorType;
   String server;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
   String image;
   String name;
   @override
-  String address_() {
-    return address;
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -59,7 +59,6 @@ class TezosCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.tezorType,
     this.server,
@@ -72,7 +71,6 @@ class TezosCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -80,7 +78,6 @@ class TezosCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['server'] = server;
     data['tezorType'] = tezorType;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -131,6 +128,7 @@ class TezosCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = '${tezorType.index}AddressBalance$address';
     final storedBalance = pref.get(key);
 
@@ -157,7 +155,8 @@ class TezosCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -428,3 +427,8 @@ final Map<String, int> prefixLength = {
   Prefix.TXRL: 32,
   Prefix.TXW: 32,
 };
+
+enum TezosTypes {
+  mainNet,
+  ghostNet,
+}

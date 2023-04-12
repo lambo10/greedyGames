@@ -19,7 +19,6 @@ const nearDecimals = 24;
 
 class NearCoin extends Coin {
   String api;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -31,7 +30,6 @@ class NearCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.api,
   });
@@ -42,14 +40,12 @@ class NearCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['api'] = api;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -58,9 +54,11 @@ class NearCoin extends Coin {
 
     return data;
   }
- @override
-  String address_() {
-    return address;
+
+  @override
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -87,6 +85,7 @@ class NearCoin extends Coin {
   String symbol_() {
     return symbol;
   }
+
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'nearDetails$mnemonic';
@@ -129,6 +128,7 @@ class NearCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'nearAddressBalance$address$api';
 
     final storedBalance = pref.get(key);
@@ -177,7 +177,8 @@ class NearCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -258,4 +259,10 @@ List getNearBlockChains() {
     });
   }
   return blockChains;
+}
+
+class NearRpcProvider extends RPCProvider {
+  final String endpoint;
+
+  NearRpcProvider(this.endpoint) : super(endpoint);
 }

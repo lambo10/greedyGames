@@ -30,13 +30,13 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
       final currentWalletName = pref.get(currentUserWalletNameKey);
       final mnemonic = pref.get(currentMmenomicKey);
       Map ethereumMap =
-          getEVMBlockchains().first((e) => e['name'] == 'Ethereum');
+          getEVMBlockchains().firstWhere((e) => e['name'] == 'Ethereum');
 
       final web3Response =
           await EthereumCoin.fromJson(ethereumMap).fromMnemonic(mnemonic);
 
       Map userDetails = {
-        'user_address': web3Response['eth_wallet_address'].toLowerCase(),
+        'user_address': web3Response['address'].toLowerCase(),
       };
       userDetails['name'] = currentWalletName;
 

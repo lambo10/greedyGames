@@ -144,7 +144,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
       );
       final data = await viewUserTokens(
         widget.chainId,
-        response['eth_wallet_address'],
+        response['address'],
         skipNetworkRequest: skipNetworkRequest,
       );
 

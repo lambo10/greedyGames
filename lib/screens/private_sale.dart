@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../components/user_balance.dart';
 import '../config/colors.dart';
@@ -35,10 +36,14 @@ class _PrivateSaleState extends State<PrivateSale> {
   double tokenBalance;
   final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
   Timer timer;
-
+  final Map networkDetails = getEVMBlockchains().firstWhere(
+    (e) => e['name'] == tokenContractNetwork,
+  );
+  EthereumCoin coin;
   @override
   void initState() {
     super.initState();
+    coin = EthereumCoin.fromJson(networkDetails);
     callAllApi();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -61,15 +66,7 @@ class _PrivateSaleState extends State<PrivateSale> {
 
   Future getEthereumBalance() async {
     try {
-      final getEthereumDetails = await getEthereumFromMemnomic(
-        mnemonic,
-        getEVMBlockchains()[tokenSaleContractNetwork]['coinType'],
-      );
-      final cryptoBalance = await getEthereumAddressBalance(
-        getEthereumDetails['eth_wallet_address'],
-        getEVMBlockchains()[tokenSaleContractNetwork]['rpc'],
-        coinType: getEVMBlockchains()[tokenSaleContractNetwork]['coinType'],
-      );
+      final cryptoBalance = await coin.getBalance(false);
       networkBalance = cryptoBalance;
       if (mounted) {
         setState(() {});
@@ -81,9 +78,9 @@ class _PrivateSaleState extends State<PrivateSale> {
     try {
       final getTokenBalance = await getERC20TokenBalance({
         'contractAddress': tokenContractAddress,
-        'rpc': getEVMBlockchains()[tokenContractNetwork]['rpc'],
-        'chainId': getEVMBlockchains()[tokenContractNetwork]['chainId'],
-        'coinType': getEVMBlockchains()[tokenContractNetwork]['coinType'],
+        'rpc': networkDetails['rpc'],
+        'chainId': networkDetails['chainId'],
+        'coinType': networkDetails['coinType'],
       });
       tokenBalance = getTokenBalance;
       if (mounted) {
@@ -95,7 +92,7 @@ class _PrivateSaleState extends State<PrivateSale> {
   Future getPrivateSaleDetails() async {
     try {
       final client = web3.Web3Client(
-        getEVMBlockchains()[tokenSaleContractNetwork]['rpc'],
+        networkDetails['rpc'],
         Client(),
       );
       final tokenSaleContract = web3.DeployedContract(
@@ -123,7 +120,7 @@ class _PrivateSaleState extends State<PrivateSale> {
 
       Map tokenDetails = await getERC20TokenNameSymbolDecimal(
         contractAddress: tokenContractAddress,
-        rpc: getEVMBlockchains()[tokenContractNetwork]['rpc'],
+        rpc: networkDetails['rpc'],
       );
 
       privateSaleDetails = {
@@ -268,19 +265,18 @@ class _PrivateSaleState extends State<PrivateSale> {
                                                           width: 10,
                                                         ),
                                                         CircleAvatar(
-                                                          backgroundImage: AssetImage(
-                                                              getEVMBlockchains()[
-                                                                      tokenSaleContractNetwork]
-                                                                  ['image']),
+                                                          backgroundImage:
+                                                              AssetImage(
+                                                                  networkDetails[
+                                                                      'image']),
                                                           radius: 15,
                                                         ),
                                                         const SizedBox(
                                                           width: 10,
                                                         ),
                                                         Text(
-                                                            getEVMBlockchains()[
-                                                                    tokenSaleContractNetwork]
-                                                                ['symbol'],
+                                                            networkDetails[
+                                                                'symbol'],
                                                             style: m_agRegular),
                                                         const SizedBox(
                                                           width: 10,
@@ -305,9 +301,9 @@ class _PrivateSaleState extends State<PrivateSale> {
                                                           if (networkBalance !=
                                                               null)
                                                             UserBalance(
-                                                              symbol: getEVMBlockchains()[
-                                                                      tokenSaleContractNetwork]
-                                                                  ['symbol'],
+                                                              symbol:
+                                                                  networkDetails[
+                                                                      'symbol'],
                                                               balance:
                                                                   networkBalance,
                                                               textStyle:
@@ -469,7 +465,7 @@ class _PrivateSaleState extends State<PrivateSale> {
                           height: 20,
                         ),
                         Text(
-                          '1 ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']} = ${privateSaleDetails['tokenPrice']} ${privateSaleDetails['appTokenSymbol']}',
+                          '1 ${networkDetails['symbol']} = ${privateSaleDetails['tokenPrice']} ${privateSaleDetails['appTokenSymbol']}',
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(
@@ -507,19 +503,15 @@ class _PrivateSaleState extends State<PrivateSale> {
                               bool purchasedSuccessfully = true;
                               try {
                                 final client = web3.Web3Client(
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['rpc'],
+                                  networkDetails['rpc'],
                                   Client(),
                                 );
 
-                                final response = await getEthereumFromMemnomic(
-                                  mnemonic,
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['coinType'],
-                                );
+                                final response =
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
@@ -540,8 +532,7 @@ class _PrivateSaleState extends State<PrivateSale> {
                                     parameters: [],
                                     value: EtherAmount.inWei(amounToSwap),
                                   ),
-                                  chainId: getEVMBlockchains()[
-                                      tokenSaleContractNetwork]['chainId'],
+                                  chainId: networkDetails['chainId'],
                                 );
 
                                 transactionHash =
@@ -570,14 +561,13 @@ class _PrivateSaleState extends State<PrivateSale> {
 
                               await slideUpPanel(context,
                                   StatefulBuilder(builder: (ctx, setState) {
-                                String privateSaleBscScan = getEVMBlockchains()[
-                                            tokenSaleContractNetwork]
-                                        ['blockExplorer']
-                                    .toString()
-                                    .replaceFirst(
-                                      transactionhashTemplateKey,
-                                      transactionHash,
-                                    );
+                                String privateSaleBscScan =
+                                    networkDetails['blockExplorer']
+                                        .toString()
+                                        .replaceFirst(
+                                          transactionhashTemplateKey,
+                                          transactionHash,
+                                        );
 
                                 return Padding(
                                   padding: const EdgeInsets.all(20),
@@ -689,19 +679,15 @@ class _PrivateSaleState extends State<PrivateSale> {
                               bool purchasedSuccessfully = true;
                               try {
                                 final client = web3.Web3Client(
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['rpc'],
+                                  networkDetails['rpc'],
                                   Client(),
                                 );
 
-                                final response = await getEthereumFromMemnomic(
-                                  mnemonic,
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['coinType'],
-                                );
+                                final response =
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
@@ -714,14 +700,14 @@ class _PrivateSaleState extends State<PrivateSale> {
                                   'claim',
                                 );
                                 final trans = await client.signTransaction(
-                                    credentials,
-                                    Transaction.callContract(
-                                      contract: tokenSaleContract,
-                                      function: tokenSale,
-                                      parameters: [BigInt.from(1)],
-                                    ),
-                                    chainId: getEVMBlockchains()[
-                                        tokenSaleContractNetwork]['chainId']);
+                                  credentials,
+                                  Transaction.callContract(
+                                    contract: tokenSaleContract,
+                                    function: tokenSale,
+                                    parameters: [BigInt.from(1)],
+                                  ),
+                                  chainId: networkDetails['chainId'],
+                                );
 
                                 transactionHash =
                                     await client.sendRawTransaction(trans);
@@ -749,14 +735,13 @@ class _PrivateSaleState extends State<PrivateSale> {
 
                               await slideUpPanel(context,
                                   StatefulBuilder(builder: (ctx, setState) {
-                                String privateSaleBscScan = getEVMBlockchains()[
-                                            tokenSaleContractNetwork]
-                                        ['blockExplorer']
-                                    .toString()
-                                    .replaceFirst(
-                                      transactionhashTemplateKey,
-                                      transactionHash,
-                                    );
+                                String privateSaleBscScan =
+                                    networkDetails['blockExplorer']
+                                        .toString()
+                                        .replaceFirst(
+                                          transactionhashTemplateKey,
+                                          transactionHash,
+                                        );
 
                                 return Padding(
                                   padding: const EdgeInsets.all(20),

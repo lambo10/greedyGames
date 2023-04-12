@@ -14,18 +14,19 @@ import '../utils/app_config.dart';
 
 final pref = Hive.box(secureStorageKey);
 const stellarDecimals = 6;
+
 class StellarCoin extends Coin {
   stellar.Network cluster;
   stellar.StellarSDK sdk;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
   String image;
   String name;
- @override
-  String address_() {
-    return address;
+  @override
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -52,12 +53,12 @@ class StellarCoin extends Coin {
   String symbol_() {
     return symbol;
   }
+
   StellarCoin({
     this.blockExplorer,
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.sdk,
     this.cluster,
@@ -70,7 +71,6 @@ class StellarCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -78,7 +78,6 @@ class StellarCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['cluster'] = cluster;
     data['sdk'] = sdk;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -118,6 +117,7 @@ class StellarCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'stellarAddressBalance$address${bytesToHex(cluster.networkId)}';
 
     final storedBalance = pref.get(key);
@@ -147,7 +147,8 @@ class StellarCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address

@@ -104,8 +104,8 @@ class WcConnector {
 
     final response =
         await EthereumCoin.fromJson(blockChainData).fromMnemonic(_mnemonic);
-    _walletAddress = response['eth_wallet_address'];
-    _privateKey = response['eth_wallet_privateKey'];
+    _walletAddress = response['address'];
+    _privateKey = response['privateKey'];
     _web3client = Web3Client(
       blockChainData['rpc'],
       http.Client(),

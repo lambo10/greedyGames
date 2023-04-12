@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../components/user_balance.dart';
 import '../config/colors.dart';
@@ -33,7 +34,9 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   Map privateSaleDetails;
   double networkBalance;
   double tokenBalance;
-
+  final Map networkDetails = getEVMBlockchains().firstWhere(
+    (e) => e['name'] == tokenContractNetwork,
+  );
   Timer timer;
 
   @override
@@ -63,9 +66,9 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
     try {
       final cryptoBalance = await getERC20TokenBalance({
         'contractAddress': busdAddress,
-        'rpc': getEVMBlockchains()[tokenContractNetwork]['rpc'],
-        'chainId': getEVMBlockchains()[tokenContractNetwork]['chainId'],
-        'coinType': getEVMBlockchains()[tokenContractNetwork]['coinType'],
+        'rpc': networkDetails['rpc'],
+        'chainId': networkDetails['chainId'],
+        'coinType': networkDetails['coinType'],
       });
       networkBalance = cryptoBalance;
       if (mounted) {
@@ -78,9 +81,9 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
     try {
       final getTokenBalance = await getERC20TokenBalance({
         'contractAddress': tokenContractAddress,
-        'rpc': getEVMBlockchains()[tokenContractNetwork]['rpc'],
-        'chainId': getEVMBlockchains()[tokenContractNetwork]['chainId'],
-        'coinType': getEVMBlockchains()[tokenContractNetwork]['coinType'],
+        'rpc': networkDetails['rpc'],
+        'chainId': networkDetails['chainId'],
+        'coinType': networkDetails['coinType'],
       });
       tokenBalance = getTokenBalance;
       if (mounted) {
@@ -92,7 +95,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   Future getPrivateSaleDetails() async {
     try {
       final client = web3.Web3Client(
-        getEVMBlockchains()[tokenSaleContractNetwork]['rpc'],
+        networkDetails['rpc'],
         Client(),
       );
       final tokenSaleContract = web3.DeployedContract(
@@ -112,7 +115,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
       Map tokenDetails = await getERC20TokenNameSymbolDecimal(
         contractAddress: tokenContractAddress,
-        rpc: getEVMBlockchains()[tokenContractNetwork]['rpc'],
+        rpc: networkDetails['rpc'],
       );
 
       privateSaleDetails = {
@@ -492,24 +495,21 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                               bool purchasedSuccessfully = true;
                               try {
                                 final client = web3.Web3Client(
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['rpc'],
+                                  networkDetails['rpc'],
                                   Client(),
                                 );
 
-                                final response = await getEthereumFromMemnomic(
-                                  mnemonic,
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['coinType'],
-                                );
+                                final response =
+                                    await EthereumCoin.fromJson(networkDetails)
+                                        .fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final userAddress =
                                     web3.EthereumAddress.fromHex(
-                                  response['eth_wallet_address'],
+                                  response['address'],
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
@@ -518,9 +518,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                     web3.EthereumAddress.fromHex(
                                         tokenSaleContractAddress));
                                 BigInt allowance = await getErc20Allowance(
-                                  owner: response['eth_wallet_address'],
-                                  rpc: getEVMBlockchains()[
-                                      tokenSaleContractNetwork]['rpc'],
+                                  owner: response['address'],
+                                  rpc: networkDetails['rpc'],
                                   contractAddress: busdAddress,
                                   spender: tokenSaleContractAddress,
                                 );
@@ -551,8 +550,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                         function: approveFunction,
                                         parameters: _parameters,
                                         nonce: nonce),
-                                    chainId: getEVMBlockchains()[
-                                        tokenSaleContractNetwork]['chainId'],
+                                    chainId: networkDetails['chainId'],
                                   );
                                   nonce++;
 
@@ -570,8 +568,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                     parameters: [amounToSwap],
                                     nonce: nonce,
                                   ),
-                                  chainId: getEVMBlockchains()[
-                                      tokenSaleContractNetwork]['chainId'],
+                                  chainId: networkDetails['chainId'],
                                 );
 
                                 transactionHash =
@@ -600,14 +597,13 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
                               await slideUpPanel(context,
                                   StatefulBuilder(builder: (ctx, setState) {
-                                String privateSaleBscScan = getEVMBlockchains()[
-                                            tokenSaleContractNetwork]
-                                        ['blockExplorer']
-                                    .toString()
-                                    .replaceFirst(
-                                      transactionhashTemplateKey,
-                                      transactionHash,
-                                    );
+                                String privateSaleBscScan =
+                                    networkDetails['blockExplorer']
+                                        .toString()
+                                        .replaceFirst(
+                                          transactionhashTemplateKey,
+                                          transactionHash,
+                                        );
 
                                 return Padding(
                                   padding: const EdgeInsets.all(20),
@@ -719,19 +715,16 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                               bool purchasedSuccessfully = true;
                               try {
                                 final client = web3.Web3Client(
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['rpc'],
+                                  networkDetails['rpc'],
                                   Client(),
                                 );
 
-                                final response = await getEthereumFromMemnomic(
-                                  mnemonic,
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['coinType'],
-                                );
+                                final response =
+                                    await EthereumCoin.fromJson(networkDetails)
+                                        .fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final tokenSaleContract = web3.DeployedContract(
@@ -750,8 +743,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                     function: tokenSale,
                                     parameters: [BigInt.from(1)],
                                   ),
-                                  chainId: getEVMBlockchains()[
-                                      tokenSaleContractNetwork]['chainId'],
+                                  chainId: networkDetails['chainId'],
                                 );
 
                                 transactionHash =
@@ -780,14 +772,13 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
 
                               await slideUpPanel(context,
                                   StatefulBuilder(builder: (ctx, setState) {
-                                String privateSaleBscScan = getEVMBlockchains()[
-                                            tokenSaleContractNetwork]
-                                        ['blockExplorer']
-                                    .toString()
-                                    .replaceFirst(
-                                      transactionhashTemplateKey,
-                                      transactionHash,
-                                    );
+                                String privateSaleBscScan =
+                                    networkDetails['blockExplorer']
+                                        .toString()
+                                        .replaceFirst(
+                                          transactionhashTemplateKey,
+                                          transactionHash,
+                                        );
 
                                 return Padding(
                                   padding: const EdgeInsets.all(20),

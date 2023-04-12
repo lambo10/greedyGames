@@ -5,13 +5,14 @@ abstract class Coin {
   Future<Map> fromMnemonic(String mnemonic);
   Future<double> getBalance(bool skipNetworkRequest);
   Future<String> transferToken(String amount, String to);
-  Map getTransactions();
+  Future<Map> getTransactions();
   int decimals();
   String name_();
   String symbol_();
   String blockExplorer_();
   String default__();
-  String address_();
+  Future<String> address_();
+
   String image_();
   String contractAddress() {
     return null;

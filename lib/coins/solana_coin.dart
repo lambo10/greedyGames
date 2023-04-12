@@ -17,15 +17,15 @@ const solanaDecimals = 9;
 
 class SolanaCoin extends Coin {
   SolanaClusters solanaCluster;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
   String image;
   String name;
- @override
-  String address_() {
-    return address;
+  @override
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -52,12 +52,12 @@ class SolanaCoin extends Coin {
   String symbol_() {
     return symbol;
   }
+
   SolanaCoin({
     this.blockExplorer,
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.solanaCluster,
   });
@@ -68,7 +68,6 @@ class SolanaCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -76,7 +75,6 @@ class SolanaCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
 
     data['solanaCluster'] = solanaCluster;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -129,6 +127,7 @@ class SolanaCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'solanaAddressBalance$address${solanaCluster.index}';
 
     final storedBalance = pref.get(key);
@@ -155,7 +154,8 @@ class SolanaCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -216,4 +216,38 @@ List getSolanaBlockChains() {
     });
   }
   return blockChains;
+}
+
+solana.SolanaClient getSolanaClient(SolanaClusters solanaClusterType) {
+  solanaClusterType ??= SolanaClusters.mainNet;
+
+  String solanaRpcUrl = '';
+  String solanaWebSocket = '';
+  switch (solanaClusterType) {
+    case SolanaClusters.mainNet:
+      solanaRpcUrl = 'https://solana-api.projectserum.com';
+      solanaWebSocket = 'wss://solana-api.projectserum.com';
+      break;
+    case SolanaClusters.devNet:
+      solanaRpcUrl = 'https://api.devnet.solana.com';
+      solanaWebSocket = 'wss://api.devnet.solana.com';
+      break;
+    case SolanaClusters.testNet:
+      solanaRpcUrl = 'https://api.testnet.solana.com';
+      solanaWebSocket = 'wss://api.testnet.solana.com';
+      break;
+    default:
+      throw Exception('unimplemented error');
+  }
+
+  return solana.SolanaClient(
+    rpcUrl: Uri.parse(solanaRpcUrl),
+    websocketUrl: Uri.parse(solanaWebSocket),
+  );
+}
+
+enum SolanaClusters {
+  mainNet,
+  devNet,
+  testNet,
 }

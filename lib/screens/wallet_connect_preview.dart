@@ -13,6 +13,7 @@ import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:intl/intl.dart';
 import 'package:wallet_connect/wallet_connect.dart';
 
+import '../coins/ethereum_coin.dart';
 import '../utils/rpc_urls.dart';
 
 class WalletConnectPreview extends StatefulWidget {
@@ -34,11 +35,10 @@ class _WalletConnectPreviewState extends State<WalletConnectPreview> {
     super.initState();
     icons = widget.data['remotePeerMeta']['icons'];
     trnDate = DateFormat("yyyy-MM-dd hh:mm:ss").parse(widget.data['date']);
-    List evmValues = getEVMBlockchains().values.toList();
-    List evmKeys = getEVMBlockchains().keys.toList();
+    List evmValues = getEVMBlockchains();
     for (int i = 0; i < evmValues.length; i++) {
       if (evmValues[i]['chainId'] == widget.data['chainId']) {
-        networkName = evmKeys[i];
+        networkName = evmValues[i]['name'];
         networkIcon = evmValues[i]['image'];
         break;
       }

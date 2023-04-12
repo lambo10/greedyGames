@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:base_x/base_x.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hash/hash.dart';
 import 'package:hex/hex.dart';
@@ -21,7 +22,7 @@ const xrpDecimals = 6;
 
 class XRPCoin extends Coin {
   String api;
-  String address;
+
   String blockExplorer;
   String symbol;
   String default_;
@@ -33,14 +34,12 @@ class XRPCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.api,
   });
+
   @override
-  String address_() {
-    return address;
-  }
+  Future<String> address_() async {}
 
   @override
   String blockExplorer_() {
@@ -73,15 +72,12 @@ class XRPCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['api'] = api;
-
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -146,6 +142,7 @@ class XRPCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'xrpAddressBalance$address$api';
 
     final storedBalance = pref.get(key);
@@ -193,7 +190,8 @@ class XRPCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -401,3 +399,6 @@ Future<bool> fundRippleTestnet(String address) async {
     return false;
   }
 }
+
+final xrpBaseCodec =
+    BaseXCodec('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');

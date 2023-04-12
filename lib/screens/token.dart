@@ -80,7 +80,7 @@ class _TokenState extends State<Token> {
       ) as Map;
 
       final Map cryptoMarket =
-          allCryptoPrice[coinGeckCryptoSymbolToID[widget.tokenData['symbol']]];
+          allCryptoPrice[coinGeckoID[widget.tokenData['symbol']]];
 
       final double price =
           (cryptoMarket[defaultCurrency.toLowerCase()] as num).toDouble();
@@ -205,7 +205,7 @@ class _TokenState extends State<Token> {
           widget.tokenData['coinType'],
         );
         final ethBalance = await getEthereumAddressBalance(
-          getEthereumDetails['eth_wallet_address'],
+          getEthereumDetails['address'],
           widget.tokenData['rpc'],
           coinType: widget.tokenData['coinType'],
           skipNetworkRequest: skipNetworkRequest,
@@ -286,7 +286,7 @@ class _TokenState extends State<Token> {
           mnemonic,
           widget.tokenData['coinType'],
         );
-        currentAddress = response['eth_wallet_address'].toString();
+        currentAddress = response['address'].toString();
       }
 
       rampName = rampSwap[widget.tokenData['symbol']];
@@ -703,7 +703,8 @@ class _TokenState extends State<Token> {
                                                   MaterialPageRoute(
                                                     builder: (ctx) =>
                                                         ReceiveToken(
-                                                      data: widget.tokenData,
+                                                      tokenData:
+                                                          widget.tokenData,
                                                       mnemonic: mnemonic,
                                                     ),
                                                   ),

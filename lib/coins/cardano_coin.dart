@@ -18,7 +18,6 @@ const cardanoDecimals = 6;
 class CardanoCoin extends Coin {
   String blockFrostKey;
   cardano.NetworkId cardano_network;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -30,7 +29,6 @@ class CardanoCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.blockFrostKey,
     this.cardano_network,
@@ -43,7 +41,6 @@ class CardanoCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -51,7 +48,6 @@ class CardanoCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['cardano_network'] = cardano_network;
     data['blockFrostKey'] = blockFrostKey;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -107,6 +103,7 @@ class CardanoCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'cardanoAddressBalance$address';
 
     final storedBalance = pref.get(key);
@@ -147,7 +144,8 @@ class CardanoCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -155,8 +153,9 @@ class CardanoCoin extends Coin {
   }
 
   @override
-  String address_() {
-    return address;
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override

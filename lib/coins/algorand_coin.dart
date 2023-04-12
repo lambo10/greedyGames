@@ -18,7 +18,6 @@ const algorandDecimals = 6;
 
 class AlgorandCoin extends Coin {
   AlgorandTypes algoType;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -30,7 +29,6 @@ class AlgorandCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.name,
     this.algoType,
   });
@@ -41,7 +39,7 @@ class AlgorandCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
+
     name = json['name'];
   }
 
@@ -49,7 +47,7 @@ class AlgorandCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
 
     data['algoType'] = algoType;
-    data['address'] = address;
+
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -106,6 +104,7 @@ class AlgorandCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'algorandAddressBalance$address${algoType.index}';
 
     final storedBalance = pref.get(key);
@@ -131,7 +130,8 @@ class AlgorandCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -172,8 +172,9 @@ class AlgorandCoin extends Coin {
   }
 
   @override
-  String address_() {
-    return address;
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -226,4 +227,38 @@ List getAlgorandBlockchains() {
     });
   }
   return blockChains;
+}
+
+enum AlgorandTypes {
+  mainNet,
+  testNet,
+}
+
+algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {
+  final _algodClient = algo_rand.AlgodClient(
+    apiUrl: type == AlgorandTypes.mainNet
+        ? algo_rand.PureStake.MAINNET_ALGOD_API_URL
+        : algo_rand.PureStake.TESTNET_ALGOD_API_URL,
+    apiKey: pureStakeApiKey,
+    tokenKey: algo_rand.PureStake.API_TOKEN_HEADER,
+  );
+
+  final _indexerClient = algo_rand.IndexerClient(
+    apiUrl: type == AlgorandTypes.mainNet
+        ? algo_rand.PureStake.MAINNET_INDEXER_API_URL
+        : algo_rand.PureStake.TESTNET_INDEXER_API_URL,
+    apiKey: pureStakeApiKey,
+    tokenKey: algo_rand.PureStake.API_TOKEN_HEADER,
+  );
+
+  final _kmdClient = algo_rand.KmdClient(
+    apiUrl: '127.0.0.1',
+    apiKey: pureStakeApiKey,
+  );
+
+  return algo_rand.Algorand(
+    algodClient: _algodClient,
+    indexerClient: _indexerClient,
+    kmdClient: _kmdClient,
+  );
 }

@@ -32,7 +32,6 @@ const fileCoinDecimals = 18;
 class FilecoinCoin extends Coin {
   String prefix;
   String baseUrl;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -44,13 +43,15 @@ class FilecoinCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.address,
     this.baseUrl,
     this.prefix,
     this.name,
-  }); @override
-  String address_() {
-    return address;
+  });
+  @override
+  @override
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -85,7 +86,6 @@ class FilecoinCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -93,7 +93,6 @@ class FilecoinCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['prefix'] = prefix;
     data['baseUrl'] = baseUrl;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -171,6 +170,7 @@ class FilecoinCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final key = 'fileCoinAddressBalance$address$baseUrl';
 
     final storedBalance = pref.get(key);
@@ -213,7 +213,8 @@ class FilecoinCoin extends Coin {
   }
 
   @override
-  Map getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address

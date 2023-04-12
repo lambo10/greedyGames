@@ -8,22 +8,19 @@ import 'package:cryptowallet/screens/user_added_tokens.dart';
 import 'package:cryptowallet/screens/add_custom_token.dart';
 import 'package:cryptowallet/screens/settings.dart';
 import 'package:cryptowallet/screens/token.dart';
-import 'package:cryptowallet/screens/wallet_connect.dart';
-import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_js/flutter_js.dart';
 
 import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:upgrader/upgrader.dart';
+import '../coins/ethereum_coin.dart';
 import '../utils/app_config.dart';
 import '../utils/get_blockchain_widget.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
@@ -78,8 +75,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
   @override
   bool get wantKeepAlive => true;
   StreamSubscription _intentDataStreamSubscription;
-  List<ValueNotifier<double>> cryptoBalanceListNotifiers =
-      <ValueNotifier<double>>[];
+  List<ValueNotifier<double>> cryptoNotifiers = <ValueNotifier<double>>[];
   ValueNotifier<double> walletNotifier = ValueNotifier(null);
 
   List<Widget> blockChainsArray = <Widget>[];
@@ -92,7 +88,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
     for (Timer cryptoTimer in cryptoBalancesTimer) {
       cryptoTimer?.cancel();
     }
-    for (ValueNotifier cryptoNotifier in cryptoBalanceListNotifiers) {
+    for (ValueNotifier cryptoNotifier in cryptoNotifiers) {
       cryptoNotifier?.dispose();
     }
     walletNotifier?.dispose();
@@ -126,15 +122,11 @@ class _WalletMainBodyState extends State<WalletMainBody>
   void initializeBlockchains() {
     blockChainsArray = <Widget>[];
 
-    final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-
-    for (String name in getBitCoinPOSBlockchains().keys) {
-      Map bitcoinBlockchain = Map.from(getBitCoinPOSBlockchains()[name])
-        ..addAll({'name': name});
-
+    final allBlockchains = getAllBlockchains();
+    for (int i = 0; i < allBlockchains.length; i++) {
       final notifier = ValueNotifier<double>(null);
 
-      cryptoBalanceListNotifiers.add(notifier);
+      cryptoNotifiers.add(notifier);
 
       blockChainsArray.addAll([
         InkWell(
@@ -142,39 +134,31 @@ class _WalletMainBodyState extends State<WalletMainBody>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (ctx) => Token(tokenData: bitcoinBlockchain),
+                  builder: (ctx) => Token(tokenData: allBlockchains[i]),
                 ),
               );
             },
             child: GetBlockChainWidget(
-              name_: name,
-              symbol_: bitcoinBlockchain['symbol'],
+              name_: allBlockchains[i].name_(),
+              symbol_: allBlockchains[i].symbol_(),
               hasPrice_: true,
-              image_: AssetImage(bitcoinBlockchain['image']),
+              image_: AssetImage(allBlockchains[i].image_()),
               cryptoAmount_: ValueListenableBuilder(
                 valueListenable: notifier,
                 builder: ((_, double value, Widget __) {
                   if (value == null) {
                     () async {
-                      final getBitcoinDetails = await getBitcoinFromMemnomic(
-                        mnemonic,
-                        bitcoinBlockchain,
-                      );
                       try {
-                        notifier.value = await getBitcoinAddressBalance(
-                          getBitcoinDetails['address'],
-                          bitcoinBlockchain['POSNetwork'],
-                          skipNetworkRequest: notifier.value == null,
+                        notifier.value = await allBlockchains[i].getBalance(
+                          notifier.value == null,
                         );
                       } catch (_) {}
 
                       cryptoBalancesTimer.add(
                         Timer.periodic(httpPollingDelay, (timer) async {
                           try {
-                            notifier.value = await getBitcoinAddressBalance(
-                              getBitcoinDetails['address'],
-                              bitcoinBlockchain['POSNetwork'],
-                              skipNetworkRequest: notifier.value == null,
+                            notifier.value = await allBlockchains[i].getBalance(
+                              notifier.value == null,
                             );
                           } catch (_) {}
                         }),
@@ -184,750 +168,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
                   }
 
                   return UserBalance(
-                    symbol: bitcoinBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getEVMBlockchains().keys) {
-      final Map evmBlockchain = Map.from(getEVMBlockchains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.add(
-        InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (ctx) => Token(
-                  tokenData: evmBlockchain,
-                ),
-              ),
-            );
-          },
-          child: GetBlockChainWidget(
-            name_: i,
-            symbol_: evmBlockchain['symbol'],
-            hasPrice_: true,
-            image_: AssetImage(
-              evmBlockchain['image'],
-            ),
-            cryptoAmount_: ValueListenableBuilder(
-              valueListenable: notifier,
-              builder: ((context, value, child) {
-                if (value == null) {
-                  () async {
-                    final getEthereumDetails = await getEthereumFromMemnomic(
-                      mnemonic,
-                      evmBlockchain['coinType'],
-                    );
-                    try {
-                      notifier.value = await getEthereumAddressBalance(
-                        getEthereumDetails['eth_wallet_address'],
-                        evmBlockchain['rpc'],
-                        coinType: evmBlockchain['coinType'],
-                        skipNetworkRequest: notifier.value == null,
-                      );
-                    } catch (_) {}
-
-                    cryptoBalancesTimer.add(
-                      Timer.periodic(httpPollingDelay, (timer) async {
-                        try {
-                          notifier.value = await getEthereumAddressBalance(
-                            getEthereumDetails['eth_wallet_address'],
-                            evmBlockchain['rpc'],
-                            coinType: evmBlockchain['coinType'],
-                            skipNetworkRequest: notifier.value == null,
-                          );
-                        } catch (_) {}
-                      }),
-                    );
-                  }();
-                  return Container();
-                }
-                return UserBalance(
-                  symbol: evmBlockchain['symbol'],
-                  balance: value,
-                );
-              }),
-            ),
-          ),
-        ),
-      );
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getSolanaBlockChains().keys) {
-      final Map solanaBlockchain = Map.from(getSolanaBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (ctx) => Token(
-                  tokenData: solanaBlockchain,
-                ),
-              ),
-            );
-          },
-          child: GetBlockChainWidget(
-            name_: i,
-            symbol_: solanaBlockchain['symbol'],
-            hasPrice_: true,
-            image_: AssetImage(solanaBlockchain['image']),
-            cryptoAmount_: ValueListenableBuilder(
-              valueListenable: notifier,
-              builder: ((context, value, child) {
-                if (value == null) {
-                  () async {
-                    final getSolanaDetails =
-                        await getSolanaFromMemnomic(mnemonic);
-                    try {
-                      notifier.value = await getSolanaAddressBalance(
-                        getSolanaDetails['address'],
-                        solanaBlockchain['solanaCluster'],
-                        skipNetworkRequest: notifier.value == null,
-                      );
-                    } catch (_) {}
-
-                    cryptoBalancesTimer.add(
-                      Timer.periodic(httpPollingDelay, (timer) async {
-                        try {
-                          notifier.value = await getSolanaAddressBalance(
-                            getSolanaDetails['address'],
-                            solanaBlockchain['solanaCluster'],
-                            skipNetworkRequest: notifier.value == null,
-                          );
-                        } catch (_) {}
-                      }),
-                    );
-                  }();
-                  return Container();
-                }
-                return UserBalance(
-                  symbol: solanaBlockchain['symbol'],
-                  balance: value,
-                );
-              }),
-            ),
-          ),
-        ),
-      ]);
-
-      blockChainsArray.add(const Divider());
-    }
-    for (String i in getStellarBlockChains().keys) {
-      final Map stellarBlockChain = Map.from(getStellarBlockChains()[i])
-        ..addAll({'name': i});
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: stellarBlockChain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: stellarBlockChain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                stellarBlockChain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getStellarDetails =
-                          await getStellarFromMemnomic(mnemonic);
-                      try {
-                        notifier.value = await getStellarAddressBalance(
-                          getStellarDetails['address'],
-                          stellarBlockChain['sdk'],
-                          stellarBlockChain['cluster'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getStellarAddressBalance(
-                              getStellarDetails['address'],
-                              stellarBlockChain['sdk'],
-                              stellarBlockChain['cluster'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: stellarBlockChain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getFilecoinBlockChains().keys) {
-      final Map filecoinBlockchain = Map.from(getFilecoinBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: filecoinBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: filecoinBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                filecoinBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getFilecoinDetails = await getFileCoinFromMemnomic(
-                        mnemonic,
-                        filecoinBlockchain['prefix'],
-                      );
-                      try {
-                        notifier.value = await getFileCoinAddressBalance(
-                          getFilecoinDetails['address'],
-                          baseUrl: filecoinBlockchain['baseUrl'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getFileCoinAddressBalance(
-                              getFilecoinDetails['address'],
-                              baseUrl: filecoinBlockchain['baseUrl'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: filecoinBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-
-      blockChainsArray.add(const Divider());
-    }
-    for (String i in getCosmosBlockChains().keys) {
-      final Map cosmosBlockchain = Map.from(getCosmosBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: cosmosBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: cosmosBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                cosmosBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getCosmosDetails = await getCosmosFromMemnomic(
-                        mnemonic,
-                        cosmosBlockchain['bech32Hrp'],
-                        cosmosBlockchain['lcdUrl'],
-                      );
-
-                      try {
-                        notifier.value = await getCosmosAddressBalance(
-                          getCosmosDetails['address'],
-                          cosmosBlockchain['lcdUrl'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getCosmosAddressBalance(
-                              getCosmosDetails['address'],
-                              cosmosBlockchain['lcdUrl'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: cosmosBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getAlgorandBlockchains().keys) {
-      final Map algorandBlockchain = Map.from(getAlgorandBlockchains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: algorandBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: algorandBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                algorandBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getAlgorandDetails =
-                          await getAlgorandFromMemnomic(mnemonic);
-                      try {
-                        notifier.value = await getAlgorandAddressBalance(
-                          getAlgorandDetails['address'],
-                          algorandBlockchain['algoType'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getAlgorandAddressBalance(
-                              getAlgorandDetails['address'],
-                              algorandBlockchain['algoType'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: algorandBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getNearBlockChains().keys) {
-      final Map nearBlockchains = Map.from(getNearBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: nearBlockchains,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: nearBlockchains['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                nearBlockchains['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getNearDetails =
-                          await getNearFromMemnomic(mnemonic);
-                      try {
-                        notifier.value = await getNearAddressBalance(
-                          getNearDetails['address'],
-                          nearBlockchains['api'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getNearAddressBalance(
-                              getNearDetails['address'],
-                              nearBlockchains['api'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: nearBlockchains['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getTronBlockchains().keys) {
-      final Map tronBlockchain = Map.from(getTronBlockchains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: tronBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: tronBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                tronBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getTronDetails =
-                          await getTronFromMemnomic(mnemonic);
-                      try {
-                        notifier.value = await getTronAddressBalance(
-                          getTronDetails['address'],
-                          tronBlockchain['api'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getTronAddressBalance(
-                              getTronDetails['address'],
-                              tronBlockchain['api'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: tronBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getCardanoBlockChains().keys) {
-      final Map cardanoBlockchain = Map.from(getCardanoBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: cardanoBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: cardanoBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                cardanoBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getCardanoDetails = await getCardanoFromMemnomic(
-                        mnemonic,
-                        cardanoBlockchain['cardano_network'],
-                      );
-                      try {
-                        notifier.value = await getCardanoAddressBalance(
-                          getCardanoDetails['address'],
-                          cardanoBlockchain['cardano_network'],
-                          cardanoBlockchain['blockFrostKey'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getCardanoAddressBalance(
-                              getCardanoDetails['address'],
-                              cardanoBlockchain['cardano_network'],
-                              cardanoBlockchain['blockFrostKey'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: cardanoBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String i in getXRPBlockChains().keys) {
-      final Map xrpBlockchain = Map.from(getXRPBlockChains()[i])
-        ..addAll({'name': i});
-
-      final notifier = ValueNotifier<double>(null);
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(
-                    tokenData: xrpBlockchain,
-                  ),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: i,
-              symbol_: xrpBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(
-                xrpBlockchain['image'],
-              ),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((context, value, child) {
-                  if (value == null) {
-                    () async {
-                      final getXRPDetails = await getXRPFromMemnomic(mnemonic);
-
-                      try {
-                        notifier.value = await getXRPAddressBalance(
-                          getXRPDetails['address'],
-                          xrpBlockchain['ws'],
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getXRPAddressBalance(
-                              getXRPDetails['address'],
-                              xrpBlockchain['ws'],
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-                  return UserBalance(
-                    symbol: xrpBlockchain['symbol'],
-                    balance: value,
-                  );
-                }),
-              ),
-            )),
-      ]);
-      blockChainsArray.add(const Divider());
-    }
-
-    for (String name in getTezosBlockchains().keys) {
-      Map tezorBlockchain = Map.from(getTezosBlockchains()[name])
-        ..addAll({'name': name});
-
-      final notifier = ValueNotifier<double>(null);
-
-      cryptoBalanceListNotifiers.add(notifier);
-
-      blockChainsArray.addAll([
-        InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => Token(tokenData: tezorBlockchain),
-                ),
-              );
-            },
-            child: GetBlockChainWidget(
-              name_: name,
-              symbol_: tezorBlockchain['symbol'],
-              hasPrice_: true,
-              image_: AssetImage(tezorBlockchain['image']),
-              cryptoAmount_: ValueListenableBuilder(
-                valueListenable: notifier,
-                builder: ((_, double value, Widget __) {
-                  if (value == null) {
-                    () async {
-                      final getBitcoinDetails = await getTezorFromMemnomic(
-                        mnemonic,
-                        tezorBlockchain,
-                      );
-                      try {
-                        notifier.value = await getTezorAddressBalance(
-                          getBitcoinDetails['address'],
-                          tezorBlockchain,
-                          skipNetworkRequest: notifier.value == null,
-                        );
-                      } catch (_) {}
-
-                      cryptoBalancesTimer.add(
-                        Timer.periodic(httpPollingDelay, (timer) async {
-                          try {
-                            notifier.value = await getTezorAddressBalance(
-                              getBitcoinDetails['address'],
-                              tezorBlockchain,
-                              skipNetworkRequest: notifier.value == null,
-                            );
-                          } catch (_) {}
-                        }),
-                      );
-                    }();
-                    return Container();
-                  }
-
-                  return UserBalance(
-                    symbol: tezorBlockchain['symbol'],
+                    symbol: allBlockchains[i].symbol_(),
                     balance: value,
                   );
                 }),
@@ -1171,9 +412,10 @@ class _WalletMainBodyState extends State<WalletMainBody>
     final pref = Hive.box(secureStorageKey);
     Map appTokenDetails = {};
     const appTokenKey = 'appTokenDetails';
-
+    final evmBlockchain = getEVMBlockchains().firstWhere(
+      (element) => element['name'] == tokenContractNetwork,
+    );
     if (pref.get(appTokenKey) == null) {
-      final Map evmBlockchain = getEVMBlockchains()[tokenContractNetwork];
       final Map erc20AppTokenDetails = await getERC20TokenNameSymbolDecimal(
         contractAddress: tokenContractAddress,
         rpc: evmBlockchain['rpc'],

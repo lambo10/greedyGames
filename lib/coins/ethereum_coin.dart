@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:convert';
 import 'dart:math';
 
@@ -19,7 +21,6 @@ class EthereumCoin extends Coin {
   int coinType;
   int chainId;
   String rpcUrl;
-  String address;
   String blockExplorer;
   String symbol;
   String default_;
@@ -32,14 +33,14 @@ class EthereumCoin extends Coin {
     this.default_,
     this.image,
     this.coinType,
-    this.address,
     this.rpcUrl,
     this.chainId,
     this.name,
   });
- @override
-  String address_() {
-    return address;
+  @override
+  Future<String> address_() async {
+    final details = await fromMnemonic(pref.get(currentMmenomicKey));
+    return details['address'];
   }
 
   @override
@@ -66,6 +67,7 @@ class EthereumCoin extends Coin {
   String symbol_() {
     return symbol;
   }
+
   EthereumCoin.fromJson(Map<String, dynamic> json) {
     chainId = json['chainId'];
     rpcUrl = json['rpcUrl'];
@@ -74,7 +76,6 @@ class EthereumCoin extends Coin {
     default_ = json['default'];
     symbol = json['symbol'];
     image = json['image'];
-    address = json['address'];
     name = json['name'];
   }
 
@@ -82,7 +83,6 @@ class EthereumCoin extends Coin {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['chainId'] = chainId;
     data['rpcUrl'] = rpcUrl;
-    data['address'] = address;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -118,8 +118,8 @@ class EthereumCoin extends Coin {
     final address = await etherPrivateKeyToAddress(privatekeyStr);
 
     final keys = {
-      'eth_wallet_address': address,
-      'eth_wallet_privateKey': privatekeyStr,
+      'address': address,
+      'privateKey': privatekeyStr,
       mnemonicKey: mnemonic
     };
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
@@ -140,6 +140,7 @@ class EthereumCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    final address = await address_();
     final tokenKey = '$rpcUrl$address/balance';
     final storedBalance = pref.get(tokenKey);
 
@@ -166,7 +167,8 @@ class EthereumCoin extends Coin {
   }
 
   @override
-  getTransactions() {
+  Future<Map> getTransactions() async {
+    final address = await address_();
     return {
       'trx': jsonDecode(pref.get('$default_ Details')),
       'currentUser': address
@@ -183,7 +185,7 @@ class EthereumCoin extends Coin {
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
 
     final credentials = EthPrivateKey.fromHex(
-      response['eth_wallet_privateKey'],
+      response['privateKey'],
     );
     final gasPrice = await client.getGasPrice();
 
@@ -192,7 +194,7 @@ class EthereumCoin extends Coin {
     final trans = await client.signTransaction(
       credentials,
       Transaction(
-        from: EthereumAddress.fromHex(response['eth_wallet_address']),
+        from: EthereumAddress.fromHex(response['address']),
         to: EthereumAddress.fromHex(to),
         value: EtherAmount.inWei(
           BigInt.from(wei),
@@ -216,12 +218,12 @@ class EthereumCoin extends Coin {
   }
 }
 
-List getEVMBlockchains() {
+List<Map> getEVMBlockchains() {
   Map userAddedEVM = {};
   if (pref.get(newEVMChainKey) != null) {
     userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
   }
-  List blockChains = [
+  List<Map> blockChains = [
     {
       "rpc": 'https://mainnet.infura.io/v3/$infuraApiKey',
       'chainId': 1,

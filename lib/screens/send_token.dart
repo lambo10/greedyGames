@@ -57,7 +57,7 @@ class _SendTokenState extends State<SendToken> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
-            '${AppLocalizations.of(context).send} ${widget.tokenData['contractAddress'] != null ? ellipsify(str: symbol) : symbol}'),
+            '${AppLocalizations.of(context).send} ${widget.tokenData.contractAddress() != null ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()}'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -101,7 +101,7 @@ class _SendTokenState extends State<SendToken> {
                             }
 
                             try {
-                              if (widget.tokenData['contractAddress'] != null) {
+                              if (widget.tokenData.contractAddress() != null) {
                                 Map data = EIP681.parse(recipientAddr);
 
                                 recipientAddressController.text =
@@ -128,7 +128,7 @@ class _SendTokenState extends State<SendToken> {
                                 MaterialPageRoute(
                                   builder: (ctx) => Contact(
                                     showAdd: false,
-                                    sendName: widget.tokenData['name'],
+                                    sendName: widget.tokenData.name_(),
                                   ),
                                 ),
                               );
