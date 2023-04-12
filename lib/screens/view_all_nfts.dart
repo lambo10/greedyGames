@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
 
 class ViewAllNFTs extends StatefulWidget {
@@ -462,27 +463,33 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
                                       ),
                                       onPressed: () async {
                                         try {
-                                          //FIXME:
-                                          // await Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder: (ctx) => SendToken(
-                                          //       tokenData: {
-                                          //         'name': name,
-                                          //         'symbol': symbol,
-                                          //         'isNFT': true,
-                                          //         'tokenId': tokenId,
-                                          //         'contractAddress':
-                                          //             contractAddress,
-                                          //         'network': networkName,
-                                          //         'rpc': rpc,
-                                          //         'chainId': chainId,
-                                          //         'coinType': coinType,
-                                          //         'tokenType': tokenType,
-                                          //       },
-                                          //     ),
-                                          //   ),
-                                          // );
+                                          FIXME:
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (ctx) => SendToken(
+                                                tokenData:
+                                                    EthContractCoin.fromJson(
+                                                  {
+                                                    'name': name,
+                                                    'symbol': symbol,
+                                                    'tokenId': tokenId,
+                                                    'contractAddress':
+                                                        contractAddress,
+                                                    'network': networkName,
+                                                    'rpc': rpc,
+                                                    'chainId': chainId,
+                                                    'coinType': coinType,
+                                                    'noPrice': true,
+                                                    'tokenType': tokenType ==
+                                                            'ERC1155'
+                                                        ? EthTokenType.ERC1155
+                                                        : EthTokenType.ERC721,
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          );
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(

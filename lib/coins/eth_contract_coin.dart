@@ -21,8 +21,6 @@ enum EthTokenType {
 class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
   String tokenId;
-
-  bool isContract = true;
   String contractAddress_;
   String network;
   List parameters_;
@@ -49,7 +47,6 @@ class EthContractCoin extends EthereumCoin {
     String name,
     this.tokenType,
     this.tokenId,
-    this.isContract,
     this.contractAddress_,
     this.network,
   }) : super(
@@ -92,7 +89,6 @@ class EthContractCoin extends EthereumCoin {
       name: json['name'],
       tokenType: json['tokenType'],
       tokenId: json['tokenId'],
-      isContract: json['isContract'],
       contractAddress_: json['contractAddress'],
       network: json['network'],
     );
@@ -111,7 +107,6 @@ class EthContractCoin extends EthereumCoin {
     data['image'] = image;
     data['tokenType'] = tokenType;
     data['tokenId'] = tokenId;
-    data['isContract'] = isContract;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;
 
