@@ -31,7 +31,7 @@ const bitCoinDecimals = 8;
 
 class BitcoinCoin extends Coin {
   NetworkType POSNetwork;
-  bool P2WPKHType;
+  bool P2WPKH;
   String derivationPath;
   String blockExplorer;
   String symbol;
@@ -44,7 +44,7 @@ class BitcoinCoin extends Coin {
     this.symbol,
     this.default_,
     this.image,
-    this.P2WPKHType,
+    this.P2WPKH,
     this.derivationPath,
     this.POSNetwork,
     this.name,
@@ -54,7 +54,7 @@ class BitcoinCoin extends Coin {
     return BitcoinCoin(
       POSNetwork: json['POSNetwork'],
       derivationPath: json['derivationPath'],
-      P2WPKHType: json['P2WPKH'],
+      P2WPKH: json['P2WPKH'],
       blockExplorer: json['blockExplorer'],
       default_: json['default'],
       symbol: json['symbol'],
@@ -66,7 +66,7 @@ class BitcoinCoin extends Coin {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['POSNetwork'] = POSNetwork;
-    data['P2WPKH'] = P2WPKHType;
+    data['P2WPKH'] = P2WPKH;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
