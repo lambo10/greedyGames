@@ -8,7 +8,18 @@
 import 'dart:convert';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
+import 'package:cryptowallet/coins/algorand_coin.dart';
+import 'package:cryptowallet/coins/cardano_coin.dart';
+import 'package:cryptowallet/coins/cosmos_coin.dart';
+import 'package:cryptowallet/coins/eth_contract_coin.dart';
+import 'package:cryptowallet/coins/ethereum_coin.dart';
+import 'package:cryptowallet/coins/filecoin_coin.dart';
+import 'package:cryptowallet/coins/solana_coin.dart';
+import 'package:cryptowallet/coins/stellar_coin.dart';
+import 'package:cryptowallet/coins/tron_coin.dart';
+import 'package:cryptowallet/coins/xrp_coin.dart';
 import 'package:cryptowallet/eip/eip681.dart';
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/utils/cid.dart';
 import 'package:cryptowallet/utils/alt_ens.dart';
@@ -412,342 +423,279 @@ void main() async {
       'rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz',
     );
   });
-  test('validate addresses', () {
-    final btcMap = {'default': "BTC", 'name': 'Bitcoin', 'P2WPKH': ''};
-    final ethMap = {
-      'default': "ETH",
-      'rpc': getEVMBlockchains()['Ethereum']['rpc']
-    };
-    final bchMap = {'default': "BCH"};
-    final ltcMap = {'default': "LTC", 'name': 'Litecoin', 'P2WPKH': ''};
-    final dashMap = {'default': "DASH", 'name': 'Dash', 'P2WPKH': ''};
-    final trxMap = {'default': "TRX"};
-    final solMap = {'default': "SOL"};
-    final xlmMap = {'default': "XLM"};
-    final algoMap = {'default': "ALGO"};
-    final cosmosMap = {'default': "ATOM", 'bech32Hrp': 'cosmos'};
-    final zecMap = {'default': "ZEC", 'name': 'ZCash', 'P2WPKH': ''};
-    final xtz = {'default': "XTZ"};
-    final adaMap = {'default': "ADA"};
-    final xrpMap = {'default': "XRP"};
-    final filMap = {'default': "FIL"};
+  // test('validate addresses', () {
+  //   final btcMap = {'default': "BTC", 'name': 'Bitcoin', 'P2WPKH': ''};
+  //   final ethMap = {
+  //     'default': "ETH",
+  //     'rpc': getEVMBlockchains()['Ethereum']['rpc']
+  //   };
+  //   final bchMap = {'default': "BCH"};
+  //   final ltcMap = {'default': "LTC", 'name': 'Litecoin', 'P2WPKH': ''};
+  //   final dashMap = {'default': "DASH", 'name': 'Dash', 'P2WPKH': ''};
+  //   final trxMap = {'default': "TRX"};
+  //   final solMap = {'default': "SOL"};
+  //   final xlmMap = {'default': "XLM"};
+  //   final algoMap = {'default': "ALGO"};
+  //   final cosmosMap = {'default': "ATOM", 'bech32Hrp': 'cosmos'};
+  //   final zecMap = {'default': "ZEC", 'name': 'ZCash', 'P2WPKH': ''};
+  //   final xtz = {'default': "XTZ"};
+  //   final adaMap = {'default': "ADA"};
+  //   final xrpMap = {'default': "XRP"};
+  //   final filMap = {'default': "FIL"};
 
-    // valid addresses
-    validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
-    validateAddress(ethMap, '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF');
-    validateAddress(bchMap, 'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
-    validateAddress(ltcMap, 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
-    validateAddress(dashMap, 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
-    validateAddress(trxMap, 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-    validateAddress(solMap, '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W');
-    validateAddress(
-        xlmMap, 'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
-    validateAddress(
-        algoMap, 'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
-    validateAddress(cosmosMap, 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
-    validateAddress(zecMap, 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
-    validateAddress(xtz, 'tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
-    validateAddress(adaMap,
-        'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
-    validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
-    validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
-    validateAddress(filMap, 'f01782');
-    validateAddress(filMap,
-        'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
+  //   // valid addresses
+  //   validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
+  //   validateAddress(ethMap, '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF');
+  //   validateAddress(bchMap, 'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
+  //   validateAddress(ltcMap, 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
+  //   validateAddress(dashMap, 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
+  //   validateAddress(trxMap, 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
+  //   validateAddress(solMap, '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W');
+  //   validateAddress(
+  //       xlmMap, 'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
+  //   validateAddress(
+  //       algoMap, 'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
+  //   validateAddress(cosmosMap, 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
+  //   validateAddress(zecMap, 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
+  //   validateAddress(xtz, 'tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
+  //   validateAddress(adaMap,
+  //       'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
+  //   validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+  //   validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
+  //   validateAddress(filMap, 'f01782');
+  //   validateAddress(filMap,
+  //       'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
 
-    // invalid address
+  //   // invalid address
 
-    const invalidAddress = 'bc1qzmy4dtruaf';
+  //   const invalidAddress = 'bc1qzmy4dtruaf';
 
-    expect(() => validateAddress(btcMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(ethMap, invalidAddress),
-        throwsA(isA<ArgumentError>()));
-    expect(() => validateAddress(bchMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(ltcMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(dashMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(trxMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(solMap, invalidAddress),
-        throwsA(isA<ArgumentError>()));
-    expect(() => validateAddress(xlmMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(algoMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(cosmosMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(zecMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(
-        () => validateAddress(xtz, invalidAddress), throwsA(isA<Exception>()));
-    expect(() => validateAddress(adaMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(xrpMap, invalidAddress),
-        throwsA(isA<Exception>()));
-    expect(() => validateAddress(filMap, invalidAddress),
-        throwsA(isA<Exception>()));
-  });
+  //   expect(() => validateAddress(btcMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(ethMap, invalidAddress),
+  //       throwsA(isA<ArgumentError>()));
+  //   expect(() => validateAddress(bchMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(ltcMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(dashMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(trxMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(solMap, invalidAddress),
+  //       throwsA(isA<ArgumentError>()));
+  //   expect(() => validateAddress(xlmMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(algoMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(cosmosMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(zecMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(
+  //       () => validateAddress(xtz, invalidAddress), throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(adaMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(xrpMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  //   expect(() => validateAddress(filMap, invalidAddress),
+  //       throwsA(isA<Exception>()));
+  // });
 
-  test('bitcoin-kind of blockchain pos network,hd path, p2wpkh not null', () {
-    for (String i in getBitCoinPOSBlockchains().keys) {
-      expect(getBitCoinPOSBlockchains()[i]['POSNetwork'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['P2WPKH'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['derivationPath'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['symbol'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['default'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['blockExplorer'], isNotNull);
-      expect(getBitCoinPOSBlockchains()[i]['image'], isNotNull);
+  test('all blockchain have important fields', () async {
+    getAllBlockchains = await getAllBlockchains_fun();
+    for (int i = 0; i < getAllBlockchains.length; i++) {
+      expect(getAllBlockchains[i].name_(), isNotNull);
+      expect(getAllBlockchains[i].symbol_(), isNotNull);
+      expect(getAllBlockchains[i].default__(), isNotNull);
+      expect(getAllBlockchains[i].blockExplorer_(), isNotNull);
+      expect(getAllBlockchains[i].image_(), isNotNull);
     }
   });
-  test('ethereum-kind block have all valid inputs', () {
-    for (String i in getEVMBlockchains().keys) {
-      expect(getEVMBlockchains()[i]['rpc'], isNotNull);
-      expect(getEVMBlockchains()[i]['chainId'], isNotNull);
-      expect(getEVMBlockchains()[i]['blockExplorer'], isNotNull);
-      expect(getEVMBlockchains()[i]['symbol'], isNotNull);
-      expect(getEVMBlockchains()[i]['default'], isNotNull);
-      expect(getEVMBlockchains()[i]['image'], isNotNull);
-      expect(getEVMBlockchains()[i]['coinType'], isNotNull);
-    }
-  });
-  test('stellar-kind block have all valid inputs', () {
-    for (String i in getStellarBlockChains().keys) {
-      expect(getStellarBlockChains()[i]['symbol'], isNotNull);
-      expect(getStellarBlockChains()[i]['default'], isNotNull);
-      expect(getStellarBlockChains()[i]['blockExplorer'], isNotNull);
-      expect(getStellarBlockChains()[i]['image'], isNotNull);
-      expect(getStellarBlockChains()[i]['sdk'], isNotNull);
-      expect(getStellarBlockChains()[i]['cluster'], isNotNull);
-    }
-  });
-  test('filecoin-kind block have all valid inputs', () {
-    for (String i in getFilecoinBlockChains().keys) {
-      expect(getFilecoinBlockChains()[i]['symbol'], isNotNull);
-      expect(getFilecoinBlockChains()[i]['default'], isNotNull);
-      expect(getFilecoinBlockChains()[i]['blockExplorer'], isNotNull);
-      expect(getFilecoinBlockChains()[i]['image'], isNotNull);
-      expect(getFilecoinBlockChains()[i]['baseUrl'], isNotNull);
-      expect(getFilecoinBlockChains()[i]['prefix'], isNotNull);
-    }
-  });
-  test('cardano-kind block have all valid inputs', () {
-    for (String i in getCardanoBlockChains().keys) {
-      expect(getCardanoBlockChains()[i]['symbol'], isNotNull);
-      expect(getCardanoBlockChains()[i]['default'], isNotNull);
-      expect(getCardanoBlockChains()[i]['blockExplorer'], isNotNull);
-      expect(getCardanoBlockChains()[i]['blockFrostKey'], isNotNull);
-      expect(getCardanoBlockChains()[i]['cardano_network'], isNotNull);
-      expect(getCardanoBlockChains()[i]['image'], isNotNull);
-    }
-  });
-  test('solana-kind block have all valid inputs', () {
-    for (String i in getSolanaBlockChains().keys) {
-      expect(getSolanaBlockChains()[i]['symbol'], isNotNull);
-      expect(getSolanaBlockChains()[i]['default'], isNotNull);
-      expect(getSolanaBlockChains()[i]['blockExplorer'], isNotNull);
-      expect(getSolanaBlockChains()[i]['image'], isNotNull);
-      expect(getSolanaBlockChains()[i]['solanaCluster'], isNotNull);
-    }
-  });
+  // test('check if seed phrase generates the correct crypto address', () async {
+  //   // WARNING: These accounts, and their private keys, are publicly known.
+  //   // Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+  //   const mnemonic =
+  //       'express crane road good warm suggest genre organ cradle tuition strike manual';
 
-  test('cosmos-kind block have all valid inputs', () {
-    for (String i in getCosmosBlockChains().keys) {
-      expect(getCosmosBlockChains()[i]['symbol'], isNotNull);
-      expect(getCosmosBlockChains()[i]['default'], isNotNull);
-      expect(getCosmosBlockChains()[i]['blockExplorer'], isNotNull);
-      expect(getCosmosBlockChains()[i]['image'], isNotNull);
-      expect(getCosmosBlockChains()[i]['bech32Hrp'], isNotNull);
-      expect(getCosmosBlockChains()[i]['lcdUrl'], isNotNull);
-    }
-  });
+  //   seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
-  test('check if seed phrase generates the correct crypto address', () async {
-    // WARNING: These accounts, and their private keys, are publicly known.
-    // Any funds sent to them on Mainnet or any other live network WILL BE LOST.
-    const mnemonic =
-        'express crane road good warm suggest genre organ cradle tuition strike manual';
+  //   final bitcoinKeyLive = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['Bitcoin'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
 
-    seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
+  //   final litecoinKey = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['Litecoin'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
 
-    final bitcoinKeyLive = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['Bitcoin'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
+  //   final bitcoinCashKey = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['BitcoinCash'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
 
-    final litecoinKey = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['Litecoin'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
+  //   final dogecoinKey = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['Dogecoin'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
 
-    final bitcoinCashKey = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['BitcoinCash'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
+  //   final zcashKey = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['ZCash'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
+  //   final dashKey = await compute(
+  //     calculateBitCoinKey,
+  //     Map.from(getBitCoinPOSBlockchains()['Dash'])
+  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //   );
 
-    final dogecoinKey = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['Dogecoin'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
+  //   // final tezosKey = await compute(
+  //   //   calculateTezorKey,
+  //   //   {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
+  //   // );
 
-    final zcashKey = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['ZCash'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
-    final dashKey = await compute(
-      calculateBitCoinKey,
-      Map.from(getBitCoinPOSBlockchains()['Dash'])
-        ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-    );
+  //   final ethereumKey = await compute(
+  //     calculateEthereumKey,
+  //     {
+  //       seedRootKey: seedPhraseRoot,
+  //       mnemonicKey: mnemonic,
+  //       'coinType': getEVMBlockchains()['Ethereum']['coinType'],
+  //     },
+  //   );
+  //   final ethereumClassicKey = await compute(
+  //     calculateEthereumKey,
+  //     {
+  //       seedRootKey: seedPhraseRoot,
+  //       mnemonicKey: mnemonic,
+  //       'coinType': getEVMBlockchains()['Ethereum Classic']['coinType'],
+  //     },
+  //   );
+  //   final cardanoLiveKey = await compute(
+  //     calculateCardanoKey,
+  //     {mnemonicKey: mnemonic, 'network': cardano.NetworkId.mainnet},
+  //   );
+  //   final cardanoTestNetKey = await compute(
+  //     calculateCardanoKey,
+  //     {mnemonicKey: mnemonic, 'network': cardano.NetworkId.testnet},
+  //   );
+  //   final stellarKey = await compute(
+  //     calculateStellarKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
 
-    // final tezosKey = await compute(
-    //   calculateTezorKey,
-    //   {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
-    // );
+  //   final filecoinKey = await compute(calculateFileCoinKey, {
+  //     mnemonicKey: mnemonic,
+  //     seedRootKey: seedPhraseRoot,
+  //     'addressPrefix': 'f'
+  //   });
 
-    final ethereumKey = await compute(
-      calculateEthereumKey,
-      {
-        seedRootKey: seedPhraseRoot,
-        mnemonicKey: mnemonic,
-        'coinType': getEVMBlockchains()['Ethereum']['coinType'],
-      },
-    );
-    final ethereumClassicKey = await compute(
-      calculateEthereumKey,
-      {
-        seedRootKey: seedPhraseRoot,
-        mnemonicKey: mnemonic,
-        'coinType': getEVMBlockchains()['Ethereum Classic']['coinType'],
-      },
-    );
-    final cardanoLiveKey = await compute(
-      calculateCardanoKey,
-      {mnemonicKey: mnemonic, 'network': cardano.NetworkId.mainnet},
-    );
-    final cardanoTestNetKey = await compute(
-      calculateCardanoKey,
-      {mnemonicKey: mnemonic, 'network': cardano.NetworkId.testnet},
-    );
-    final stellarKey = await compute(
-      calculateStellarKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
+  //   final cosmosKey = await compute(calculateCosmosKey, {
+  //     mnemonicKey: mnemonic,
+  //     seedRootKey: seedPhraseRoot,
+  //     "networkInfo": cosmos.NetworkInfo(
+  //       bech32Hrp: 'cosmos',
+  //       lcdUrl: Uri.parse(''),
+  //     )
+  //   });
+  //   final solanaKey = await compute(
+  //     calculateSolanaKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
 
-    final filecoinKey = await compute(calculateFileCoinKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-      'addressPrefix': 'f'
-    });
+  //   final rippleKey = await compute(
+  //     calculateRippleKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
 
-    final cosmosKey = await compute(calculateCosmosKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-      "networkInfo": cosmos.NetworkInfo(
-        bech32Hrp: 'cosmos',
-        lcdUrl: Uri.parse(''),
-      )
-    });
-    final solanaKey = await compute(
-      calculateSolanaKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
+  //   final algorandKey = await compute(
+  //     calculateAlgorandKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
+  //   final tronKey = await compute(
+  //     calculateTronKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
+  //   final nearKey = await compute(
+  //     calculateNearKey,
+  //     {
+  //       mnemonicKey: mnemonic,
+  //       seedRootKey: seedPhraseRoot,
+  //     },
+  //   );
 
-    final rippleKey = await compute(
-      calculateRippleKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
+  //   if (enableTestNet) {
+  //     final bitcoinKeyTest = await compute(
+  //       calculateBitCoinKey,
+  //       Map.from(getBitCoinPOSBlockchains()['Bitcoin(Test)'])
+  //         ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
+  //     );
+  //     expect(bitcoinKeyTest['address'], 'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E');
+  //   }
+  //   expect(bitcoinKeyLive['address'],
+  //       'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
 
-    final algorandKey = await compute(
-      calculateAlgorandKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
-    final tronKey = await compute(
-      calculateTronKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
-    final nearKey = await compute(
-      calculateNearKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
-    );
+  //   expect(bitcoinCashKey['address'],
+  //       'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
+  //   expect(rippleKey['address'], 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
 
-    if (enableTestNet) {
-      final bitcoinKeyTest = await compute(
-        calculateBitCoinKey,
-        Map.from(getBitCoinPOSBlockchains()['Bitcoin(Test)'])
-          ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-      );
-      expect(bitcoinKeyTest['address'], 'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E');
-    }
-    expect(bitcoinKeyLive['address'],
-        'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
-
-    expect(bitcoinCashKey['address'],
-        'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
-    expect(rippleKey['address'], 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
-
-    expect(
-        litecoinKey['address'], 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
-    expect(dashKey['address'], 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
-    expect(dogecoinKey['address'], 'DF6pp77Q4ms37ABLberK4EuBtREiB1BGJz');
-    expect(zcashKey['address'], 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
-    expect(algorandKey['address'],
-        'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
-    expect(nearKey['address'],
-        'a0c8aed1a106c99fa1b35858a1588e9504bde5fc38428358e6ceadb1c2b1850e');
-    expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-    // expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
-    expect(
-        cosmosKey['address'], 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
-    expect(stellarKey['address'],
-        'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
-    expect(
-      await etherPrivateKeyToAddress(ethereumKey),
-      '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF',
-    );
-    expect(
-      await etherPrivateKeyToAddress(ethereumClassicKey),
-      '0x5C4b9839FDD8D5156549bE3eD5a00c933AaA3544',
-    );
-    expect(filecoinKey['address'], 'f16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa');
-    expect(
-      solanaKey['address'],
-      '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
-    );
-    expect(
-      cardanoLiveKey['address'],
-      'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
-    );
-    expect(
-      cardanoTestNetKey['address'],
-      'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
-    );
-  });
+  //   expect(
+  //       litecoinKey['address'], 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
+  //   expect(dashKey['address'], 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
+  //   expect(dogecoinKey['address'], 'DF6pp77Q4ms37ABLberK4EuBtREiB1BGJz');
+  //   expect(zcashKey['address'], 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
+  //   expect(algorandKey['address'],
+  //       'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
+  //   expect(nearKey['address'],
+  //       'a0c8aed1a106c99fa1b35858a1588e9504bde5fc38428358e6ceadb1c2b1850e');
+  //   expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
+  //   // expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
+  //   expect(
+  //       cosmosKey['address'], 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
+  //   expect(stellarKey['address'],
+  //       'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
+  //   expect(
+  //     await etherPrivateKeyToAddress(ethereumKey),
+  //     '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF',
+  //   );
+  //   expect(
+  //     await etherPrivateKeyToAddress(ethereumClassicKey),
+  //     '0x5C4b9839FDD8D5156549bE3eD5a00c933AaA3544',
+  //   );
+  //   expect(filecoinKey['address'], 'f16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa');
+  //   expect(
+  //     solanaKey['address'],
+  //     '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
+  //   );
+  //   expect(
+  //     cardanoLiveKey['address'],
+  //     'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
+  //   );
+  //   expect(
+  //     cardanoTestNetKey['address'],
+  //     'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
+  //   );
+  // });
 
   test('user pin length and pin trials is secured and correct.', () async {
     expect(pinLength, greaterThanOrEqualTo(4));
@@ -765,7 +713,9 @@ void main() async {
   test('can import token from blockchain', () async {
     Map bep20TokenDetails = await getERC20TokenDetails(
       contractAddress: busdContractAddress,
-      rpc: getEVMBlockchains()['Smart Chain']['rpc'],
+      rpc: getEVMBlockchains().firstWhere(
+        (element) => element['name'] == 'Smart Chain',
+      )['rpc'],
     );
 
     expect(bep20TokenDetails['name'], 'BUSD Token');

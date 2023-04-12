@@ -130,12 +130,6 @@ class EthereumCoin extends Coin {
     return keys;
   }
 
-  Future<String> etherPrivateKeyToAddress(String privateKey) async {
-    EthPrivateKey ethereumPrivateKey = EthPrivateKey.fromHex(privateKey);
-    final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
-    return EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
-  }
-
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final address = await address_();
@@ -551,4 +545,10 @@ Future<double> getEtherTransactionFee(
 String calculateEthereumKey(Map config) {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
   return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
+}
+
+Future<String> etherPrivateKeyToAddress(String privateKey) async {
+  EthPrivateKey ethereumPrivateKey = EthPrivateKey.fromHex(privateKey);
+  final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
+  return EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
 }

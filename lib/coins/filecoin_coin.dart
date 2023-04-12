@@ -307,51 +307,6 @@ class FilecoinCoin extends Coin {
     return blake2bHash(data, digestSize: 4);
   }
 
-  String transactionSignLotus(Map msg, String privateKeyHex) {
-    final to = addressAsBytes(msg['To']);
-    final from = addressAsBytes(msg['From']);
-    final value = serializeBigNum(msg['Value']);
-    final gasfeecap = serializeBigNum(msg['GasFeeCap']);
-    final gaspremium = serializeBigNum(msg['GasPremium']);
-    final gaslimit = msg['GasLimit'];
-    int method = msg['Method'];
-    final params = msg['Params'];
-    int nonce = msg['Nonce'];
-    int version = msg['Version'];
-
-    final messageToEncode = [
-      version ?? 0,
-      to,
-      from,
-      nonce ?? 0,
-      value,
-      gaslimit,
-      gasfeecap,
-      gaspremium,
-      method ?? 0,
-      base64.decode(params ?? '')
-    ];
-    cbor.init();
-    final output = cbor.OutputStandard();
-    final encoder = cbor.Encoder(output);
-    output.clear();
-    encoder.writeArray(messageToEncode);
-    final unsignedMessage = output.getDataAsList();
-    Uint8List privateKey = HEX.decode(privateKeyHex);
-
-    final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-
-    final signatureEC = sign(messageDigest, privateKey);
-    final recid = signatureEC.v - 27;
-
-    final cid = base64.encode([
-      ...signatureEC.r.toUint8List(),
-      ...signatureEC.s.toUint8List(),
-      recid,
-    ]);
-    return cid;
-  }
-
   Map constructFilecoinMsg(
     String destinationAddress,
     String from,
@@ -538,4 +493,49 @@ Uint8List _hexToU8a(String hex) {
         int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
   }
   return result;
+}
+
+String transactionSignLotus(Map msg, String privateKeyHex) {
+  final to = addressAsBytes(msg['To']);
+  final from = addressAsBytes(msg['From']);
+  final value = serializeBigNum(msg['Value']);
+  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
+  final gaspremium = serializeBigNum(msg['GasPremium']);
+  final gaslimit = msg['GasLimit'];
+  int method = msg['Method'];
+  final params = msg['Params'];
+  int nonce = msg['Nonce'];
+  int version = msg['Version'];
+
+  final messageToEncode = [
+    version ?? 0,
+    to,
+    from,
+    nonce ?? 0,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method ?? 0,
+    base64.decode(params ?? '')
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(messageToEncode);
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey = HEX.decode(privateKeyHex);
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+
+  final signatureEC = sign(messageDigest, privateKey);
+  final recid = signatureEC.v - 27;
+
+  final cid = base64.encode([
+    ...signatureEC.r.toUint8List(),
+    ...signatureEC.s.toUint8List(),
+    recid,
+  ]);
+  return cid;
 }
