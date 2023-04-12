@@ -35,6 +35,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   Map privateSaleDetails;
   double networkBalance;
   double tokenBalance;
+  EthereumCoin coin;
   final Map networkDetails = getEVMBlockchains().firstWhere(
     (e) => e['name'] == tokenContractNetwork,
   );
@@ -43,6 +44,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
   @override
   void initState() {
     super.initState();
+    coin = EthereumCoin.fromJson(Map.from(networkDetails));
     callAllApi();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -87,7 +89,8 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
         Map.from(networkDetails)
           ..addAll(
             {
-              'contractAddress': tokenContractAddress,   'tokenType': EthTokenType.ERC20,
+              'contractAddress': tokenContractAddress,
+              'tokenType': EthTokenType.ERC20,
             },
           ),
       );
@@ -506,8 +509,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                 );
 
                                 final response =
-                                    await EthereumCoin.fromJson(networkDetails)
-                                        .fromMnemonic(mnemonic);
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
                                   response['privateKey'],
@@ -726,8 +728,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
                                 );
 
                                 final response =
-                                    await EthereumCoin.fromJson(networkDetails)
-                                        .fromMnemonic(mnemonic);
+                                    await coin.fromMnemonic(mnemonic);
 
                                 final credentials = EthPrivateKey.fromHex(
                                   response['privateKey'],
