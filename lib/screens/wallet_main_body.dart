@@ -128,8 +128,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
 
       cryptoNotifiers.add(notifier);
 
-      blockChainsArray.addAll([
-        InkWell(
+      blockChainsArray.addAll(
+        [
+          InkWell(
             onTap: () {
               Navigator.push(
                 context,
@@ -173,8 +174,10 @@ class _WalletMainBodyState extends State<WalletMainBody>
                   );
                 }),
               ),
-            )),
-      ]);
+            ),
+          ),
+        ],
+      );
       blockChainsArray.add(const Divider());
     }
   }
@@ -409,6 +412,8 @@ class _WalletMainBodyState extends State<WalletMainBody>
   }
 
   Future getWalletToken() async {
+    //FIXME:
+    return null;
     final pref = Hive.box(secureStorageKey);
     Map appTokenDetails = {};
     const appTokenKey = 'appTokenDetails';

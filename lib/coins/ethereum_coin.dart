@@ -96,7 +96,6 @@ class EthereumCoin extends Coin {
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'ethereumDetails$coinType';
-
     List mmenomicMapping = [];
     if (pref.get(key) != null) {
       mmenomicMapping = jsonDecode(pref.get(key)) as List;
@@ -486,7 +485,7 @@ List<Map> getEVMBlockchains() {
     ]);
   }
 
-  blockChains.addAll([userAddedEVM]);
+  if (userAddedEVM.isNotEmpty) blockChains.addAll([userAddedEVM]);
 
   return blockChains;
 }

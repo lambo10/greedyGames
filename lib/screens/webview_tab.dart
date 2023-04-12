@@ -326,7 +326,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
       currentChainIdData: currentChainIdData,
       switchChainIdData: switchChainIdData,
       onConfirm: () async {
-        initJs = await changeBlockChainAndReturnInit(
+        initJs = await returnInitEvm(
           switchChainId,
           switchChainIdData['rpc'],
         );
@@ -1426,7 +1426,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
   }
 
   switchWeb3_(int chainId, String rpc) async {
-    initJs = await changeBlockChainAndReturnInit(chainId, rpc);
+    initJs = await returnInitEvm(chainId, rpc);
     await reloadWeb3_();
   }
 
