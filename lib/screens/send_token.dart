@@ -217,7 +217,11 @@ class _SendTokenState extends State<SendToken> {
                           AppLocalizations.of(context).max,
                           textAlign: TextAlign.end,
                         ),
-                        onPressed: () async {},
+                        onPressed: () async {
+                          final maxTransfer =
+                              await widget.tokenData.getMaxTransfer();
+                          amountContrl.text = maxTransfer.toString();
+                        },
                       ),
                       hintText: AppLocalizations.of(context).amount,
 

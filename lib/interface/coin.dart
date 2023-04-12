@@ -19,6 +19,10 @@ abstract class Coin {
     };
   }
 
+  Future<double> getMaxTransfer() async {
+    return 0.0;
+  }
+
   String savedTransKey() => '${default__()} Details';
 
   int decimals();
