@@ -4,6 +4,8 @@ import 'package:convert/convert.dart';
 import 'package:sha3/sha3.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 
+import '../coins/ethereum_coin.dart';
+
 Future<Map> unstoppableDomainENS({
   String cryptoDomainName,
   String currency,
@@ -23,7 +25,11 @@ Future<Map> unstoppableDomainENS({
         web3.ContractAbi.fromJson(unstoppableDomainAbi, ''),
         proxyReader,
       );
-      final rpcUrl = getEVMBlockchains()[udResolvers[contractAddr]]['rpc'];
+      Map evmDetails = getEVMBlockchains().firstWhere(
+        (e) => e['name'] == udResolvers[contractAddr],
+      );
+
+      final rpcUrl = evmDetails['rpc'];
 
       final client = web3.Web3Client(rpcUrl, Client());
       String udCryptoAddress = (await client.call(

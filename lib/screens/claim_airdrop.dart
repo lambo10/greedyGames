@@ -12,6 +12,8 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import '../../config/colors.dart';
 import '../../config/styles.dart';
+import '../coins/eth_contract_coin.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../utils/slide_up_panel.dart';
 import 'package:web3dart/web3dart.dart' as web3;
@@ -29,15 +31,20 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
   bool isClaiming = false;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   Map airdropDetails;
-  final client = web3.Web3Client(
-    getEVMBlockchains()[tokenSaleContractNetwork]['rpc'],
-    Client(),
+  Map evmNetwork = getEVMBlockchains().firstWhere(
+    (e) => e['name'] == tokenSaleContractNetwork,
   );
+
+  web3.Web3Client client;
   Timer timer;
 
   @override
   void initState() {
     super.initState();
+    client = web3.Web3Client(
+      evmNetwork['rpc'],
+      Client(),
+    );
     getAirDropdetails();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -45,6 +52,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
     );
   }
 
+  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
   @override
   void dispose() {
     timer?.cancel();
@@ -54,18 +62,13 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
 
   Future getAirDropdetails() async {
     try {
-      final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+      final response =
+          await EthereumCoin.fromJson(evmNetwork).fromMnemonic(mnemonic);
+      final sendingAddress = web3.EthereumAddress.fromHex(response['address']);
 
-      final response = await getEthereumFromMemnomic(
-        mnemonic,
-        getEVMBlockchains()[tokenSaleContractNetwork]['coinType'],
-      );
-      final sendingAddress =
-          web3.EthereumAddress.fromHex(response['eth_wallet_address']);
-
-      Map tokenDetails = await getERC20TokenNameSymbolDecimal(
+      Map tokenDetails = await savedERC20Details(
         contractAddress: tokenContractAddress,
-        rpc: getEVMBlockchains()[tokenContractNetwork]['rpc'],
+        rpc: evmNetwork['rpc'],
       );
 
       final tokenSaleContract = web3.DeployedContract(
@@ -83,7 +86,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
       );
 
       double transactionFee = await getEtherTransactionFee(
-        getEVMBlockchains()[tokenSaleContractNetwork]['rpc'],
+        evmNetwork['rpc'],
         getAirdrop.encodeCall([EthereumAddress.fromHex(zeroAddress)]),
         sendingAddress,
         EthereumAddress.fromHex(tokenSaleContractAddress),
@@ -165,7 +168,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
                           height: 50,
                         ),
                         Text(
-                          '${AppLocalizations.of(context).transactionFee}: ${formatMoney(airdropDetails['transactionFee'])} ${getEVMBlockchains()[tokenSaleContractNetwork]['symbol']}',
+                          '${AppLocalizations.of(context).transactionFee}: ${formatMoney(airdropDetails['transactionFee'])} ${evmNetwork['symbol']}',
                           style: const TextStyle(fontSize: 17),
                         ),
                         const SizedBox(
@@ -196,15 +199,11 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
                               String transactionHash;
 
                               try {
-                                final mnemonic = Hive.box(secureStorageKey)
-                                    .get(currentMmenomicKey);
-                                final response = await getEthereumFromMemnomic(
-                                  mnemonic,
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                      ['coinType'],
-                                );
+                                final response =
+                                    await EthereumCoin.fromJson(evmNetwork)
+                                        .fromMnemonic(mnemonic);
                                 final credentials = EthPrivateKey.fromHex(
-                                  response['eth_wallet_privateKey'],
+                                  response['privateKey'],
                                 );
 
                                 final contract = web3.DeployedContract(
@@ -218,16 +217,16 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
                                 );
 
                                 final trans = await client.signTransaction(
-                                    credentials,
-                                    Transaction.callContract(
-                                      contract: contract,
-                                      function: getAirdrop,
-                                      parameters: [
-                                        EthereumAddress.fromHex(zeroAddress)
-                                      ],
-                                    ),
-                                    chainId: getEVMBlockchains()[
-                                        tokenSaleContractNetwork]['chainId']);
+                                  credentials,
+                                  Transaction.callContract(
+                                    contract: contract,
+                                    function: getAirdrop,
+                                    parameters: [
+                                      EthereumAddress.fromHex(zeroAddress)
+                                    ],
+                                  ),
+                                  chainId: evmNetwork['chainId'],
+                                );
 
                                 transactionHash =
                                     await client.sendRawTransaction(trans);
@@ -254,14 +253,12 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
                                 return;
                               }
 
-                              bscAirdropUrl =
-                                  getEVMBlockchains()[tokenSaleContractNetwork]
-                                          ['blockExplorer']
-                                      .toString()
-                                      .replaceFirst(
-                                        transactionhashTemplateKey,
-                                        transactionHash,
-                                      );
+                              bscAirdropUrl = evmNetwork['blockExplorer']
+                                  .toString()
+                                  .replaceFirst(
+                                    transactionhashTemplateKey,
+                                    transactionHash,
+                                  );
                               await slideUpPanel(context,
                                   StatefulBuilder(builder: (ctx, setState) {
                                 return Padding(

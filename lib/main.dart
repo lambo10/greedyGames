@@ -24,16 +24,45 @@ import 'package:hex/hex.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart';
-// import 'package:near_api_flutter/near_api_flutter.dart';
-import 'package:near_api_flutter/near_api_flutter.dart' hide Wallet;
 import 'package:page_transition/page_transition.dart';
-
+import 'interface/coin.dart';
 import 'screens/main_screen.dart';
+import '../coins/algorand_coin.dart';
+import '../coins/bitcoin_coin.dart';
+import '../coins/cardano_coin.dart';
+import '../coins/cosmos_coin.dart';
+import '../coins/ethereum_coin.dart';
+import '../coins/filecoin_coin.dart';
+import '../coins/near_coin.dart';
+import '../coins/solana_coin.dart';
+import '../coins/stellar_coin.dart';
+import '../coins/tezos_coin.dart';
+import '../coins/tron_coin.dart';
+import '../coins/xrp_coin.dart';
+
+List<Coin> getAllBlockchains = [];
+Future<List<Coin>> _getAllBlockchains() async {
+  return [
+    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
+    ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
+    ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(Map.from(e))),
+    ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(Map.from(e))),
+    ...getTezosBlockchains().map((e) => TezosCoin.fromJson(Map.from(e))),
+    ...getXRPBlockChains().map((e) => XRPCoin.fromJson(Map.from(e))),
+    ...getNearBlockChains().map((e) => NearCoin.fromJson(Map.from(e))),
+    ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
+    ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
+    ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
+    ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
+    ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
+  ]..sort((a, b) => a.name_().compareTo(b.name_()));
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
+
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([
@@ -73,6 +102,7 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
+  getAllBlockchains = await _getAllBlockchains();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),

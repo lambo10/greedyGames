@@ -22,6 +22,7 @@ import 'package:wallet_connect/wallet_connect.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
+import '../coins/ethereum_coin.dart';
 import '../utils/app_config.dart';
 import '../utils/json_model_callback.dart';
 import '../utils/web_notifications.dart';
@@ -325,7 +326,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
       currentChainIdData: currentChainIdData,
       switchChainIdData: switchChainIdData,
       onConfirm: () async {
-        initJs = await changeBlockChainAndReturnInit(
+        initJs = await returnInitEvm(
           switchChainId,
           switchChainIdData['rpc'],
         );
@@ -554,16 +555,6 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
 
                       final mnemonic = pref.get(currentMmenomicKey);
                       if (jsData.network == 'solana') {
-                        final solanaResponse =
-                            await getSolanaFromMemnomic(mnemonic);
-                        final sendingAddress = solanaResponse['address'];
-
-                        final keyPair = await compute(calculateSolanaKey, {
-                          mnemonicKey: mnemonic,
-                          'getSolanaKeys': true,
-                          seedRootKey: seedPhraseRoot,
-                        });
-                        solana.Ed25519HDKeyPair solanaKeyPair = keyPair;
                         switch (jsData.name) {
                           case "signMessage":
                             {
@@ -618,15 +609,15 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                           case "requestAccounts":
                             {
                               try {
-                                final setAddress =
-                                    "trustwallet.solana.setAddress(\"$sendingAddress\");";
+                                // final setAddress =
+                                //     "trustwallet.solana.setAddress(\"$sendingAddress\");";
 
-                                String callback =
-                                    "trustwallet.solana.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
+                                // String callback =
+                                //     "trustwallet.solana.sendResponse(${jsData.id}, [\"$sendingAddress\"])";
 
-                                await _sendCustomResponse(setAddress);
+                                // await _sendCustomResponse(setAddress);
 
-                                await _sendCustomResponse(callback);
+                                // await _sendCustomResponse(callback);
                               } catch (e) {
                                 final error =
                                     e.toString().replaceAll('"', '\'');
@@ -639,20 +630,16 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                       } else if (jsData.network == 'ethereum') {
                         int chainId = pref.get(dappChainIdKey);
 
-                        final blockChainDetails =
-                            getEthereumDetailsFromChainId(chainId);
+                        final blockChainDetails = evmFromChainId(chainId);
                         final rpc = blockChainDetails['rpc'];
-                        final web3Response = await getEthereumFromMemnomic(
-                          mnemonic,
-                          blockChainDetails['coinType'],
-                        );
+                        final coin =
+                            EthereumCoin.fromJson(Map.from(blockChainDetails));
+                        final web3Response = await coin.fromMnemonic(mnemonic);
 
-                        final privateKey =
-                            web3Response['eth_wallet_privateKey'];
+                        final privateKey = web3Response['privateKey'];
                         final credentials = EthPrivateKey.fromHex(privateKey);
 
-                        final sendingAddress =
-                            web3Response['eth_wallet_address'];
+                        final sendingAddress = web3Response['address'];
                         switch (jsData.name) {
                           case "signTransaction":
                             {
@@ -937,10 +924,8 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     'invalid asset symbol',
                                   );
                                 }
-                                validateAddress(
-                                  {'rpc': blockChainDetails['rpc']},
-                                  data.contract,
-                                );
+                                coin.validateAddress(data.contract);
+
                                 final assetDetails = {
                                   'name': data.symbol,
                                   'symbol': data.symbol,
@@ -975,11 +960,10 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     BigInt.parse(data.chainId).toInt();
 
                                 final currentChainIdData =
-                                    getEthereumDetailsFromChainId(chainId);
+                                    evmFromChainId(chainId);
 
                                 Map switchChainIdData =
-                                    getEthereumDetailsFromChainId(
-                                        switchChainId);
+                                    evmFromChainId(switchChainId);
 
                                 if (chainId == switchChainId) {
                                   _sendNull(
@@ -1135,11 +1119,10 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                                     BigInt.parse(data.chainId).toInt();
 
                                 final currentChainIdData =
-                                    getEthereumDetailsFromChainId(chainId);
+                                    evmFromChainId(chainId);
 
                                 final switchChainIdData =
-                                    getEthereumDetailsFromChainId(
-                                        switchChainId);
+                                    evmFromChainId(switchChainId);
 
                                 if (chainId == switchChainId) {
                                   _sendNull(
@@ -1260,7 +1243,9 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
                   }
                 } catch (_) {}
 
-                widget.onStateUpdated.call();
+                if (mounted) {
+                  widget.onStateUpdated.call();
+                }
               },
               onConsoleMessage:
                   (InAppWebViewController controller, ConsoleMessage message) {
@@ -1438,7 +1423,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
   }
 
   switchWeb3_(int chainId, String rpc) async {
-    initJs = await changeBlockChainAndReturnInit(chainId, rpc);
+    initJs = await returnInitEvm(chainId, rpc);
     await reloadWeb3_();
   }
 

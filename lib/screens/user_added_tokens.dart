@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/components/user_balance.dart';
 import 'package:cryptowallet/screens/token.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 
 import '../utils/get_blockchain_widget.dart';
@@ -20,12 +19,10 @@ class UserAddedTokens extends StatefulWidget {
 }
 
 class _UserAddedTokensState extends State<UserAddedTokens> {
-  List userAddedToken;
-  List<ValueNotifier<double>> addedTokenListNotifiers =
-      <ValueNotifier<double>>[];
-  List<Timer> addedTokenListTimer = <Timer>[];
+  List<ValueNotifier<double>> addedTokensNotifiers = <ValueNotifier<double>>[];
+  List<Timer> addedTokensTimer = <Timer>[];
   double tokenBalance;
-  int addedTokenListNotifiersCounter = 0;
+  int addedTokensCounter = 0;
 
   @override
   void initState() {
@@ -35,15 +32,16 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
 
   @override
   void dispose() {
-    for (Timer cryptoTimer in addedTokenListTimer) {
+    for (Timer cryptoTimer in addedTokensTimer) {
       cryptoTimer?.cancel();
     }
-    for (ValueNotifier cryptoNotifier in addedTokenListNotifiers) {
+    for (ValueNotifier cryptoNotifier in addedTokensNotifiers) {
       cryptoNotifier?.dispose();
     }
     super.dispose();
   }
 
+  final List<EthContractCoin> tokenList = [];
   Future getUserAddedToken() async {
     final pref = Hive.box(secureStorageKey);
     final userTokenListKey = getAddTokenKey();
@@ -55,10 +53,8 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
       userTokenList = jsonDecode(prefToken);
     }
 
-    final tokenList = [];
-
     for (final token in userTokenList) {
-      tokenList.add({
+      tokenList.add(EthContractCoin.fromJson({
         'name': token['name'],
         'symbol': token['symbol'],
         'decimals': token['decimals'],
@@ -69,9 +65,11 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
         'rpc': token['rpc'],
         'coinType': token['coinType'],
         'noPrice': true,
-      });
+        'isNFT': false,
+        'isContract': true,
+        'tokenType': EthTokenType.ERC20,
+      }));
     }
-    userAddedToken = tokenList;
     if (mounted) {
       setState(() {});
     }
@@ -80,10 +78,10 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
   @override
   Widget build(BuildContext context) {
     List<Widget> addedTokens = <Widget>[];
-    if (userAddedToken != null) {
-      for (int i = 0; i < userAddedToken.length; i++) {
+    if (tokenList != null) {
+      for (int i = 0; i < tokenList.length; i++) {
         final notifier = ValueNotifier<double>(null);
-        addedTokenListNotifiers.add(notifier);
+        addedTokensNotifiers.add(notifier);
         addedTokens.addAll([
           Dismissible(
             background: Container(),
@@ -109,20 +107,20 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
 
               final userTokenListKey = getAddTokenKey();
 
-              if (userAddedToken.isEmpty) return false;
-              String customTokenDetailsKey = await contractDetailsKey(
-                userAddedToken[i]['rpc'],
-                userAddedToken[i]['contractAddress'],
+              if (tokenList.isEmpty) return false;
+              String customTokenDetailsKey = contractDetailsKey(
+                tokenList[i].rpc,
+                tokenList[i].contractAddress_,
               );
 
               if (pref.get(customTokenDetailsKey) != null) {
                 await pref.delete(customTokenDetailsKey);
               }
-              userAddedToken.removeAt(i);
+              tokenList.removeAt(i);
 
               await pref.put(
                 userTokenListKey,
-                jsonEncode(userAddedToken),
+                jsonEncode(tokenList),
               );
               return true;
             },
@@ -130,32 +128,30 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
               child: Column(
                 children: [
                   GetBlockChainWidget(
-                    name_: ellipsify(str: userAddedToken[i]['name']),
-                    image_: userAddedToken[i]['image'] != null
-                        ? AssetImage(userAddedToken[i]['image'])
+                    name_: ellipsify(str: tokenList[i].name_()),
+                    image_: tokenList[i].image_() != null
+                        ? AssetImage(tokenList[i].image_())
                         : null,
                     priceWithCurrency_: '0',
                     hasPrice_: false,
                     cryptoChange_: 0,
-                    symbol_: userAddedToken[i]['symbol'],
+                    symbol_: tokenList[i].symbol_(),
                     cryptoAmount_: ValueListenableBuilder(
                       valueListenable: notifier,
                       builder: ((_, double value, Widget __) {
                         if (value == null) {
                           () async {
                             try {
-                              notifier.value = await getERC20TokenBalance(
-                                userAddedToken[i],
-                                skipNetworkRequest: notifier.value == null,
-                              );
-                            } catch (_) {}
-                            addedTokenListTimer.add(
+                              notifier.value = await tokenList[i]
+                                  .getBalance(notifier.value == null);
+                            } catch (_, sk) {
+                              print(sk);
+                            }
+                            addedTokensTimer.add(
                               Timer.periodic(httpPollingDelay, (timer) async {
                                 try {
-                                  notifier.value = await getERC20TokenBalance(
-                                    userAddedToken[i],
-                                    skipNetworkRequest: notifier.value == null,
-                                  );
+                                  notifier.value = await tokenList[i]
+                                      .getBalance(notifier.value == null);
                                 } catch (_) {}
                               }),
                             );
@@ -165,7 +161,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
                         }
                         return UserBalance(
                           symbol: ellipsify(
-                            str: userAddedToken[i]['symbol'],
+                            str: tokenList[i].symbol_(),
                           ),
                           balance: value,
                         );
@@ -180,7 +176,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
                   context,
                   MaterialPageRoute(
                     builder: (ctx) => Token(
-                      data: userAddedToken[i],
+                      tokenData: tokenList[i],
                     ),
                   ),
                 );

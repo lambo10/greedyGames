@@ -1,3 +1,4 @@
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -96,16 +97,6 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
                                 recipientAddressController.text = recipientAddr;
                               }
 
-                              // try {
-                              //   if (widget.data['contractAddress'] != null) {
-                              //     Map data = EIP681.parse(recipientAddr);
-
-                              //     recipientAddressController.text =
-                              //         data['parameters']['address'];
-                              //     return;
-                              //   }
-                              // } catch (_) {}
-
                               try {
                                 CoinPay data = CoinPay.parseUri(recipientAddr);
                                 recipientAddressController.text =
@@ -177,10 +168,9 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
                         String recipient =
                             recipientAddressController.text.trim();
                         try {
-                          validateAddress(
-                            widget.blockchainData,
-                            recipient,
-                          );
+                          EthereumCoin.fromJson(widget.blockchainData)
+                              .validateAddress(recipient);
+
                           Navigator.pop(context, {
                             ...widget.blockchainData,
                             'address': recipient,

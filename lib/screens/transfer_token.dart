@@ -1,36 +1,33 @@
 import 'dart:async';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'dart:math';
-import 'package:algorand_dart/algorand_dart.dart' as algoRan;
 import 'package:cryptowallet/api/notification_api.dart';
 import 'package:cryptowallet/components/loader.dart';
 import 'package:cryptowallet/config/colors.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/app_config.dart';
-import 'package:cryptowallet/utils/bitcoin_util.dart';
-import 'package:cryptowallet/utils/format_money.dart';
-import 'package:cryptowallet/utils/stellar_utils.dart';
-import 'package:cryptowallet/utils/tron_utils.dart';
-import 'package:dartez/dartez.dart';
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:cryptowallet/utils/rpc_urls.dart';
-import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:near_api_flutter/near_api_flutter.dart';
-import 'package:web3dart/web3dart.dart' as web3;
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import '../utils/filecoin_util.dart';
+
+import '../coins/eth_contract_coin.dart';
 
 class TransferToken extends StatefulWidget {
-  final Map data;
+  final Coin tokenData;
   final String cryptoDomain;
-  const TransferToken({Key key, this.data, this.cryptoDomain})
-      : super(key: key);
+  final String recipient;
+  final String amount;
+  const TransferToken({
+    Key key,
+    this.tokenData,
+    this.cryptoDomain,
+    this.recipient,
+    this.amount,
+  }) : super(key: key);
 
   @override
   _TransferTokenState createState() => _TransferTokenState();
@@ -43,41 +40,16 @@ class _TransferTokenState extends State<TransferToken> {
   bool get kDebugMode => null;
   Timer timer;
   Map transactionFeeMap;
-  bool isContract;
-  bool isBitcoinType;
-  bool isSolana;
-  bool isAlgorand;
-  bool isCardano;
-  bool isFilecoin;
-  bool isStellar;
-  bool isNFTTransfer;
-  bool isCosmos;
-  bool isTron;
-  bool isTezor;
-  bool isXRP;
-  bool isNear;
+
   ContractAbi contrAbi;
-  List _parameters;
+  bool isContract = false;
+  bool isNFT = false;
+  String tokenId;
   String mnemonic;
 
   @override
   void initState() {
     super.initState();
-    mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-    isContract = widget.data['contractAddress'] != null;
-    isBitcoinType = widget.data['POSNetwork'] != null;
-    isSolana = widget.data['default'] == 'SOL';
-    isCardano = widget.data['default'] == 'ADA';
-    isFilecoin = widget.data['default'] == 'FIL';
-    isStellar = widget.data['default'] == 'XLM';
-    isCosmos = widget.data['default'] == 'ATOM';
-    isAlgorand = widget.data['default'] == 'ALGO';
-    isTron = widget.data['default'] == 'TRX';
-    isTezor = widget.data['default'] == 'XTZ';
-    isXRP = widget.data['default'] == 'XRP';
-    isNear = widget.data['default'] == 'NEAR';
-    isNFTTransfer = widget.data['isNFT'] != null;
-
     getTransactionFee();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -95,336 +67,13 @@ class _TransferTokenState extends State<TransferToken> {
 
   Future getTransactionFee() async {
     try {
-      if (isContract) {
-        final client = web3.Web3Client(
-          widget.data['rpc'],
-          Client(),
-        );
-
-        Map response = await getEthereumFromMemnomic(
-          mnemonic,
-          widget.data['coinType'],
-        );
-
-        final sendingAddress = web3.EthereumAddress.fromHex(
-          response['eth_wallet_address'],
-        );
-
-        if (!isNFTTransfer) {
-          contrAbi = web3.ContractAbi.fromJson(
-            erc20Abi,
-            '',
-          );
-        } else if (widget.data['tokenType'] == 'ERC721') {
-          contrAbi = web3.ContractAbi.fromJson(
-            erc721Abi,
-            '',
-          );
-        } else if (widget.data['tokenType'] == 'ERC1155') {
-          contrAbi = web3.ContractAbi.fromJson(
-            erc1155Abi,
-            '',
-          );
-        }
-
-        final contract = web3.DeployedContract(
-          contrAbi,
-          web3.EthereumAddress.fromHex(widget.data['contractAddress']),
-        );
-
-        web3.ContractFunction decimalsFunction;
-
-        BigInt decimals;
-
-        if (!isNFTTransfer) {
-          decimalsFunction = contract.function('decimals');
-          decimals = (await client.call(
-                  contract: contract, function: decimalsFunction, params: []))
-              .first;
-        }
-
-        final transfer = isNFTTransfer
-            ? contract.findFunctionsByName('safeTransferFrom').toList()[0]
-            : contract.function('transfer');
-
-        if (!isNFTTransfer) {
-          _parameters = [
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
-            BigInt.from(
-              double.parse(widget.data['amount']) * pow(10, decimals.toInt()),
-            )
-          ];
-        } else if (widget.data['tokenType'] == 'ERC721') {
-          _parameters = [
-            sendingAddress,
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
-            widget.data['tokenId']
-          ];
-        } else if (widget.data['tokenType'] == 'ERC1155') {
-          _parameters = [
-            sendingAddress,
-            web3.EthereumAddress.fromHex(widget.data['recipient']),
-            widget.data['tokenId'],
-            BigInt.from(
-              double.parse(widget.data['amount']),
-            ),
-            Uint8List(1)
-          ];
-        }
-
-        Uint8List contractData = transfer.encodeCall(_parameters);
-
-        final transactionFee = await getEtherTransactionFee(
-          widget.data['rpc'],
-          contractData,
-          sendingAddress,
-          web3.EthereumAddress.fromHex(
-            widget.data['contractAddress'],
-          ),
-        );
-        final etherAmountBalance = await client.getBalance(sendingAddress);
-        final userBalance =
-            etherAmountBalance.getInWei.toDouble() / pow(10, etherDecimals);
-
-        final blockChainCost = transactionFee / pow(10, etherDecimals);
-
-        transactionFeeMap = {
-          'transactionFee': blockChainCost,
-          'userBalance': userBalance,
-        };
-      } else if (isBitcoinType) {
-        final getBitcoinDetails = await getBitcoinFromMemnomic(
-          mnemonic,
-          widget.data,
-        );
-        final bitCoinBalance = await getBitcoinAddressBalance(
-          getBitcoinDetails['address'],
-          widget.data['POSNetwork'],
-        );
-
-        List getUnspentOutput;
-        int fee = 0;
-        num satoshi = double.parse(widget.data['amount']) * pow(10, 8);
-        int satoshiToSend = satoshi.toInt();
-
-        if (widget.data['default'] == 'BCH') {
-          fee = await getBCHNetworkFee(
-            getBitcoinDetails['address'],
-            widget.data,
-            satoshiToSend,
-          );
-        } else {
-          getUnspentOutput =
-              await getUnspentTransactionBitcoinType(widget.data);
-          fee = await getBitcoinTypeNetworkFee(satoshiToSend, getUnspentOutput);
-        }
-
-        double feeInBitcoin = fee / pow(10, bitCoinDecimals);
-
-        transactionFeeMap = {
-          'transactionFee': feeInBitcoin,
-          'userBalance': bitCoinBalance,
-        };
-      } else if (isTron) {
-        final getTronDetails = await getTronFromMemnomic(mnemonic);
-        final tronBalance = await getTronAddressBalance(
-          getTronDetails['address'],
-          widget.data['api'],
-        );
-        transactionFeeMap = {
-          'transactionFee': 0,
-          'userBalance': tronBalance,
-        };
-      } else if (isNear) {
-        final getNearDetails = await getNearFromMemnomic(mnemonic);
-        final nearBalance = await getNearAddressBalance(
-          getNearDetails['address'],
-          widget.data['api'],
-        );
-        transactionFeeMap = {
-          'transactionFee': 0,
-          'userBalance': nearBalance,
-        };
-      } else if (isTezor) {
-        final getTrezorDetails =
-            await getTezorFromMemnomic(mnemonic, widget.data);
-        final tezorBalance = await getTezorAddressBalance(
-          getTrezorDetails['address'],
-          widget.data,
-        );
-        transactionFeeMap = {
-          'transactionFee': 0,
-          'userBalance': tezorBalance,
-        };
-      } else if (isXRP) {
-        final getXRPDetails = await getXRPFromMemnomic(mnemonic);
-        final xrpBalance = await getXRPAddressBalance(
-          getXRPDetails['address'],
-          widget.data['ws'],
-        );
-        final fee = await getXrpFee(widget.data['ws']);
-        transactionFeeMap = {
-          'transactionFee': double.parse(fee['Fee']) / pow(10, xrpDecimals),
-          'userBalance': xrpBalance,
-        };
-      } else if (isAlgorand) {
-        final getAlgorandDetials = await getAlgorandFromMemnomic(
-          mnemonic,
-        );
-        final algorandBalance = await getAlgorandAddressBalance(
-          getAlgorandDetials['address'],
-          widget.data['algoType'],
-        );
-
-        transactionFeeMap = {
-          'transactionFee': 0.001,
-          'userBalance': algorandBalance,
-        };
-      } else if (isSolana) {
-        final getSolanaDetails = await getSolanaFromMemnomic(mnemonic);
-        final solanaCoinBalance = await getSolanaAddressBalance(
-          getSolanaDetails['address'],
-          widget.data['solanaCluster'],
-        );
-
-        final fees = await getSolanaClient(widget.data['solanaCluster'])
-            .rpcClient
-            .getFees();
-
-        transactionFeeMap = {
-          'transactionFee':
-              fees.feeCalculator.lamportsPerSignature / pow(10, solanaDecimals),
-          'userBalance': solanaCoinBalance,
-        };
-      } else if (isCardano) {
-        final getCardanoDetails = await getCardanoFromMemnomic(
-          mnemonic,
-          widget.data['cardano_network'],
-        );
-        final cardanoCoinBalance = await getCardanoAddressBalance(
-          getCardanoDetails['address'],
-          widget.data['cardano_network'],
-          widget.data['blockFrostKey'],
-        );
-
-        final fees = maxFeeGuessForCardano / pow(10, cardanoDecimals);
-
-        transactionFeeMap = {
-          'transactionFee': fees,
-          'userBalance': cardanoCoinBalance,
-        };
-      } else if (isFilecoin) {
-        final getFileCoinDetails = await getFileCoinFromMemnomic(
-          mnemonic,
-          widget.data['prefix'],
-        );
-        final fileCoinBalance = await getFileCoinAddressBalance(
-          getFileCoinDetails['address'],
-          baseUrl: widget.data['baseUrl'],
-        );
-
-        final nonce = await getFileCoinNonce(
-          widget.data['prefix'],
-          widget.data['baseUrl'],
-        );
-        final attoFIL = double.parse(widget.data['amount']) *
-            pow(10, fileCoinDecimals.toInt());
-
-        BigInt amounToSend = BigInt.from(attoFIL);
-
-        final msg = constructFilecoinMsg(
-          widget.data['recipient'],
-          getFileCoinDetails['address'],
-          nonce,
-          amounToSend,
-        );
-
-        final gasFromNetwork = await fileCoinEstimateGas(
-          widget.data['baseUrl'],
-          msg,
-        );
-
-        // Transaction Fee = GasLimit * GasFeeCap + GasPremium
-        final gasLimit = gasFromNetwork['GasLimit'];
-        final gasFeeCap = double.parse(gasFromNetwork['GasFeeCap']);
-        final gasPremium = double.parse(gasFromNetwork['GasPremium']);
-        final fees =
-            ((gasLimit * gasFeeCap) + gasPremium) / pow(10, fileCoinDecimals);
-
-        transactionFeeMap = {
-          'transactionFee': fees,
-          'userBalance': fileCoinBalance,
-        };
-      } else if (isStellar) {
-        final getStellarDetails = await getStellarFromMemnomic(mnemonic);
-
-        final stellarBalance = await getStellarAddressBalance(
-          getStellarDetails['address'],
-          widget.data['sdk'],
-          widget.data['cluster'],
-        );
-
-        final fees = await getStellarGas(
-          widget.data['recipient'],
-          widget.data['amount'],
-          widget.data['sdk'],
-        );
-
-        transactionFeeMap = {
-          'transactionFee': fees,
-          'userBalance': stellarBalance,
-        };
-      } else if (isCosmos) {
-        final getCosmosDetails = await getCosmosFromMemnomic(
-          mnemonic,
-          widget.data['bech32Hrp'],
-          widget.data['lcdUrl'],
-        );
-
-        final cosmosBalance = await getCosmosAddressBalance(
-          getCosmosDetails['address'],
-          widget.data['lcdUrl'],
-        );
-        transactionFeeMap = {
-          'transactionFee': 0.001,
-          'userBalance': cosmosBalance,
-        };
-      } else {
-        final response = await getEthereumFromMemnomic(
-          mnemonic,
-          widget.data['coinType'],
-        );
-        final client = web3.Web3Client(
-          widget.data['rpc'],
-          Client(),
-        );
-
-        final transactionFee = await getEtherTransactionFee(
-          widget.data['rpc'],
-          null,
-          web3.EthereumAddress.fromHex(
-            response['eth_wallet_address'],
-          ),
-          web3.EthereumAddress.fromHex(
-            widget.data['recipient'],
-          ),
-        );
-
-        final senderAddress =
-            EthereumAddress.fromHex(response['eth_wallet_address']);
-
-        final getSenderBalance = await client.getBalance(senderAddress);
-
-        final userBalance =
-            getSenderBalance.getInWei.toDouble() / pow(10, etherDecimals);
-
-        final blockChainCost = transactionFee / pow(10, etherDecimals);
-
-        transactionFeeMap = {
-          'transactionFee': blockChainCost,
-          'userBalance': userBalance,
-        };
-      }
+      transactionFeeMap = {
+        'transactionFee': await widget.tokenData.getTransactionFee(
+          widget.amount,
+          widget.recipient,
+        ),
+        'userBalance': await widget.tokenData.getBalance(false),
+      };
       if (mounted) {
         setState(() {});
       }
@@ -451,7 +100,7 @@ class _TransferTokenState extends State<TransferToken> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '-${widget.data['amount'] ?? '1'} ${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']}',
+                    '-${widget.amount ?? '1'} ${isContract ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -469,7 +118,7 @@ class _TransferTokenState extends State<TransferToken> {
                     height: 10,
                   ),
                   Text(
-                    '${isContract ? ellipsify(str: widget.data['name']) : widget.data['name']} (${isContract ? ellipsify(str: widget.data['symbol']) : widget.data['symbol']})',
+                    '${isContract ? ellipsify(str: widget.tokenData.name_()) : widget.tokenData.name_()} (${isContract ? ellipsify(str: widget.tokenData.symbol_()) : widget.tokenData.symbol_()})',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(
@@ -483,77 +132,11 @@ class _TransferTokenState extends State<TransferToken> {
                   const SizedBox(
                     height: 10,
                   ),
-                  FutureBuilder(future: () async {
-                    if (isBitcoinType) {
-                      final getPOSblockchainDetails =
-                          await getBitcoinFromMemnomic(
-                        mnemonic,
-                        widget.data,
-                      );
-                      return {'address': getPOSblockchainDetails['address']};
-                    } else if (isSolana) {
-                      final getSolanaDetails =
-                          await getSolanaFromMemnomic(mnemonic);
-                      return {'address': getSolanaDetails['address']};
-                    } else if (isCardano) {
-                      final getCardanoDetails = await getCardanoFromMemnomic(
-                        mnemonic,
-                        widget.data['cardano_network'],
-                      );
-                      return {'address': getCardanoDetails['address']};
-                    } else if (isNear) {
-                      final getNearDetails =
-                          await getNearFromMemnomic(mnemonic);
-                      return {'address': getNearDetails['address']};
-                    } else if (isTezor) {
-                      final getTezorDetails = await getTezorFromMemnomic(
-                        mnemonic,
-                        widget.data,
-                      );
-                      return {'address': getTezorDetails['address']};
-                    } else if (isXRP) {
-                      final getXRPDetails = await getXRPFromMemnomic(mnemonic);
-                      return {'address': getXRPDetails['address']};
-                    } else if (isTron) {
-                      final getTronDetails = await getTronFromMemnomic(
-                        mnemonic,
-                      );
-                      return {'address': getTronDetails['address']};
-                    } else if (isAlgorand) {
-                      final getAlgorandDetails = await getAlgorandFromMemnomic(
-                        mnemonic,
-                      );
-                      return {'address': getAlgorandDetails['address']};
-                    } else if (isFilecoin) {
-                      final getFileCoinDetails = await getFileCoinFromMemnomic(
-                        mnemonic,
-                        widget.data['prefix'],
-                      );
-                      return {'address': getFileCoinDetails['address']};
-                    } else if (isStellar) {
-                      final getStellarDetails =
-                          await getStellarFromMemnomic(mnemonic);
-                      return {'address': getStellarDetails['address']};
-                    } else if (isCosmos) {
-                      final getCosmosDetails = await getCosmosFromMemnomic(
-                        mnemonic,
-                        widget.data['bech32Hrp'],
-                        widget.data['lcdUrl'],
-                      );
-                      return {'address': getCosmosDetails['address']};
-                    } else {
-                      return {
-                        'address': (await getEthereumFromMemnomic(
-                          mnemonic,
-                          widget.data['coinType'],
-                        ))['eth_wallet_address']
-                      };
-                    }
+                  FutureBuilder<String>(future: () async {
+                    return await widget.tokenData.address_();
                   }(), builder: (context, snapshot) {
                     return Text(
-                      snapshot.hasData
-                          ? (snapshot.data as Map)['address']
-                          : 'Loading...',
+                      snapshot.hasData ? snapshot.data : 'Loading...',
                       style: const TextStyle(fontSize: 16),
                     );
                   }),
@@ -570,14 +153,14 @@ class _TransferTokenState extends State<TransferToken> {
                   ),
                   Text(
                     widget.cryptoDomain != null
-                        ? '${widget.cryptoDomain} (${widget.data['recipient']})'
-                        : widget.data['recipient'],
+                        ? '${widget.cryptoDomain} (${widget.recipient})'
+                        : widget.recipient,
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
-                  if (isNFTTransfer) ...[
+                  if (isNFT) ...[
                     Text(
                       AppLocalizations.of(context).tokenId,
                       style: const TextStyle(
@@ -587,7 +170,7 @@ class _TransferTokenState extends State<TransferToken> {
                       height: 10,
                     ),
                     Text(
-                      widget.data['tokenId'].toString(),
+                      tokenId,
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(
@@ -602,18 +185,10 @@ class _TransferTokenState extends State<TransferToken> {
                   const SizedBox(
                     height: 10,
                   ),
-                  widget.data['default'] != null
-                      ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.data['default']}',
-                          style: const TextStyle(fontSize: 16),
-                        )
-                      : Container(),
-                  widget.data['network'] != null
-                      ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${getEVMBlockchains()[widget.data['network']]['symbol']}',
-                          style: const TextStyle(fontSize: 16),
-                        )
-                      : Container(),
+                  Text(
+                    '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.tokenData.default__() ?? (widget.tokenData as EthContractCoin).network}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                   const SizedBox(
                     height: 20,
                   ),
@@ -661,452 +236,20 @@ class _TransferTokenState extends State<TransferToken> {
                                       try {
                                         final pref = Hive.box(secureStorageKey);
 
-                                        String userAddress;
-                                        String transactionHash;
-                                        int coinDecimals;
-                                        String userTransactionsKey;
-                                        if (isContract) {
-                                          final client = web3.Web3Client(
-                                            widget.data['rpc'],
-                                            Client(),
-                                          );
+                                        String transactionHash = await widget
+                                            .tokenData
+                                            .transferToken(
+                                          widget.amount,
+                                          widget.recipient,
+                                        );
 
-                                          Map response =
-                                              await getEthereumFromMemnomic(
-                                            mnemonic,
-                                            widget.data['coinType'],
-                                          );
-                                          final credentials =
-                                              EthPrivateKey.fromHex(
-                                            response['eth_wallet_privateKey'],
-                                          );
+                                        int coinDecimals =
+                                            widget.tokenData.decimals();
+                                        String userAddress =
+                                            await widget.tokenData.address_();
 
-                                          final contract =
-                                              web3.DeployedContract(
-                                            contrAbi,
-                                            web3.EthereumAddress.fromHex(
-                                              widget.data['contractAddress'],
-                                            ),
-                                          );
-
-                                          web3.ContractFunction
-                                              decimalsFunction;
-
-                                          BigInt decimals;
-
-                                          ContractFunction transfer;
-
-                                          if (isNFTTransfer) {
-                                            transfer = contract
-                                                .findFunctionsByName(
-                                                    'safeTransferFrom')
-                                                .toList()[0];
-                                          } else {
-                                            transfer =
-                                                contract.function('transfer');
-
-                                            decimalsFunction =
-                                                contract.function('decimals');
-                                            decimals = (await client.call(
-                                                    contract: contract,
-                                                    function: decimalsFunction,
-                                                    params: []))
-                                                .first;
-
-                                            coinDecimals = decimals.toInt();
-                                          }
-
-                                          final trans =
-                                              await client.signTransaction(
-                                            credentials,
-                                            Transaction.callContract(
-                                              contract: contract,
-                                              function: transfer,
-                                              parameters: _parameters,
-                                            ),
-                                            chainId: widget.data['chainId'],
-                                          );
-
-                                          transactionHash = await client
-                                              .sendRawTransaction(trans);
-
-                                          userAddress =
-                                              response['eth_wallet_address'];
-
-                                          userTransactionsKey =
-                                              '${widget.data['contractAddress']}${widget.data['rpc']} Details';
-
-                                          await client.dispose();
-                                        } else if (isBitcoinType) {
-                                          final getBitCoinDetails =
-                                              await getBitcoinFromMemnomic(
-                                            mnemonic,
-                                            widget.data,
-                                          );
-
-                                          double satoshi = double.parse(
-                                                widget.data['amount'],
-                                              ) *
-                                              pow(10, bitCoinDecimals);
-
-                                          int amountToSend = satoshi.toInt();
-
-                                          final transaction = await sendBTCType(
-                                            widget.data['recipient'],
-                                            amountToSend,
-                                            widget.data,
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = bitCoinDecimals;
-                                          userAddress =
-                                              getBitCoinDetails['address'];
-
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isTezor) {
-                                          final getTezorDetails =
-                                              await getTezorFromMemnomic(
-                                            mnemonic,
-                                            widget.data,
-                                          );
-
-                                          final keyStore = KeyStoreModel(
-                                            publicKey:
-                                                getTezorDetails['public_key'],
-                                            secretKey:
-                                                getTezorDetails['private_key'],
-                                            publicKeyHash:
-                                                getTezorDetails['address'],
-                                          );
-
-                                          final signer = Dartez.createSigner(
-                                            Dartez.writeKeyWithHint(
-                                                keyStore.secretKey, 'edsk'),
-                                          );
-                                          final microTez = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, tezorDecimals);
-
-                                          final result = await Dartez
-                                              .sendTransactionOperation(
-                                            widget.data['server'],
-                                            signer,
-                                            keyStore,
-                                            widget.data['recipient'],
-                                            microTez.toInt(),
-                                            1500,
-                                          );
-                                          transactionHash = Map.from(
-                                              result)['operationGroupID'];
-
-                                          transactionHash = transactionHash
-                                              .replaceAll('\n', '');
-
-                                          coinDecimals = tezorDecimals;
-                                          userAddress =
-                                              getTezorDetails['address'];
-
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isNear) {
-                                          final getNearDetails =
-                                              await getNearFromMemnomic(
-                                            mnemonic,
-                                          );
-                                          final privateKeyPublic = [
-                                            ...HEX.decode(
-                                                getNearDetails['privateKey']),
-                                            ...HEX.decode(
-                                                getNearDetails['address'])
-                                          ];
-                                          final publicKey = PublicKey(
-                                            HEX.decode(
-                                              getNearDetails['address'],
-                                            ),
-                                          );
-                                          Account account = Account(
-                                            accountId:
-                                                getNearDetails['address'],
-                                            keyPair: KeyPair(
-                                              PrivateKey(privateKeyPublic),
-                                              publicKey,
-                                            ),
-                                            provider: NearRpcProvider(
-                                              widget.data['api'],
-                                            ),
-                                          );
-
-                                          final trans =
-                                              await account.sendTokens(
-                                            double.parse(
-                                              widget.data['amount'],
-                                            ),
-                                            widget.data['recipient'],
-                                          );
-
-                                          transactionHash = trans['result']
-                                              ['transaction']['hash'];
-
-                                          transactionHash = transactionHash
-                                              .replaceAll('\n', '');
-
-                                          coinDecimals = nearDecimals;
-                                          userAddress =
-                                              getNearDetails['address'];
-
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isXRP) {
-                                          final getXRPDetails =
-                                              await getXRPFromMemnomic(
-                                            mnemonic,
-                                          );
-                                          Map transaction = await sendXRP(
-                                            ws: widget.data['ws'],
-                                            recipient: widget.data['recipient'],
-                                            amountInXrp: widget.data['amount'],
-                                            mnemonic: mnemonic,
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = xrpDecimals;
-                                          userAddress =
-                                              getXRPDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isAlgorand) {
-                                          final getAlgorandDetails =
-                                              await getAlgorandFromMemnomic(
-                                                  mnemonic);
-
-                                          Map transaction = await sendAlgorand(
-                                            widget.data['recipient'],
-                                            widget.data['algoType'],
-                                            algoRan.Algo.toMicroAlgos(
-                                              double.parse(
-                                                widget.data['amount'],
-                                              ),
-                                            ),
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = algorandDecimals;
-                                          userAddress =
-                                              getAlgorandDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isSolana) {
-                                          final getSolanaDetails =
-                                              await getSolanaFromMemnomic(
-                                                  mnemonic);
-
-                                          final lamport = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, solanaDecimals);
-
-                                          final transaction = await sendSolana(
-                                            widget.data['recipient'],
-                                            lamport.toInt(),
-                                            widget.data['solanaCluster'],
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = solanaDecimals;
-                                          userAddress =
-                                              getSolanaDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isCardano) {
-                                          final getCardanoDetails =
-                                              await getCardanoFromMemnomic(
-                                            mnemonic,
-                                            widget.data['cardano_network'],
-                                          );
-
-                                          final lovelace = double.parse(
-                                                widget.data['amount'],
-                                              ) *
-                                              pow(10, cardanoDecimals);
-
-                                          int amountToSend = lovelace.toInt();
-                                          final transaction = await compute(
-                                            sendCardano,
-                                            {
-                                              'cardanoNetwork': widget
-                                                  .data['cardano_network'],
-                                              'blockfrostForCardanoApiKey':
-                                                  widget.data['blockFrostKey'],
-                                              'mnemonic': mnemonic,
-                                              'lovelaceToSend': amountToSend,
-                                              'senderAddress': cardano
-                                                  .ShelleyAddress.fromBech32(
-                                                getCardanoDetails['address'],
-                                              ),
-                                              'recipientAddress': cardano
-                                                  .ShelleyAddress.fromBech32(
-                                                widget.data['recipient'],
-                                              )
-                                            },
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = cardanoDecimals;
-                                          userAddress =
-                                              getCardanoDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isTron) {
-                                          final getTronDetails =
-                                              await getTronFromMemnomic(
-                                                  mnemonic);
-
-                                          final microTron = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, tronDecimals);
-
-                                          final transaction = await sendTron(
-                                            widget.data['api'],
-                                            microTron.toInt(),
-                                            getTronDetails['address'],
-                                            widget.data['recipient'],
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = tronDecimals;
-                                          userAddress =
-                                              getTronDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isFilecoin) {
-                                          final getFileCoinDetails =
-                                              await getFileCoinFromMemnomic(
-                                            mnemonic,
-                                            widget.data['prefix'],
-                                          );
-
-                                          final attoFil = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, fileCoinDecimals);
-
-                                          BigInt amounToSend =
-                                              BigInt.from(attoFil);
-
-                                          final transaction =
-                                              await sendFilecoin(
-                                            widget.data['recipient'],
-                                            amounToSend,
-                                            baseUrl: widget.data['baseUrl'],
-                                            addressPrefix:
-                                                widget.data['prefix'],
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = fileCoinDecimals;
-                                          userAddress =
-                                              getFileCoinDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isStellar) {
-                                          Map getStellarDetails =
-                                              await getStellarFromMemnomic(
-                                            mnemonic,
-                                          );
-
-                                          final transaction = await sendStellar(
-                                            widget.data['recipient'],
-                                            widget.data['amount'],
-                                            widget.data['sdk'],
-                                            widget.data['cluster'],
-                                          );
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = stellarDecimals;
-                                          userAddress =
-                                              getStellarDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else if (isCosmos) {
-                                          Map getCosmosDetails =
-                                              await getCosmosFromMemnomic(
-                                            mnemonic,
-                                            widget.data['bech32Hrp'],
-                                            widget.data['lcdUrl'],
-                                          );
-
-                                          final uatomToSend = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, cosmosDecimals);
-
-                                          final transaction =
-                                              await compute(sendCosmos, {
-                                            'bech32Hrp':
-                                                widget.data['bech32Hrp'],
-                                            'lcdUrl': widget.data['lcdUrl'],
-                                            'mnemonic': mnemonic,
-                                            'recipientAddress':
-                                                widget.data['recipient'],
-                                            'uatomToSend':
-                                                uatomToSend.toInt().toString()
-                                          });
-                                          transactionHash = transaction['txid'];
-
-                                          coinDecimals = cosmosDecimals;
-                                          userAddress =
-                                              getCosmosDetails['address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']} Details';
-                                        } else {
-                                          final client = web3.Web3Client(
-                                            widget.data['rpc'],
-                                            Client(),
-                                          );
-
-                                          final response =
-                                              await getEthereumFromMemnomic(
-                                            mnemonic,
-                                            widget.data['coinType'],
-                                          );
-
-                                          final credentials =
-                                              EthPrivateKey.fromHex(
-                                            response['eth_wallet_privateKey'],
-                                          );
-                                          final gasPrice =
-                                              await client.getGasPrice();
-
-                                          final wei = double.parse(
-                                                  widget.data['amount']) *
-                                              pow(10, etherDecimals);
-
-                                          final trans =
-                                              await client.signTransaction(
-                                            credentials,
-                                            web3.Transaction(
-                                              from: web3.EthereumAddress
-                                                  .fromHex(response[
-                                                      'eth_wallet_address']),
-                                              to: web3.EthereumAddress.fromHex(
-                                                  widget.data['recipient']),
-                                              value: web3.EtherAmount.inWei(
-                                                BigInt.from(wei),
-                                              ),
-                                              gasPrice: gasPrice,
-                                            ),
-                                            chainId: widget.data['chainId'],
-                                          );
-
-                                          transactionHash = await client
-                                              .sendRawTransaction(trans);
-
-                                          coinDecimals = etherDecimals;
-                                          userAddress =
-                                              response['eth_wallet_address'];
-                                          userTransactionsKey =
-                                              '${widget.data['default']}${widget.data['rpc']} Details';
-
-                                          await client.dispose();
-                                        }
+                                        String trnxKey =
+                                            widget.tokenData.savedTransKey();
 
                                         if (transactionHash == null) {
                                           throw Exception('Sending failed');
@@ -1121,18 +264,17 @@ class _TransferTokenState extends State<TransferToken> {
                                           ),
                                         );
 
-                                        String tokenSent = isNFTTransfer
-                                            ? widget.data['tokenId'].toString()
-                                            : widget.data['amount'];
+                                        String tokenSent =
+                                            isNFT ? tokenId : widget.amount;
 
                                         NotificationApi.showNotification(
                                           title:
-                                              '${widget.data['symbol']} Sent',
+                                              '${widget.tokenData.symbol_()} Sent',
                                           body:
-                                              '$tokenSent ${widget.data['symbol']} sent to ${widget.data['recipient']}',
+                                              '$tokenSent ${widget.tokenData.symbol_()} sent to ${widget.recipient}',
                                         );
 
-                                        if (isNFTTransfer) {
+                                        if (isNFT) {
                                           if (mounted) {
                                             setState(() {
                                               isSending = false;
@@ -1157,9 +299,9 @@ class _TransferTokenState extends State<TransferToken> {
                                         final mapData = {
                                           'time': formattedDate,
                                           'from': userAddress,
-                                          'to': widget.data['recipient'],
+                                          'to': widget.recipient,
                                           'value': double.parse(
-                                                widget.data['amount'],
+                                                widget.amount,
                                               ) *
                                               pow(10, coinDecimals),
                                           'decimal': coinDecimals,
@@ -1168,7 +310,7 @@ class _TransferTokenState extends State<TransferToken> {
 
                                         List userTransactions = [];
                                         String jsonEncodedUsrTrx =
-                                            pref.get(userTransactionsKey);
+                                            pref.get(trnxKey);
 
                                         if (jsonEncodedUsrTrx != null) {
                                           userTransactions = json.decode(
@@ -1180,7 +322,7 @@ class _TransferTokenState extends State<TransferToken> {
                                         userTransactions.length =
                                             maximumTransactionToSave;
                                         await pref.put(
-                                          userTransactionsKey,
+                                          trnxKey,
                                           jsonEncode(userTransactions),
                                         );
                                         if (mounted) {

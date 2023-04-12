@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../coins/eth_contract_coin.dart';
 import '../utils/app_config.dart';
 import '../utils/qr_scan_view.dart';
 
@@ -18,54 +20,56 @@ class AddCustomToken extends StatefulWidget {
 }
 
 class _AddCustomTokenState extends State<AddCustomToken> {
-  List networks = getEVMBlockchains().keys.toList();
-  String network;
+  List networks = getEVMBlockchains();
+  String networkName;
   String networkImage;
   @override
   void initState() {
     super.initState();
-    network = networks[0];
-    networkImage = getEVMBlockchains().values.toList()[0]['image'];
-    contractAddressController.addListener(() async {
+    networkName = networks[0]['name'];
+    networkImage = networks[0]['image'];
+    contractAddrContrl.addListener(() async {
       await autoFillNameDecimalSymbol(
-        contractAddressController.text,
+        contractAddrContrl.text,
       );
     });
   }
 
-  final contractAddressController = TextEditingController();
-  final nameAddressController = TextEditingController();
-  final symbolAddressController = TextEditingController();
-  final decimalsAddressController = TextEditingController();
+  final contractAddrContrl = TextEditingController();
+  final nameContrl = TextEditingController();
+  final symbolCtrl = TextEditingController();
+  final decimalCtrl = TextEditingController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   emptyInput() {
-    nameAddressController.text = '';
-    symbolAddressController.text = '';
-    decimalsAddressController.text = '';
+    nameContrl.text = '';
+    symbolCtrl.text = '';
+    decimalCtrl.text = '';
   }
 
   autoFillNameDecimalSymbol(String enteredContractAddress) async {
     emptyInput();
     if (enteredContractAddress.isEmpty) return;
     try {
-      Map erc20Details = await getERC20TokenNameSymbolDecimal(
+      Map evnNetwork =
+          getEVMBlockchains().firstWhere((e) => e['name'] == networkName);
+      Map erc20Details = await savedERC20Details(
         contractAddress: enteredContractAddress.trim(),
-        rpc: getEVMBlockchains()[network]['rpc'],
+        rpc: evnNetwork['rpc'],
       );
       if (erc20Details.isEmpty) return;
-      nameAddressController.text = erc20Details['name'];
-      symbolAddressController.text = erc20Details['symbol'];
-      decimalsAddressController.text = erc20Details['decimals'];
+      nameContrl.text = erc20Details['name'];
+      symbolCtrl.text = erc20Details['symbol'];
+      decimalCtrl.text = erc20Details['decimals'];
     } catch (_) {}
   }
 
   @override
   void dispose() {
-    contractAddressController.dispose();
-    nameAddressController.dispose();
-    symbolAddressController.dispose();
-    decimalsAddressController.dispose();
+    contractAddrContrl.dispose();
+    nameContrl.dispose();
+    symbolCtrl.dispose();
+    decimalCtrl.dispose();
     super.dispose();
   }
 
@@ -96,22 +100,24 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                     ),
                     GestureDetector(
                       onTap: () {
+                        Map evnNetwork = getEVMBlockchains().firstWhere(
+                          (e) => e['name'] == networkName,
+                        );
                         showBlockChainDialog(
                           context: context,
                           onTap: (blockChainData) async {
                             Navigator.pop(context);
                             if (mounted) {
                               setState(() {
-                                network = blockChainData['name'];
+                                networkName = blockChainData['name'];
                                 networkImage = blockChainData['image'];
                               });
                               await autoFillNameDecimalSymbol(
-                                contractAddressController.text,
+                                contractAddrContrl.text,
                               );
                             }
                           },
-                          selectedChainId: getEVMBlockchains()[network]
-                              ['chainId'],
+                          selectedChainId: evnNetwork['chainId'],
                         );
                       },
                       child: CircleAvatar(
@@ -127,7 +133,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                   height: 40,
                 ),
                 TextFormField(
-                  controller: contractAddressController,
+                  controller: contractAddrContrl,
                   decoration: InputDecoration(
                     suffixIcon: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -145,7 +151,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                               ),
                             );
                             if (contractAddr == null) return;
-                            contractAddressController.text = contractAddr;
+                            contractAddrContrl.text = contractAddr;
                           },
                         ),
                         InkWell(
@@ -154,7 +160,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                                 await Clipboard.getData(Clipboard.kTextPlain);
                             if (cdata == null) return;
                             if (cdata.text == null) return;
-                            contractAddressController.text = cdata.text;
+                            contractAddrContrl.text = cdata.text;
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -187,7 +193,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: nameAddressController,
+                  controller: nameContrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).name,
                     focusedBorder: const OutlineInputBorder(
@@ -207,7 +213,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                 ),
                 TextFormField(
                   readOnly: true,
-                  controller: symbolAddressController,
+                  controller: symbolCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).symbol,
                     focusedBorder: const OutlineInputBorder(
@@ -231,7 +237,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
-                  controller: decimalsAddressController,
+                  controller: decimalCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).decimals,
                     focusedBorder: const OutlineInputBorder(
@@ -307,13 +313,10 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                       FocusManager.instance.primaryFocus?.unfocus();
                       final pref = Hive.box(secureStorageKey);
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      final contractAddr =
-                          contractAddressController.text.trim();
-                      final contractName = nameAddressController.text.trim();
-                      final contractSymbol =
-                          symbolAddressController.text.trim();
-                      final contractDecimals =
-                          decimalsAddressController.text.trim();
+                      final contractAddr = contractAddrContrl.text.trim();
+                      final contractName = nameContrl.text.trim();
+                      final contractSymbol = symbolCtrl.text.trim();
+                      final contractDecimals = decimalCtrl.text.trim();
 
                       if (contractName.isEmpty ||
                           contractSymbol.isEmpty ||
@@ -370,18 +373,20 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                       }
 
                       final userTokenListKey = getAddTokenKey();
+                      Map evnNetwork = getEVMBlockchains().firstWhere(
+                        (e) => e['name'] == networkName,
+                      );
 
                       final Map customTokenDetails = {
                         'contractAddress': contractAddr,
                         'name': contractName,
                         'symbol': contractSymbol,
                         'decimals': contractDecimals,
-                        'network': network,
-                        'chainId': getEVMBlockchains()[network]['chainId'],
-                        'rpc': getEVMBlockchains()[network]['rpc'],
-                        'blockExplorer': getEVMBlockchains()[network]
-                            ['blockExplorer'],
-                        'coinType': getEVMBlockchains()[network]['coinType'],
+                        'network': networkName,
+                        'chainId': evnNetwork['chainId'],
+                        'rpc': evnNetwork['rpc'],
+                        'blockExplorer': evnNetwork['blockExplorer'],
+                        'coinType': evnNetwork['coinType'],
                       };
 
                       List userTokenList = [];
@@ -397,7 +402,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                           bool sameContractAddress =
                               contractAddress.toLowerCase() ==
                                   contractAddr.toLowerCase();
-                          bool sameNetwork = contractNetwork == network;
+                          bool sameNetwork = contractNetwork == networkName;
 
                           if (sameNetwork && sameContractAddress) {
                             ScaffoldMessenger.of(context).showSnackBar(

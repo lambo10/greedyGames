@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import '../coins/eth_contract_coin.dart';
+import '../coins/ethereum_coin.dart';
 import '../components/loader.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
@@ -31,13 +33,14 @@ class _ExchangeTokenState extends State<ExchangeToken>
   bool tokenGetLoading = false;
   String error = '';
   final amountPay = TextEditingController()..text = '1';
-  List networks = getEVMBlockchains().keys.toList();
+  List networks = getEVMBlockchains();
   String network;
   String currentSelectedTokenPay = 'ETH';
   String currentSelectedTokenGet = 'ETH';
   String payAddress = nativeTokenAddress;
   String getAddress = nativeTokenAddress;
   Map tokenList;
+  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
   Map selectedItemPay = {};
   Map selectedItemGet = {};
   String networkImage;
@@ -84,7 +87,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
       httpPollingDelay,
       (Timer t) async => await getAllExchangeToken(),
     );
-    networkImage = getEVMBlockchains().values.toList()[0]['image'];
+    networkImage = getEVMBlockchains()[0]['image'];
   }
 
   Future userGetDetails() async {
@@ -96,25 +99,19 @@ class _ExchangeTokenState extends State<ExchangeToken>
         selectedItemGet = tokenList[nativeTokenLCase];
       }
 
+      final Map evmNetwork = getEVMBlockchains().firstWhere(
+        (e) => e['name'] == network,
+      );
       if (selectedItemGet['address'].toString().toLowerCase() ==
           nativeTokenLCase) {
-        final mnemonic = (Hive.box(secureStorageKey)).get(currentMmenomicKey);
-
-        final getEthereumDetails = await getEthereumFromMemnomic(
-          mnemonic,
-          getEVMBlockchains()[network]['coinType'],
-        );
-        cryptoBalance = await getEthereumAddressBalance(
-          getEthereumDetails['eth_wallet_address'],
-          getEVMBlockchains()[network]['rpc'],
-          coinType: getEVMBlockchains()[network]['coinType'],
-        );
+        final EthereumCoin coin = EthereumCoin.fromJson(evmNetwork);
+        cryptoBalance = await coin.getBalance(false);
       } else {
         cryptoBalance = await getERC20TokenBalance({
           'contractAddress': selectedItemGet['address'],
-          'rpc': getEVMBlockchains()[network]['rpc'],
-          'chainId': getEVMBlockchains()[network]['chainId'],
-          'coinType': getEVMBlockchains()[network]['coinType'],
+          'rpc': evmNetwork['rpc'],
+          'chainId': evmNetwork['chainId'],
+          'coinType': evmNetwork['coinType'],
         });
       }
 
@@ -129,7 +126,10 @@ class _ExchangeTokenState extends State<ExchangeToken>
   Future userPayDetails() async {
     try {
       double cryptoBalance = 0;
-      final Map networkDetails = getEVMBlockchains()[network];
+      final Map networkDetails = getEVMBlockchains().firstWhere(
+        (e) => e['name'] == network,
+      );
+      final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
       if (selectedItemPay.values.isEmpty) {
         tokenList = await get1InchUrlList(1);
         selectedItemPay = tokenList[nativeTokenLCase];
@@ -137,17 +137,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
 
       if (selectedItemPay['address'].toString().toLowerCase() ==
           nativeTokenLCase) {
-        final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-
-        final getEthereumDetails = await getEthereumFromMemnomic(
-          mnemonic,
-          networkDetails['coinType'],
-        );
-        cryptoBalance = await getEthereumAddressBalance(
-          getEthereumDetails['eth_wallet_address'],
-          networkDetails['rpc'],
-          coinType: networkDetails['coinType'],
-        );
+        cryptoBalance = await coin.getBalance(false);
       } else {
         cryptoBalance = await getERC20TokenBalance({
           'contractAddress': selectedItemPay['address'],
@@ -165,7 +155,10 @@ class _ExchangeTokenState extends State<ExchangeToken>
   }
 
   Future tokenToGet() async {
-    final Map networkDetails = getEVMBlockchains()[network];
+    final Map networkDetails = getEVMBlockchains().firstWhere(
+      (e) => e['name'] == network,
+    );
+    final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
     try {
       if (selectedItemPay.values.isEmpty) {
         tokenList = await get1InchUrlList(1);
@@ -176,11 +169,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
         selectedItemGet = selectedItemGet = tokenList[nativeTokenLCase];
       }
 
-      final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-      final response = await getEthereumFromMemnomic(
-        mnemonic,
-        networkDetails['coinType'],
-      );
+      final response = await coin.fromMnemonic(mnemonic);
 
       double amountPaying = double.tryParse(amountPay.text);
 
@@ -191,9 +180,9 @@ class _ExchangeTokenState extends State<ExchangeToken>
           fromTokenAddress: selectedItemPay['address'],
           toTokenAddress: selectedItemGet['address'],
           amountInWei: amountPaying,
-          fromAddress: response['eth_wallet_address'],
+          fromAddress: response['address'],
           slippage: 0.1,
-          chainId: getEVMBlockchains()[network]['chainId'],
+          chainId: networkDetails['chainId'],
         );
 
         if (transactionData != null) {
@@ -214,22 +203,16 @@ class _ExchangeTokenState extends State<ExchangeToken>
   }
 
   Future evmBalance() async {
+    final Map networkDetails = getEVMBlockchains().firstWhere(
+      (e) => e['name'] == network,
+    );
+    final EthereumCoin coin = EthereumCoin.fromJson(networkDetails);
     try {
-      final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-
-      final getEthereumDetails = await getEthereumFromMemnomic(
-        mnemonic,
-        getEVMBlockchains()[network]['coinType'],
-      );
-      final cryptoBalance = await getEthereumAddressBalance(
-        getEthereumDetails['eth_wallet_address'],
-        getEVMBlockchains()[network]['rpc'],
-        coinType: getEVMBlockchains()[network]['coinType'],
-      );
+      final cryptoBalance = await coin.getBalance(false);
 
       networkBalanceInfo = {
         'balance': cryptoBalance,
-        'symbol': getEVMBlockchains()[network]['symbol']
+        'symbol': networkDetails['symbol']
       };
       setState(() {});
     } catch (_) {}
@@ -276,6 +259,10 @@ class _ExchangeTokenState extends State<ExchangeToken>
                     ),
                     GestureDetector(
                       onTap: () {
+                        final Map networkDetails =
+                            getEVMBlockchains().firstWhere(
+                          (e) => e['name'] == network,
+                        );
                         showBlockChainDialog(
                           context: context,
                           onTap: (blockChainData) async {
@@ -293,10 +280,13 @@ class _ExchangeTokenState extends State<ExchangeToken>
                               networkImage = blockChainData['image'];
                               selectedItemPay =
                                   selectedItemGet = tokenList[nativeTokenLCase];
-
+                              final Map networkDetails =
+                                  getEVMBlockchains().firstWhere(
+                                (e) => e['name'] == network,
+                              );
                               currentSelectedTokenPay =
                                   currentSelectedTokenGet =
-                                      getEVMBlockchains()[network]['symbol'];
+                                      networkDetails['symbol'];
                               amountPay.text = '0';
 
                               try {
@@ -316,8 +306,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                               );
                             }
                           },
-                          selectedChainId: getEVMBlockchains()[network]
-                              ['chainId'],
+                          selectedChainId: networkDetails['chainId'],
                         );
                       },
                       child: CircleAvatar(
@@ -812,21 +801,19 @@ class _ExchangeTokenState extends State<ExchangeToken>
                         onPressed: () async {
                           if (isLoading) return;
                           FocusManager.instance.primaryFocus?.unfocus();
-
+                          final Map evmDetails = getEVMBlockchains().firstWhere(
+                            (e) => e['name'] == network,
+                          );
+                          final EthereumCoin coin =
+                              EthereumCoin.fromJson(evmDetails);
                           try {
                             setState(() {
                               isLoading = true;
                             });
 
                             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            final mnemonic = Hive.box(secureStorageKey)
-                                .get(currentMmenomicKey);
-                            final response = await getEthereumFromMemnomic(
-                              mnemonic,
-                              getEVMBlockchains()[network]['coinType'],
-                            );
 
-                            Map evmDetails = getEVMBlockchains()[network];
+                            final response = await coin.fromMnemonic(mnemonic);
 
                             if (selectedItemPay.values.isEmpty) {
                               tokenList = await get1InchUrlList(1);
@@ -893,7 +880,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                               fromTokenAddress: payingContract,
                               toTokenAddress: getContract,
                               amountInWei: amountInWei_,
-                              fromAddress: response['eth_wallet_address'],
+                              fromAddress: response['address'],
                               slippage: 0.1,
                               chainId: evmDetails['chainId'],
                             );
@@ -907,7 +894,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
 
                             if (payingContract != nativeTokenLCase) {
                               BigInt allowance = await getErc20Allowance(
-                                owner: response['eth_wallet_address'],
+                                owner: response['address'],
                                 rpc: evmDetails['rpc'],
                                 contractAddress: payingContract,
                                 spender: swapOneInch['tx']['to'],
@@ -923,7 +910,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                 await signTransaction(
                                   gasPriceInWei_: approve1inch['gasPrice'],
                                   to: approve1inch['to'],
-                                  from: response['eth_wallet_address'],
+                                  from: response['address'],
                                   txData: approve1inch['data'],
                                   valueInWei_: approve1inch['value'],
                                   gasInWei_: null,
@@ -935,20 +922,20 @@ class _ExchangeTokenState extends State<ExchangeToken>
                                   onConfirm: () async {
                                     try {
                                       final client = web3.Web3Client(
-                                        getEVMBlockchains()[network]['rpc'],
+                                        evmDetails['rpc'],
                                         Client(),
                                       );
 
                                       final credentials =
                                           web3.EthPrivateKey.fromHex(
-                                        response['eth_wallet_privateKey'],
+                                        response['privateKey'],
                                       );
                                       final approveTrx =
                                           await client.signTransaction(
                                         credentials,
                                         web3.Transaction(
                                           from: web3.EthereumAddress.fromHex(
-                                            response['eth_wallet_address'],
+                                            response['address'],
                                           ),
                                           to: web3.EthereumAddress.fromHex(
                                             approve1inch['to'],
@@ -1037,7 +1024,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
 
                                   final credentials =
                                       web3.EthPrivateKey.fromHex(
-                                    response['eth_wallet_privateKey'],
+                                    response['privateKey'],
                                   );
                                   final swapTrx = await client.signTransaction(
                                     credentials,

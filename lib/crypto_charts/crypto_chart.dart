@@ -119,8 +119,7 @@ class _CryptoChartState extends State<CryptoChart> {
                                           getMarketData(
                                             days: days,
                                             coinGeckoId:
-                                                coinGeckCryptoSymbolToID[
-                                                    widget.symbol],
+                                                coinGeckoID[widget.symbol],
                                             defaultCurrency: defaultCurrency,
                                           ),
                                         ),

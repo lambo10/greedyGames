@@ -1,9 +1,6 @@
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../utils/rpc_urls.dart';

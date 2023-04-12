@@ -31,7 +31,6 @@ slideUpPanel(context, screen, {bool canDismiss = true}) async {
 }
 
 class RemoveScrollGlow extends ScrollBehavior {
-  @override
   Widget buildViewportChrome(
       BuildContext context, Widget child, AxisDirection axisDirection) {
     return child;

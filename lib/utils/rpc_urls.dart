@@ -1,35 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:base_x/base_x.dart';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
-import 'package:crypto/crypto.dart';
-import 'package:elliptic/elliptic.dart';
-import 'package:hash/hash.dart';
-import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
+import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
-import 'package:bech32/bech32.dart';
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/security.dart';
-import 'package:cryptowallet/utils/bitcoin_util.dart';
 import 'package:cryptowallet/utils/json_viewer.dart';
-import 'package:cryptowallet/validate_tezos.dart';
-import 'package:dartez/dartez.dart';
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:eth_sig_util/util/utils.dart' hide hexToBytes, bytesToHex;
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:hive/hive.dart';
-import 'package:leb128/leb128.dart';
-import 'package:near_api_flutter/near_api_flutter.dart' hide PrivateKey;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sacco/sacco.dart' as cosmos;
 import 'package:bs58check/bs58check.dart' as bs58check;
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar
-    hide Row;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cryptowallet/utils/slide_up_panel.dart';
 import 'package:flutter/foundation.dart';
@@ -37,9 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' hide Row;
 import 'package:validators/validators.dart';
-import 'package:wallet/wallet.dart' as wallet;
+
 import 'package:wallet_connect/wallet_connect.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart' as web3;
@@ -48,41 +31,35 @@ import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:bitcoin_flutter/bitcoin_flutter.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart' as bitcoin;
 import 'package:http/http.dart' as http;
-import 'package:solana/solana.dart' as solana;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:bitbox/bitbox.dart' as bitbox;
 import 'package:hex/hex.dart';
 
+import '../coins/algorand_coin.dart';
+import '../coins/bitcoin_coin.dart';
+import '../coins/cardano_coin.dart';
+import '../coins/cosmos_coin.dart';
+import '../coins/eth_contract_coin.dart';
+import '../coins/ethereum_coin.dart';
+import '../coins/filecoin_coin.dart';
+import '../coins/near_coin.dart';
+import '../coins/solana_coin.dart';
+import '../coins/stellar_coin.dart';
+import '../coins/tezos_coin.dart';
+import '../coins/tron_coin.dart';
+import '../coins/xrp_coin.dart';
 import '../components/loader.dart';
 import '../eip/eip681.dart';
+import '../interface/coin.dart';
 import '../model/seed_phrase_root.dart';
 import '../screens/build_row.dart';
 import '../screens/dapp.dart';
-import '../xrp_transaction/xrp_ordinal.dart';
-import '../xrp_transaction/xrp_transaction.dart';
 import 'alt_ens.dart';
 import 'app_config.dart';
-import 'filecoin_util.dart';
-import 'pos_networks.dart';
-import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 // crypto decimals
-const etherDecimals = 18;
-const bitCoinDecimals = 8;
-const cardanoDecimals = 6;
-const tronDecimals = 6;
-const cosmosDecimals = 6;
-const xrpDecimals = 6;
-const fileCoinDecimals = 18;
-const solanaDecimals = 9;
+
 const satoshiDustAmount = 546;
-const stellarDecimals = 6;
-const algorandDecimals = 6;
-const tezorDecimals = 6;
-const nearDecimals = 24;
-const int maxFeeGuessForCardano = 200000;
 
 // time
 const Duration networkTimeOutDuration = Duration(seconds: 15);
@@ -130,52 +107,6 @@ const ensInterface =
 
 solidityFunctionSig(String methodId) {
   return '0x${sha3(methodId).substring(0, 8)}';
-}
-
-enum SolanaClusters {
-  mainNet,
-  devNet,
-  testNet,
-}
-
-enum AlgorandTypes {
-  mainNet,
-  testNet,
-}
-
-enum TezosTypes {
-  mainNet,
-  ghostNet,
-}
-
-final xrpBaseCodec =
-    BaseXCodec('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');
-solana.SolanaClient getSolanaClient(SolanaClusters solanaClusterType) {
-  solanaClusterType ??= SolanaClusters.mainNet;
-
-  String solanaRpcUrl = '';
-  String solanaWebSocket = '';
-  switch (solanaClusterType) {
-    case SolanaClusters.mainNet:
-      solanaRpcUrl = 'https://solana-api.projectserum.com';
-      solanaWebSocket = 'wss://solana-api.projectserum.com';
-      break;
-    case SolanaClusters.devNet:
-      solanaRpcUrl = 'https://api.devnet.solana.com';
-      solanaWebSocket = 'wss://api.devnet.solana.com';
-      break;
-    case SolanaClusters.testNet:
-      solanaRpcUrl = 'https://api.testnet.solana.com';
-      solanaWebSocket = 'wss://api.testnet.solana.com';
-      break;
-    default:
-      throw Exception('unimplemented error');
-  }
-
-  return solana.SolanaClient(
-    rpcUrl: Uri.parse(solanaRpcUrl),
-    websocketUrl: Uri.parse(solanaWebSocket),
-  );
 }
 
 Future<Map> viewUserTokens(
@@ -531,303 +462,6 @@ Future<Map> approveTokenFor1inch(
   return response;
 }
 
-Map getKnownMethodId() {
-  return {
-    "data": [
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "transferFrom(address,address,uint16[])"
-      },
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "transfer(address,uint16[])"
-      },
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "trade(uint256,uint16[],uint8,bytes32,bytes32)"
-      },
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "passTo(uint256,uint16[],uint8,bytes32,bytes32,address)"
-      },
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "loadNewTickets(bytes32[])"
-      },
-      {
-        "contractType": "ContractType.ERC875_LEGACY",
-        "methodId": "balanceOf(address)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "transfer(address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "transfer(address,uint)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "transferFrom(address,address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "approve(address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "approve(address,uint)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "allocateTo(address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "allowance(address,address)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "transferFrom(address,address,uint)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "approveAndCall(address,uint,bytes)"
-      },
-      {"contractType": "ContractType.ERC20", "methodId": "balanceOf(address)"},
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "transferAnyERC20Token(address,uint)"
-      },
-      {"contractType": "ContractType.ERC20", "methodId": "delegate(address)"},
-      {"contractType": "ContractType.ERC20", "methodId": "mint(address,uint)"},
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId":
-            "swapExactTokensForTokens(uint256,uint256,address[],address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "withdraw(address,uint256,address)"
-      },
-      {
-        "contractType": "ContractType.ERC20",
-        "methodId": "deposit(address,uint256,address,uint16)"
-      },
-      {"contractType": "ContractType.ERC20", "methodId": "deposit()"},
-      {
-        "contractType": "ContractType.ERC875",
-        "methodId": "transferFrom(address,address,uint256[])"
-      },
-      {
-        "contractType": "ContractType.ERC875",
-        "methodId": "transfer(address,uint256[])"
-      },
-      {
-        "contractType": "ContractType.ERC875",
-        "methodId": "trade(uint256,uint256[],uint8,bytes32,bytes32)"
-      },
-      {
-        "contractType": "ContractType.ERC875",
-        "methodId": "passTo(uint256,uint256[],uint8,bytes32,bytes32,address)"
-      },
-      {
-        "contractType": "ContractType.ERC875",
-        "methodId": "loadNewTickets(uint256[])"
-      },
-      {"contractType": "ContractType.ERC875", "methodId": "balanceOf(address)"},
-      {"contractType": "ContractType.CREATION", "methodId": "endContract()"},
-      {"contractType": "ContractType.CREATION", "methodId": "selfdestruct()"},
-      {"contractType": "ContractType.CREATION", "methodId": "kill()"},
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "safeTransferFrom(address,address,uint256,bytes)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "safeTransferFrom(address,address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "transferFrom(address,address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "approve(address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "setApprovalForAll(address,bool)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "getApproved(address,address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "isApprovedForAll(address,address)"
-      },
-      {
-        "contractType": "ContractType.ERC721_LEGACY",
-        "methodId": "transfer(address,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "giveBirth(uint256,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "breedWithAuto(uint256,uint256)"
-      },
-      {"contractType": "ContractType.ERC721", "methodId": "ownerOf(uint256)"},
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "createSaleAuction(uint256,uint256,uint256,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "mixGenes(uint256,uint256,uint256)"
-      },
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "tokensOfOwner(address)"
-      },
-      {"contractType": "ContractType.ERC721", "methodId": "store(uint256)"},
-      {
-        "contractType": "ContractType.ERC721",
-        "methodId": "remix(uint256,bytes)"
-      },
-      {
-        "contractType": "ContractType.ERC1155",
-        "methodId": "safeTransferFrom(address,address,uint256,uint256,bytes)"
-      },
-      {
-        "contractType": "ContractType.ERC1155",
-        "methodId":
-            "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"
-      },
-      {
-        "contractType": "ContractType.CURRENCY",
-        "methodId":
-            "dropCurrency(uint32,uint32,uint32,uint8,bytes32,bytes32,address)"
-      },
-      {
-        "contractType": "ContractType.CURRENCY",
-        "methodId": "withdraw(uint256)"
-      },
-      {"contractType": "ContractType.ERC721", "methodId": "commitNFT()"}
-    ]
-  };
-}
-
-Map getBitCoinPOSBlockchains() {
-  Map blockChains = {
-    'Bitcoin': {
-      'symbol': 'BTC',
-      'default': 'BTC',
-      'blockExplorer':
-          'https://live.blockcypher.com/btc/tx/$transactionhashTemplateKey',
-      'image': 'assets/bitcoin.jpg',
-      'POSNetwork': bitcoin.bitcoin,
-      'P2WPKH': true,
-      'derivationPath': "m/84'/0'/0'/0/0"
-    },
-    'BitcoinCash': {
-      'symbol': 'BCH',
-      'default': 'BCH',
-      'blockExplorer':
-          'https://www.blockchain.com/explorer/transactions/bch/$transactionhashTemplateKey',
-      'image': 'assets/bitcoin_cash.png',
-      'POSNetwork': bitcoincash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/145'/0'/0/0"
-    },
-    'Litecoin': {
-      'symbol': 'LTC',
-      'default': 'LTC',
-      'blockExplorer':
-          'https://live.blockcypher.com/ltc/tx/$transactionhashTemplateKey',
-      'image': 'assets/litecoin.png',
-      'POSNetwork': litecoin,
-      'P2WPKH': true,
-      'derivationPath': "m/84'/2'/0'/0/0"
-    },
-    'Dash': {
-      'symbol': 'DASH',
-      'default': 'DASH',
-      'blockExplorer':
-          'https://live.blockcypher.com/dash/tx/$transactionhashTemplateKey',
-      'image': 'assets/dash.png',
-      'POSNetwork': dash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/5'/0'/0/0"
-    },
-    'ZCash': {
-      'symbol': 'ZEC',
-      'default': 'ZEC',
-      'blockExplorer':
-          'https://zcashblockexplorer.com/transactions/$transactionhashTemplateKey',
-      'image': 'assets/zcash.png',
-      'POSNetwork': zcash,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/133'/0'/0/0"
-    },
-    'Dogecoin': {
-      'symbol': 'DOGE',
-      'default': 'DOGE',
-      'blockExplorer':
-          'https://live.blockcypher.com/doge/tx/$transactionhashTemplateKey',
-      'image': 'assets/dogecoin.png',
-      'POSNetwork': dogecoin,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/3'/0'/0/0"
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Bitcoin(Test)'] = {
-      'symbol': 'BTC',
-      'default': 'BTC',
-      'blockExplorer':
-          'https://www.blockchain.com/btc-testnet/tx/$transactionhashTemplateKey',
-      'image': 'assets/bitcoin.jpg',
-      'POSNetwork': testnet,
-      'P2WPKH': false,
-      'derivationPath': "m/44'/0'/0'/0/0"
-    };
-  }
-
-  return blockChains;
-}
-
-Map getCosmosBlockChains() {
-  // change lcdurl for cosmos to sdk 0.37.9 / cosmoshub-3
-  Map blockChains = {
-    'Cosmos': {
-      'blockExplorer':
-          'https://atomscan.com/transactions/$transactionhashTemplateKey',
-      'symbol': 'ATOM',
-      'default': 'ATOM',
-      'image': 'assets/cosmos.png',
-      'bech32Hrp': 'cosmos',
-      'lcdUrl': 'https://api.cosmos.network'
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Cosmos(Test)'] = {
-      'blockExplorer':
-          'https://explorer.theta-testnet.polypore.xyz/transactions/$transactionhashTemplateKey',
-      'symbol': 'ATOM',
-      'default': 'ATOM',
-      'image': 'assets/cosmos.png',
-      'bech32Hrp': 'cosmos',
-      'lcdUrl': 'https://rest.state-sync-02.theta-testnet.polypore.xyz'
-    };
-  }
-  return blockChains;
-}
-
 final List<String> months = [
   'Jan',
   'Feb',
@@ -843,82 +477,7 @@ final List<String> months = [
   'Dec'
 ];
 
-Map getTronBlockchains() {
-  Map blockChains = {
-    'Tron': {
-      'blockExplorer':
-          'https://tronscan.org/#/transaction/$transactionhashTemplateKey',
-      'symbol': 'TRX',
-      'default': 'TRX',
-      'image': 'assets/tron.png',
-      'api': 'https://api.trongrid.io',
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Tron(Testnet)'] = {
-      'blockExplorer':
-          'https://shasta.tronscan.org/#/transaction/$transactionhashTemplateKey',
-      'symbol': 'TRX',
-      'default': 'TRX',
-      'image': 'assets/tron.png',
-      'api': 'https://api.shasta.trongrid.io',
-    };
-  }
-
-  return blockChains;
-}
-
-Map getTezosBlockchains() {
-  Map blockChains = {
-    'Tezos': {
-      'blockExplorer': 'https://tzkt.io/$transactionhashTemplateKey',
-      'symbol': 'XTZ',
-      'default': 'XTZ',
-      'image': 'assets/tezos.png',
-      'tezorType': TezosTypes.mainNet,
-      'server': 'https://rpc.tzkt.io/mainnet'
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Tezos(Testnet)'] = {
-      'blockExplorer': 'https://ghostnet.tzkt.io/$transactionhashTemplateKey',
-      'symbol': 'XTZ',
-      'default': 'XTZ',
-      'image': 'assets/tezos.png',
-      'tezorType': TezosTypes.ghostNet,
-      'server': 'https://rpc.tzkt.io/ghostnet'
-    };
-  }
-  return blockChains;
-}
-
-Map getAlgorandBlockchains() {
-  Map blockChains = {
-    'Algorand': {
-      'blockExplorer': 'https://algoexplorer.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ALGO',
-      'default': 'ALGO',
-      'image': 'assets/algorand.png',
-      'algoType': AlgorandTypes.mainNet,
-    }
-  };
-
-  if (enableTestNet) {
-    blockChains['Algorand(Testnet)'] = {
-      'blockExplorer':
-          'https://testnet.algoexplorer.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ALGO',
-      'default': 'ALGO',
-      'image': 'assets/algorand.png',
-      'algoType': AlgorandTypes.testNet,
-    };
-  }
-  return blockChains;
-}
-
-reInstianteSeedRoot() async {
+Future reInstianteSeedRoot() async {
   final pref = Hive.box(secureStorageKey);
   final currentPhrase = pref.get(currentMmenomicKey);
   if (currentPhrase != null) {
@@ -926,391 +485,7 @@ reInstianteSeedRoot() async {
   }
 }
 
-Map getEVMBlockchains() {
-  final pref = Hive.box(secureStorageKey);
-  Map userAddedEVM = {};
-  if (pref.get(newEVMChainKey) != null) {
-    userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
-  }
-  Map blockChains = {
-    'Ethereum': {
-      "rpc": 'https://mainnet.infura.io/v3/$infuraApiKey',
-      'chainId': 1,
-      'blockExplorer': 'https://etherscan.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ETH',
-      'default': 'ETH',
-      'image': 'assets/ethereum_logo.png',
-      'coinType': 60
-    },
-    'Smart Chain': {
-      "rpc": 'https://bsc-dataseed.binance.org/',
-      'chainId': 56,
-      'blockExplorer': 'https://bscscan.com/tx/$transactionhashTemplateKey',
-      'symbol': 'BNB',
-      'default': 'BNB',
-      'image': 'assets/smartchain.png',
-      'coinType': 60
-    },
-    'Polygon Matic': {
-      "rpc": 'https://polygon-rpc.com',
-      'chainId': 137,
-      'blockExplorer': 'https://polygonscan.com/tx/$transactionhashTemplateKey',
-      'symbol': 'MATIC',
-      'default': 'MATIC',
-      'image': 'assets/polygon.png',
-      'coinType': 60
-    },
-    'Avalanche': {
-      "rpc": 'https://api.avax.network/ext/bc/C/rpc',
-      'chainId': 43114,
-      'blockExplorer': 'https://snowtrace.io/tx/$transactionhashTemplateKey',
-      'symbol': 'AVAX',
-      'default': 'AVAX',
-      'image': 'assets/avalanche.png',
-      'coinType': 60
-    },
-    'Fantom': {
-      "rpc": 'https://rpc.ftm.tools/',
-      'chainId': 250,
-      'blockExplorer': 'https://ftmscan.com/tx/$transactionhashTemplateKey',
-      'symbol': 'FTM',
-      'default': 'FTM',
-      'image': 'assets/fantom.png',
-      'coinType': 60
-    },
-    'Arbitrum': {
-      "rpc": 'https://arb1.arbitrum.io/rpc',
-      'chainId': 42161,
-      'blockExplorer': 'https://arbiscan.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ETH',
-      'default': 'ETH',
-      'image': 'assets/arbitrum.jpg',
-      'coinType': 60
-    },
-    'Optimism': {
-      "rpc": 'https://mainnet.optimism.io',
-      'chainId': 10,
-      'blockExplorer':
-          'https://optimistic.etherscan.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ETH',
-      'default': 'ETH',
-      'image': 'assets/optimism.png',
-      'coinType': 60
-    },
-    'Ethereum Classic': {
-      'symbol': 'ETC',
-      'default': 'ETH',
-      'blockExplorer':
-          'https://blockscout.com/etc/mainnet/tx/$transactionhashTemplateKey',
-      'rpc': 'https://www.ethercluster.com/etc',
-      'chainId': 61,
-      'image': 'assets/ethereum-classic.png',
-      'coinType': 61
-    },
-    'Cronos': {
-      "rpc": 'https://evm.cronos.org',
-      'chainId': 25,
-      'blockExplorer': 'https://cronoscan.com/tx/$transactionhashTemplateKey',
-      'symbol': 'CRO',
-      'default': 'CRO',
-      'image': 'assets/cronos.png',
-      'coinType': 60
-    },
-    'Milkomeda Cardano': {
-      "rpc": ' https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
-      'chainId': 2001,
-      'blockExplorer':
-          'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/tx/$transactionhashTemplateKey',
-      'symbol': 'MilkADA',
-      'default': 'MilkADA',
-      'image': 'assets/milko-cardano.jpeg',
-      'coinType': 60
-    },
-    'Huobi Chain': {
-      "rpc": 'https://http-mainnet-node.huobichain.com/',
-      'chainId': 128,
-      'blockExplorer': 'https://hecoinfo.com/tx/$transactionhashTemplateKey',
-      'symbol': 'HT',
-      'default': 'HT',
-      'image': 'assets/huobi.png',
-      'coinType': 60
-    },
-    'Kucoin Chain': {
-      "rpc": 'https://rpc-mainnet.kcc.network',
-      'chainId': 321,
-      'blockExplorer': 'https://explorer.kcc.io/tx/$transactionhashTemplateKey',
-      'symbol': 'KCS',
-      'default': 'KCS',
-      'image': 'assets/kucoin.jpeg',
-      'coinType': 60
-    },
-    'Elastos': {
-      "rpc": 'https://api.elastos.io/eth',
-      'chainId': 20,
-      'blockExplorer':
-          'https://explorer.elaeth.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ELA',
-      'default': 'ELA',
-      'image': 'assets/elastos.png',
-      'coinType': 60
-    },
-    'xDai': {
-      "rpc": 'https://rpc.xdaichain.com/',
-      'chainId': 100,
-      'blockExplorer':
-          'https://blockscout.com/xdai/mainnet/tx/$transactionhashTemplateKey',
-      'symbol': 'XDAI',
-      'default': 'XDAI',
-      'image': 'assets/xdai.jpg',
-      'coinType': 60
-    },
-    'Ubiq': {
-      "rpc": 'https://rpc.octano.dev/',
-      'chainId': 8,
-      'blockExplorer': 'https://ubiqscan.io/tx/$transactionhashTemplateKey',
-      'symbol': 'UBQ',
-      'default': 'UBQ',
-      'image': 'assets/ubiq.png',
-      'coinType': 60
-    },
-    'Celo': {
-      "rpc": 'https://rpc.ankr.com/celo',
-      'chainId': 42220,
-      'blockExplorer':
-          'https://explorer.celo.org/tx/$transactionhashTemplateKey',
-      'symbol': 'CELO',
-      'default': 'CELO',
-      'image': 'assets/celo.png',
-      'coinType': 60
-    },
-    'Fuse': {
-      "rpc": 'https://rpc.fuse.io',
-      'chainId': 122,
-      'blockExplorer':
-          'https://explorer.fuse.io/tx/$transactionhashTemplateKey',
-      'symbol': 'FUSE',
-      'default': 'FUSE',
-      'image': 'assets/fuse.png',
-      'coinType': 60
-    },
-    'Aurora': {
-      "rpc": 'https://mainnet.aurora.dev',
-      'chainId': 1313161554,
-      'blockExplorer': 'https://aurorascan.dev/tx/$transactionhashTemplateKey',
-      'symbol': 'ETH',
-      'default': 'ETH',
-      'image': 'assets/aurora.png',
-      'coinType': 60
-    },
-    'Thunder Token': {
-      "rpc": 'https://mainnet-rpc.thundercore.com',
-      'chainId': 108,
-      'blockExplorer':
-          'https://viewblock.io/thundercore/tx/$transactionhashTemplateKey',
-      'symbol': 'TT',
-      'default': 'TT',
-      'image': 'assets/thunder-token.jpeg',
-      'coinType': 1001
-    },
-    'GoChain': {
-      "rpc": 'https://rpc.gochain.io',
-      'chainId': 60,
-      'blockExplorer':
-          'https://explorer.gochain.io/tx/$transactionhashTemplateKey',
-      'symbol': 'GO',
-      'default': 'GO',
-      'image': 'assets/go-chain.png',
-      'coinType': 6060
-    },
-  };
-
-  if (enableTestNet) {
-    blockChains['Smart Chain(Testnet)'] = {
-      "rpc": 'https://data-seed-prebsc-2-s3.binance.org:8545/',
-      'chainId': 97,
-      'blockExplorer':
-          'https://testnet.bscscan.com/tx/$transactionhashTemplateKey',
-      'symbol': 'BNB',
-      'default': 'BNB',
-      'image': 'assets/smartchain.png',
-      'coinType': 60
-    };
-    blockChains["Polygon (Mumbai)"] = {
-      "rpc": "https://rpc-mumbai.maticvigil.com",
-      "chainId": 80001,
-      "blockExplorer":
-          "https://mumbai.polygonscan.com/tx/$transactionhashTemplateKey",
-      "symbol": "MATIC",
-      "default": "MATIC",
-      "image": "assets/polygon.png",
-      'coinType': 60
-    };
-    blockChains['Ethereum(Goerli)'] = {
-      "rpc": 'https://goerli.infura.io/v3/$infuraApiKey',
-      'chainId': 5,
-      'blockExplorer':
-          'https://goerli.etherscan.io/tx/$transactionhashTemplateKey',
-      'symbol': 'ETH',
-      'default': 'ETH',
-      'image': 'assets/ethereum_logo.png',
-      'coinType': 60
-    };
-  }
-
-  return {...blockChains, ...userAddedEVM};
-}
-
-Map getSolanaBlockChains() {
-  Map blockChains = {
-    'Solana': {
-      'symbol': 'SOL',
-      'default': 'SOL',
-      'blockExplorer':
-          'https://explorer.solana.com/tx/$transactionhashTemplateKey',
-      'image': 'assets/solana.webp',
-      'solanaCluster': SolanaClusters.mainNet,
-    }
-  };
-  if (enableTestNet) {
-    blockChains['Solana(Devnet)'] = {
-      'symbol': 'SOL',
-      'default': 'SOL',
-      'blockExplorer':
-          'https://explorer.solana.com/tx/$transactionhashTemplateKey?cluster=devnet',
-      'image': 'assets/solana.webp',
-      'solanaCluster': SolanaClusters.devNet,
-    };
-  }
-  return blockChains;
-}
-
-Map getStellarBlockChains() {
-  Map blockChains = {
-    'Stellar': {
-      'symbol': 'XLM',
-      'default': 'XLM',
-      'blockExplorer':
-          'https://stellarchain.io/transactions/$transactionhashTemplateKey',
-      'image': 'assets/stellar.png', // sdk stellar
-      'sdk': stellar.StellarSDK.PUBLIC,
-      'cluster': stellar.Network.PUBLIC
-    }
-  };
-  if (enableTestNet) {
-    blockChains['Stellar(Testnet)'] = {
-      'symbol': 'XLM',
-      'default': 'XLM',
-      'blockExplorer':
-          'https://testnet.stellarchain.io/transactions/$transactionhashTemplateKey',
-      'image': 'assets/stellar.png',
-      'sdk': stellar.StellarSDK.TESTNET,
-      'cluster': stellar.Network.TESTNET
-    };
-  }
-  return blockChains;
-}
-
-Map getNearBlockChains() {
-  Map blockChains = {
-    'Near': {
-      'symbol': 'NEAR',
-      'default': 'NEAR',
-      'blockExplorer':
-          'https://explorer.near.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/near.png',
-      'api': 'https://rpc.mainnet.near.org'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['Near(Testnet)'] = {
-      'symbol': 'NEAR',
-      'default': 'NEAR',
-      'blockExplorer':
-          'https://explorer.testnet.near.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/near.png',
-      'api': 'https://rpc.testnet.near.org'
-    };
-  }
-  return blockChains;
-}
-
-Map getXRPBlockChains() {
-  Map blockChains = {
-    'XRP': {
-      'symbol': 'XRP',
-      'default': 'XRP',
-      'blockExplorer':
-          'https://livenet.xrpl.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/ripple.png',
-      'ws': 'https://s1.ripple.com:51234/'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['XRP(Testnet)'] = {
-      'symbol': 'XRP',
-      'default': 'XRP',
-      'blockExplorer':
-          'https://testnet.xrpl.org/transactions/$transactionhashTemplateKey',
-      'image': 'assets/ripple.png',
-      'ws': 'https://s.altnet.rippletest.net:51234/',
-    };
-  }
-  return blockChains;
-}
-
-Map getFilecoinBlockChains() {
-  Map blockChains = {
-    'Filecoin': {
-      'symbol': 'FIL',
-      'default': 'FIL',
-      'blockExplorer':
-          'https://filscan.io/tipset/message-detail?cid=$transactionhashTemplateKey',
-      'image': 'assets/filecoin.png',
-      'baseUrl': 'https://api.node.glif.io/rpc/v0',
-      'prefix': 'f'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['Filecoin(Testnet)'] = {
-      'symbol': 'FIL',
-      'default': 'FIL',
-      'blockExplorer':
-          'https://calibration.filscan.io/tipset/message-detail?cid=$transactionhashTemplateKey',
-      'image': 'assets/filecoin.png',
-      'baseUrl': 'https://api.calibration.node.glif.io/rpc/v0',
-      'prefix': 't'
-    };
-  }
-  return blockChains;
-}
-
-Map getCardanoBlockChains() {
-  Map blockChains = {
-    'Cardano': {
-      'symbol': 'ADA',
-      'default': 'ADA',
-      'blockExplorer':
-          'https://cardanoscan.io/transaction/$transactionhashTemplateKey',
-      'image': 'assets/cardano.png',
-      'cardano_network': cardano.NetworkId.mainnet,
-      'blockFrostKey': 'mainnetpgkQqXqQ4HjK6gzUKaHW6VU9jcmcKEbd'
-    }
-  };
-  if (enableTestNet) {
-    blockChains['Cardano(Prepod)'] = {
-      'symbol': 'ADA',
-      'default': 'ADA',
-      'blockExplorer':
-          'https://preprod.cardanoscan.io/transaction/$transactionhashTemplateKey',
-      'image': 'assets/cardano.png',
-      'cardano_network': cardano.NetworkId.testnet,
-      'blockFrostKey': 'preprodmpCaCFGCxLihVPPxXxqEvEnp7dyFmG6J'
-    };
-  }
-  return blockChains;
-}
-
-const coinGeckCryptoSymbolToID = {
+const coinGeckoID = {
   "BTC": "bitcoin",
   "XTZ": "tezos",
   "TRX": "tron",
@@ -1358,7 +533,7 @@ const coinGeckCryptoSymbolToID = {
 };
 
 Map requestPaymentScheme = {
-  ...coinGeckCryptoSymbolToID,
+  ...coinGeckoID,
   "BTC": "bitcoin",
   "ETH": "ethereum",
   "BNB": "smartchain",
@@ -1440,7 +615,9 @@ Future<web3.DeployedContract> getEnsResolverContract(
 
 Future ensToContentHashAndIPFS({String cryptoDomainName}) async {
   try {
-    final rpcUrl = getEVMBlockchains()['Ethereum']['rpc'];
+    final rpcUrl = getEVMBlockchains().firstWhere(
+      (element) => element['name'] == 'Ethereum',
+    )['rpc'];
     final client = web3.Web3Client(rpcUrl, Client());
     final nameHash_ = nameHash(cryptoDomainName);
     web3.DeployedContract ensResolverContract =
@@ -1492,7 +669,10 @@ Future ensToContentHashAndIPFS({String cryptoDomainName}) async {
 Future<Map> ensToAddress({String cryptoDomainName}) async {
   try {
     cryptoDomainName = cryptoDomainName.toLowerCase();
-    final rpcUrl = getEVMBlockchains()['Ethereum']['rpc'];
+    final ethereumDetails = getEVMBlockchains().firstWhere(
+      (element) => element['name'] == 'Ethereum',
+    );
+    final rpcUrl = EthereumCoin.fromJson(ethereumDetails).rpc;
     final client = web3.Web3Client(rpcUrl, Client());
     final nameHash_ = nameHash(cryptoDomainName);
     web3.DeployedContract ensResolverContract =
@@ -1517,201 +697,9 @@ Future<Map> ensToAddress({String cryptoDomainName}) async {
 Future<void> initializeAllPrivateKeys(String mnemonic) async {
   seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
-  for (String i in getEVMBlockchains().keys) {
-    await getEthereumFromMemnomic(
-      mnemonic,
-      getEVMBlockchains()[i]['coinType'],
-    );
+  for (int i = 0; i < getAllBlockchains.length; i++) {
+    getAllBlockchains[i].fromMnemonic(mnemonic);
   }
-  for (String i in getTezosBlockchains().keys) {
-    await getTezorFromMemnomic(
-      mnemonic,
-      getTezosBlockchains()[i],
-    );
-  }
-  for (String i in getBitCoinPOSBlockchains().keys) {
-    await getBitcoinFromMemnomic(
-      mnemonic,
-      getBitCoinPOSBlockchains()[i],
-    );
-  }
-  for (String i in getFilecoinBlockChains().keys) {
-    await getFileCoinFromMemnomic(
-      mnemonic,
-      getFilecoinBlockChains()[i]['prefix'],
-    );
-  }
-  for (String i in getCardanoBlockChains().keys) {
-    await getCardanoFromMemnomic(
-      mnemonic,
-      getCardanoBlockChains()[i]['cardano_network'],
-    );
-  }
-
-  for (String i in getCosmosBlockChains().keys) {
-    await getCosmosFromMemnomic(
-      mnemonic,
-      getCosmosBlockChains()[i]['bech32Hrp'],
-      getCosmosBlockChains()[i]['lcdUrl'],
-    );
-  }
-  await getSolanaFromMemnomic(mnemonic);
-  await getStellarFromMemnomic(mnemonic);
-  await getAlgorandFromMemnomic(mnemonic);
-  await getTronFromMemnomic(mnemonic);
-  await getXRPFromMemnomic(mnemonic);
-  await getNearFromMemnomic(mnemonic);
-}
-
-Future<Map> sendCardano(Map config) async {
-  final walletBuilder = cardano.WalletBuilder()
-    ..networkId = config['cardanoNetwork']
-    ..mnemonic = config[mnemonicKey].split(' ');
-
-  if (config['cardanoNetwork'] == cardano.NetworkId.mainnet) {
-    walletBuilder.mainnetAdapterKey = config['blockfrostForCardanoApiKey'];
-  } else if (config['cardanoNetwork'] == cardano.NetworkId.testnet) {
-    walletBuilder.testnetAdapterKey = config['blockfrostForCardanoApiKey'];
-  }
-  final result = await walletBuilder.buildAndSync();
-  if (result.isErr()) {
-    if (kDebugMode) {
-      print(result.err());
-    }
-    return {};
-  }
-
-  cardano.Wallet userWallet = result.unwrap();
-
-  final coinSelection = await cardano.largestFirst(
-    unspentInputsAvailable: userWallet.unspentTransactions,
-    outputsRequested: [
-      cardano.MultiAssetRequest.lovelace(
-        config['lovelaceToSend'] + maxFeeGuessForCardano,
-      )
-    ],
-    ownedAddresses: userWallet.addresses.toSet(),
-  );
-
-  final builder = cardano.TransactionBuilder()
-    ..wallet(userWallet)
-    ..blockchainAdapter(userWallet.blockchainAdapter)
-    ..toAddress(config['recipientAddress'])
-    ..inputs(coinSelection.unwrap().inputs)
-    ..value(
-      cardano.ShelleyValue(
-        coin: config['lovelaceToSend'],
-        multiAssets: [],
-      ),
-    )
-    ..changeAddress(config['senderAddress']);
-
-  final txResult = await builder.buildAndSign();
-
-  if (txResult.isErr()) {
-    if (kDebugMode) {
-      print(txResult.err());
-    }
-    throw Exception(txResult.err());
-  }
-
-  final submitTrx = await userWallet.blockchainAdapter.submitTransaction(
-    txResult.unwrap().serialize,
-  );
-
-  if (submitTrx.isErr()) {
-    if (kDebugMode) {
-      print(submitTrx.err());
-    }
-    throw Exception(submitTrx.err());
-  }
-
-  final txHash = submitTrx.unwrap();
-  return {'txid': txHash.replaceAll('"', '')};
-}
-
-Future<Map> sendCosmos(Map config) async {
-  final networkInfo = cosmos.NetworkInfo(
-    bech32Hrp: config['bech32Hrp'],
-    lcdUrl: Uri.parse(config['lcdUrl']),
-  );
-
-  final wallet =
-      cosmos.Wallet.derive(config[mnemonicKey].split(' '), networkInfo);
-
-  final message = cosmos.StdMsg(
-    type: 'cosmos-sdk/MsgSend',
-    value: {
-      'from_address': wallet.bech32Address,
-      'to_address': config['recipientAddress'],
-      'amount': [
-        {
-          'denom': 'uatom',
-          'amount': config['uatomToSend'],
-        }
-      ]
-    },
-  );
-
-  final stdTx = cosmos.TxBuilder.buildStdTx(stdMsgs: [message]);
-
-  final signedStdTx =
-      await cosmos.TxSigner.signStdTx(wallet: wallet, stdTx: stdTx);
-
-  final result = await cosmos.TxSender.broadcastStdTx(
-    wallet: wallet,
-    stdTx: signedStdTx,
-  );
-
-  if (result.success) {
-    return {'txid': result.hash};
-  }
-  return {};
-}
-
-Future<Map> sendSolana(
-  String destinationAddress,
-  int lamportToSend,
-  SolanaClusters solanaClustersType,
-) async {
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-
-  final keyPair = await compute(calculateSolanaKey, {
-    mnemonicKey: mnemonic,
-    'getSolanaKeys': true,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  final signature = await getSolanaClient(solanaClustersType).transferLamports(
-    source: keyPair,
-    destination: solana.Ed25519HDPublicKey.fromBase58(destinationAddress),
-    lamports: lamportToSend,
-  );
-
-  return {'txid': signature};
-}
-
-Future<Map> sendAlgorand(
-  String destinationAddress,
-  AlgorandTypes type,
-  int amount,
-) async {
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-
-  final keyPair = await compute(calculateAlgorandKey, {
-    mnemonicKey: mnemonic,
-    'getAlgorandKeys': true,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  String signature = await getAlgorandClient(type).sendPayment(
-      account: keyPair,
-      recipient: algo_rand.Address.fromAlgorandAddress(
-        address: destinationAddress,
-      ),
-      amount: amount);
-
-  return {'txid': signature};
 }
 
 const rampSwap = {
@@ -1748,178 +736,6 @@ getRampLink(String asset, String userAddress) {
   return 'https://buy.ramp.network/?defaultAsset=$asset&fiatCurrency=USD&fiatValue=150.000000&hostApiKey=$rampApiKey&swapAsset=$asset&userAddress=$userAddress';
 }
 
-Future<Map> getSolanaFromMemnomic(String mnemonic) async {
-  final pref = Hive.box(secureStorageKey);
-  const keyName = 'solanaDetail';
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(calculateSolanaKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-  });
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getCardanoFromMemnomic(
-  String mnemonic,
-  cardano.NetworkId cardanoNetwork,
-) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final keyName = 'cardanoDetail${cardanoNetwork.name}';
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(calculateCardanoKey, {
-    mnemonicKey: mnemonic,
-    'network': cardanoNetwork,
-  });
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getStellarFromMemnomic(String mnemonic) async {
-  final pref = Hive.box(secureStorageKey);
-  const keyName = 'stellarDetail';
-  List mmenomicMapping = [];
-
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(calculateStellarKey, {mnemonicKey: mnemonic});
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getCosmosFromMemnomic(
-  String mnemonic,
-  String bech32Hrp,
-  String lcdUrl,
-) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final keyName = sha3('cosmosDetails$bech32Hrp');
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final networkInfo = cosmos.NetworkInfo(
-    bech32Hrp: bech32Hrp,
-    lcdUrl: Uri.parse(lcdUrl),
-  );
-
-  final keys = await compute(
-    calculateCosmosKey,
-    {
-      mnemonicKey: mnemonic,
-      "networkInfo": networkInfo,
-    },
-  );
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-calculateCosmosKey(Map config) {
-  final wallet = cosmos.Wallet.derive(
-    config[mnemonicKey].split(' '),
-    config['networkInfo'],
-  );
-
-  return {'address': wallet.bech32Address};
-}
-
-Future<Map> getBitcoinFromMemnomic(
-  String mnemonic,
-  Map posDetails,
-) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final keyName =
-      sha3('bitcoinDetail${posDetails['POSNetwork']}${posDetails['default']}');
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(
-    calculateBitCoinKey,
-    Map.from(posDetails)
-      ..addAll({
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      }),
-  );
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getTezorFromMemnomic(
-  String mnemonic,
-  Map tezorDetails,
-) async {
-  final pref = Hive.box(secureStorageKey);
-  TezosTypes tezorType = tezorDetails['tezorType'];
-
-  final keyName = 'tezorDetails${tezorType.index}';
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(
-    calculateTezorKey,
-    Map.from(tezorDetails)
-      ..addAll({
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      }),
-  );
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
 Future<Map> decodeAbi(String txData) async {
   JavascriptRuntime javaScriptRuntime = getJavascriptRuntime();
   try {
@@ -1951,847 +767,12 @@ Future<Map> decodeAbi(String txData) async {
   }
 }
 
-Future<Map> getFileCoinFromMemnomic(
-  String mnemonic,
-  String addressPrefix,
-) async {
-  final pref = Hive.box(secureStorageKey);
-  final keyName = 'fileCoinDetail$addressPrefix';
-  List mmenomicMapping = [];
-  if (pref.get(keyName) != null) {
-    mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final keys = await compute(calculateFileCoinKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-    'addressPrefix': addressPrefix,
-  });
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(keyName, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> calculateTezorKey(Map config) async {
-  List<String> keys = await Dartez.restoreIdentityFromDerivationPath(
-    "m/44'/1729'/0'/0'",
-    config[mnemonicKey],
-  );
-
-  return {
-    'address': keys[2],
-    'private_key': keys[0],
-    'public_key': keys[1],
-  };
-}
-
-Map calculateBitCoinKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  final node = seedRoot_.root.derivePath(config['derivationPath']);
-
-  String address;
-  if (config['P2WPKH']) {
-    address = P2WPKH(
-      data: PaymentData(
-        pubkey: node.publicKey,
-      ),
-      network: config['POSNetwork'],
-    ).data.address;
-  } else {
-    address = P2PKH(
-      data: PaymentData(
-        pubkey: node.publicKey,
-      ),
-      network: config['POSNetwork'],
-    ).data.address;
-  }
-  if (config['default'] == 'BCH') {
-    if (bitbox.Address.detectFormat(address) == bitbox.Address.formatLegacy) {
-      address = bitbox.Address.toCashAddress(address).split(':')[1];
-    }
-  }
-
-  if (config['default'] == 'ZEC') {
-    final baddr = [...bs58check.decode(address)];
-    baddr.removeAt(0);
-
-    final taddr = Uint8List(22);
-
-    taddr.setAll(2, baddr);
-    taddr.setAll(0, [0x1c, 0xb8]);
-
-    address = bs58check.encode(taddr);
-  }
-
-  return {
-    'address': address,
-    'private_key': "0x${HEX.encode(node.privateKey)}"
-  };
-}
-
-Uint8List hexToU8a(String hex) {
-  RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
-  if (!hexRegex.hasMatch(hex)) {
-    throw ArgumentError('Provided string is not valid hex value');
-  }
-  final value = hex.startsWith('0x') ? hex.substring(2) : hex;
-  final valLength = value.length ~/ 2;
-
-  final bufLength = (valLength).ceil();
-
-  final result = Uint8List(bufLength);
-  final offset = (bufLength - valLength).clamp(0, bufLength);
-  for (var index = 0; index < bufLength; index++) {
-    result[index + offset] =
-        int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
-  }
-  return result;
-}
-
-Map calculateFileCoinKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
-  final rs0 = node.derive(0);
-
-  final pk = hexToU8a(HEX.encode(rs0.privateKey));
-  final e = getSecp256k1();
-
-  final publickEy =
-      e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
-
-  final protocolByte = Leb128.encodeUnsigned(1);
-  final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
-
-  final addressBytes = [...protocolByte, ...payload];
-  final checksum = blake2bHash(addressBytes, digestSize: 4);
-  Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
-  final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
-
-  return {
-    "address": address.toLowerCase(),
-    'privateKey': HEX.encode(rs0.privateKey),
-  };
-}
-
-algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {
-  final _algodClient = algo_rand.AlgodClient(
-    apiUrl: type == AlgorandTypes.mainNet
-        ? algo_rand.PureStake.MAINNET_ALGOD_API_URL
-        : algo_rand.PureStake.TESTNET_ALGOD_API_URL,
-    apiKey: pureStakeApiKey,
-    tokenKey: algo_rand.PureStake.API_TOKEN_HEADER,
-  );
-
-  final _indexerClient = algo_rand.IndexerClient(
-    apiUrl: type == AlgorandTypes.mainNet
-        ? algo_rand.PureStake.MAINNET_INDEXER_API_URL
-        : algo_rand.PureStake.TESTNET_INDEXER_API_URL,
-    apiKey: pureStakeApiKey,
-    tokenKey: algo_rand.PureStake.API_TOKEN_HEADER,
-  );
-
-  final _kmdClient = algo_rand.KmdClient(
-    apiUrl: '127.0.0.1',
-    apiKey: pureStakeApiKey,
-  );
-
-  return algo_rand.Algorand(
-    algodClient: _algodClient,
-    indexerClient: _indexerClient,
-    kmdClient: _kmdClient,
-  );
-}
-
-Future calculateAlgorandKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  KeyData masterKey =
-      await ED25519_HD_KEY.derivePath("m/44'/283'/0'/0'/0'", seedRoot_.seed);
-
-  final account =
-      await algo_rand.Account.fromPrivateKey(HEX.encode(masterKey.key));
-  if (config['getAlgorandKeys'] != null && config['getAlgorandKeys'] == true) {
-    return account;
-  }
-
-  return {
-    'address': account.publicAddress,
-  };
-}
-
-class NearRpcProvider extends RPCProvider {
-  final String endpoint;
-
-  NearRpcProvider(this.endpoint) : super(endpoint);
-}
-
-Future calculateNearKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  KeyData masterKey =
-      await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
-  final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
-
-  final address = HEX.encode(publicKey).substring(2);
-
-  return {
-    'privateKey': HEX.encode(masterKey.key),
-    'address': address,
-  };
-}
-
-String calculateEthereumKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  return "0x${HEX.encode(seedRoot_.root.derivePath("m/44'/${config['coinType']}'/0'/0/0").privateKey)}";
-}
-
-calculateTronKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  final master = wallet.ExtendedPrivateKey.master(seedRoot_.seed, wallet.xprv);
-  final root = master.forPath("m/44'/195'/0'/0/0");
-
-  final privateKey = wallet.PrivateKey((root as wallet.ExtendedPrivateKey).key);
-  final publicKey = wallet.tron.createPublicKey(privateKey);
-  final address = wallet.tron.createAddress(publicKey);
-
-  return {
-    'privateKey': HEX.encode(privateKey.value.toUint8List()),
-    'address': address,
-  };
-}
-
-Map<String, String> calculateRippleKey(Map config) {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-  final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
-
-  final pubKeyHash = computePublicKeyHash(node.publicKey);
-
-  final t = sha256
-      .convert(sha256.convert([0, ...pubKeyHash]).bytes)
-      .bytes
-      .sublist(0, 4);
-
-  String address =
-      xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
-  return {
-    'address': address,
-    'publicKey': HEX.encode(node.publicKey),
-    'privateKey': HEX.encode(node.privateKey),
-  };
-}
-
-Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
-  final hash256 = sha256.convert(publicKeyBytes).bytes;
-  final hash160 = RIPEMD160().update(hash256).digest();
-
-  return Uint8List.fromList(hash160);
-}
-
-Future calculateSolanaKey(Map config) async {
-  SeedPhraseRoot seedRoot_ = config[seedRootKey];
-
-  final solana.Ed25519HDKeyPair keyPair =
-      await solana.Ed25519HDKeyPair.fromSeedWithHdPath(
-    seed: seedRoot_.seed,
-    hdPath: "m/44'/501'/0'",
-  );
-
-  if (config['getSolanaKeys'] != null && config['getSolanaKeys'] == true) {
-    return keyPair;
-  }
-
-  return {
-    'address': keyPair.address,
-  };
-}
-
-Map calculateCardanoKey(Map config) {
-  final wallet = cardano.HdWallet.fromMnemonic(config[mnemonicKey]);
-  const cardanoAccountHardOffsetKey = 0x80000000;
-
-  String userWalletAddress = wallet
-      .deriveUnusedBaseAddressKit(
-          networkId: config['network'],
-          index: 0,
-          account: cardanoAccountHardOffsetKey,
-          role: 0,
-          unusedCallback: (cardano.ShelleyAddress address) => true)
-      .address
-      .toString();
-
-  return {
-    'address': userWalletAddress,
-  };
-}
-
-Future<Map> calculateStellarKey(Map config) async {
-  final wallet = await stellar.Wallet.from(config[mnemonicKey]);
-  final userWalletAddress = await wallet.getKeyPair(index: 0);
-  return {
-    'address': userWalletAddress.accountId,
-    'private_key': userWalletAddress.secretSeed,
-  };
-}
-
-Future<Map> getXrpLedgerSequence(
-  String address,
-  String ws,
-) async {
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        "method": "account_info",
-        "params": [
-          {
-            "account": address,
-            "ledger_index": "current",
-          }
-        ]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map accountInfo = json.decode(request.body);
-
-    final accountData = accountInfo['result']['account_data'];
-    if (accountData == null) {
-      throw Exception('Account not found');
-    }
-
-    return {
-      'Sequence': accountData['Sequence'],
-      'Flags': accountData['Flags'],
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-Future<Map> getXrpFee(String ws) async {
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'method': 'fee',
-        'params': [{}]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map feeInfo = json.decode(request.body);
-
-    return {
-      'Fee': feeInfo['result']['drops']['base_fee'],
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-Future<Map> sendXRP({
-  String ws,
-  String recipient,
-  String amountInXrp,
-  String mnemonic,
-}) async {
-  final getXRPDetails = await getXRPFromMemnomic(
-    mnemonic,
-  );
-
-  final amountInDrop =
-      BigInt.from(double.parse(amountInXrp) * pow(10, xrpDecimals));
-
-  Map xrpJson = {
-    "Account": getXRPDetails['address'],
-    "Fee": "10",
-    "Sequence": 0,
-    "TransactionType": "Payment",
-    "SigningPubKey": getXRPDetails['publicKey'],
-    "Amount": "$amountInDrop",
-    "Destination": recipient
-  };
-
-  if (getXRPDetails['address'] == recipient) {
-    throw Exception(
-      'An XRP payment transaction cannot have the same sender and destination',
-    );
-  }
-
-  Map ledgers = await getXrpLedgerSequence(getXRPDetails['address'], ws);
-
-  Map fee = await getXrpFee(ws);
-
-  if (ledgers != null) {
-    xrpJson = {...xrpJson, ...ledgers};
-  }
-  if (fee != null) {
-    xrpJson = {...xrpJson, ...fee};
-  }
-
-  Map xrpTransaction = signXrpTransaction(getXRPDetails['privateKey'], xrpJson);
-
-  final httpFromWs = Uri.parse(ws);
-  final request = await post(
-    httpFromWs,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode({
-      "method": "submit",
-      "params": [
-        {
-          "tx_blob": encodeXrpJson(xrpTransaction).substring(8),
-        }
-      ]
-    }),
-  );
-
-  if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-    throw Exception(request.body);
-  }
-
-  Map txInfo = json.decode(request.body);
-
-  final hash = txInfo['result']["tx_json"]['hash'];
-
-  return {'txid': hash};
-}
-
-Future<double> getXRPAddressBalance(
-  String address,
-  String ws, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'xrpAddressBalance$address$ws';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-  try {
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        "method": "account_info",
-        "params": [
-          {"account": address}
-        ]
-      }),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-
-    Map accountInfo = json.decode(request.body);
-
-    if (accountInfo['result']['account_data'] == null) {
-      throw Exception('Account not found');
-    }
-
-    final balance = accountInfo['result']['account_data']['Balance'];
-    final userBalance = double.parse(balance) / pow(10, xrpDecimals);
-    await pref.put(key, userBalance);
-
-    return userBalance;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<bool> fundRippleTestnet(String address) async {
-  try {
-    const ws = 'https://faucet.altnet.rippletest.net/accounts';
-    final httpFromWs = Uri.parse(ws);
-    final request = await post(
-      httpFromWs,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({"destination": address}),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception(request.body);
-    }
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-Future<double> getAlgorandAddressBalance(
-  String address,
-  AlgorandTypes type, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'algorandAddressBalance$address${type.index}';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final userBalanceMicro = await getAlgorandClient(type).getBalance(address);
-    final userBalance = userBalanceMicro / pow(10, algorandDecimals);
-    await pref.put(key, userBalance);
-
-    return userBalance;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getNearAddressBalance(
-  String address,
-  String nearApi, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'nearAddressBalance$address$nearApi';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final request = await post(
-      Uri.parse(nearApi),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(
-        {
-          "jsonrpc": "2.0",
-          "id": "dontcare",
-          "method": "query",
-          "params": {
-            "request_type": "view_account",
-            "finality": "final",
-            "account_id": address
-          },
-        },
-      ),
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception('Request failed');
-    }
-    Map decodedData = jsonDecode(request.body);
-
-    final BigInt balance = BigInt.parse(decodedData['result']['amount']);
-    final base = BigInt.from(10);
-
-    final balanceInNear = (balance / base.pow(nearDecimals)).toDouble();
-    await pref.put(key, balanceInNear);
-
-    return balanceInNear;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getTronAddressBalance(
-  String address,
-  String tronGridApi, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'tronAddressBalance$address$tronGridApi';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final request = await get(
-      Uri.parse('$tronGridApi/v1/accounts/$address'),
-      headers: {
-        'TRON-PRO-API-KEY': tronGridApiKey,
-        'Content-Type': 'application/json'
-      },
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception('Request failed');
-    }
-    Map decodedData = jsonDecode(request.body);
-
-    final int balance = decodedData['data'][0]['balance'];
-
-    final balanceInTron =
-        (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals))).toDouble();
-    await pref.put(key, balanceInTron);
-
-    return balanceInTron;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getCardanoAddressBalance(
-  String address,
-  cardano.NetworkId cardanoNetwork,
-  String blockfrostForCardanoApiKey, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-  final key = 'cardanoAddressBalance$address';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final cardanoBlockfrostBaseUrl =
-        'https://cardano-${cardanoNetwork == cardano.NetworkId.mainnet ? 'mainnet' : 'preprod'}.blockfrost.io/api/v0/addresses/';
-    final request = await get(
-      Uri.parse('$cardanoBlockfrostBaseUrl$address'),
-      headers: {'project_id': blockfrostForCardanoApiKey},
-    );
-
-    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
-      throw Exception('Request failed');
-    }
-    Map decodedData = jsonDecode(request.body);
-    final String balance = (decodedData['amount'] as List)
-        .where((element) => element['unit'] == 'lovelace')
-        .toList()[0]['quantity'];
-
-    final balanceFromAdaToLoveLace =
-        (BigInt.parse(balance) / BigInt.from(pow(10, cardanoDecimals)))
-            .toDouble();
-    await pref.put(key, balanceFromAdaToLoveLace);
-
-    return balanceFromAdaToLoveLace;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getStellarAddressBalance(
-  String address,
-  stellar.StellarSDK sdk,
-  stellar.Network cluster, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'stellarAddressBalance$address${bytesToHex(cluster.networkId)}';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    stellar.AccountResponse account = await sdk.accounts.account(address);
-
-    for (stellar.Balance balance in account.balances) {
-      if (balance.assetType == stellar.Asset.TYPE_NATIVE) {
-        double balanceInStellar = double.parse(balance.balance);
-        await pref.put(key, balanceInStellar);
-        return balanceInStellar;
-      }
-    }
-    return 0;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getSolanaAddressBalance(
-  String address,
-  SolanaClusters solanaClusterType, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = 'solanaAddressBalance$address${solanaClusterType.index}';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final balanceInLamport =
-        await getSolanaClient(solanaClusterType).rpcClient.getBalance(address);
-    double balanceInSol = balanceInLamport / solana.lamportsPerSol;
-
-    await pref.put(key, balanceInSol);
-
-    return balanceInSol;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getCosmosAddressBalance(
-  String address,
-  String lcdUrl, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-  final key = 'cosmosAddressBalance$address$lcdUrl';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-  try {
-    final response = await http.get(
-      Uri.parse(
-        '$lcdUrl/cosmos/bank/v1beta1/balances/$address',
-      ),
-    );
-    final responseBody = response.body;
-    if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
-      throw Exception(responseBody);
-    }
-
-    List balances = jsonDecode(responseBody)['balances'];
-
-    if (balances.isEmpty) {
-      return 0;
-    }
-
-    final String balance = balances
-        .where((element) => element['denom'] == 'uatom')
-        .toList()[0]['amount'];
-
-    double balanceInCosmos = double.parse(balance) / pow(10, cosmosDecimals);
-
-    await pref.put(key, balanceInCosmos);
-
-    return balanceInCosmos;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getFileCoinAddressBalance(
-  String address, {
-  String baseUrl,
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-  final key = 'fileCoinAddressBalance$address$baseUrl';
-
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "Filecoin.WalletBalance",
-        "params": [address]
-      }),
-    );
-    final responseBody = response.body;
-    if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
-      throw Exception(responseBody);
-    }
-
-    double balanceInFileCoin = double.parse(
-          jsonDecode(responseBody)['result'].toString(),
-        ) /
-        pow(10, fileCoinDecimals);
-
-    await pref.put(key, balanceInFileCoin);
-
-    return balanceInFileCoin;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
 Future<String> getCryptoPrice({
   bool skipNetworkRequest = false,
 }) async {
   String allCrypto = "";
   int currentIndex = 0;
-  final listOfCoinGeckoValue = coinGeckCryptoSymbolToID.values;
+  final listOfCoinGeckoValue = coinGeckoID.values;
   for (final value in listOfCoinGeckoValue) {
     if (currentIndex == listOfCoinGeckoValue.length - 1) {
       allCrypto += value;
@@ -2859,335 +840,8 @@ Future<String> getCryptoPrice({
   }
 }
 
-Future<String> contractDetailsKey(String rpc, String contractAddress) async {
-  String mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
-  final ethereumDetails = await getEthereumFromMemnomic(
-    mnemonic,
-    getEVMBlockchains()['Ethereum']['coinType'],
-  );
-  return '${rpc.toString().toLowerCase()}${contractAddress.toString().toLowerCase()}${ethereumDetails['eth_wallet_address']}|usertoken';
-}
-
-Future getErc20Allowance({
-  String owner,
-  String spender,
-  String rpc,
-  String contractAddress,
-}) async {
-  web3.Web3Client client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final contract = web3.DeployedContract(
-      web3.ContractAbi.fromJson(erc20Abi, ''),
-      web3.EthereumAddress.fromHex(contractAddress));
-
-  final allowanceFunction = contract.function('allowance');
-
-  final allowance = (await client.call(
-    contract: contract,
-    function: allowanceFunction,
-    params: [
-      web3.EthereumAddress.fromHex(owner),
-      web3.EthereumAddress.fromHex(spender),
-    ],
-  ))
-      .first;
-
-  return allowance;
-}
-
-Future<double> getERC20TokenBalance(
-  Map tokenDetails, {
-  bool skipNetworkRequest = false,
-}) async {
-  web3.Web3Client client = web3.Web3Client(
-    tokenDetails['rpc'],
-    Client(),
-  );
-
-  final pref = Hive.box(secureStorageKey);
-  String mnemonic = pref.get(currentMmenomicKey);
-  Map response = await getEthereumFromMemnomic(
-    mnemonic,
-    tokenDetails['coinType'],
-  );
-
-  final sendingAddress = web3.EthereumAddress.fromHex(
-    response['eth_wallet_address'],
-  );
-  String elementDetailsKey = await contractDetailsKey(
-    tokenDetails['rpc'],
-    tokenDetails['contractAddress'],
-  );
-
-  String balanceKey = sha3('${elementDetailsKey}balance');
-
-  final storedBalance = pref.get(balanceKey);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    final crytoBalance = jsonDecode(pref.get(balanceKey));
-    savedBalance = double.parse(crytoBalance['balance']) /
-        pow(10, double.parse(crytoBalance['decimals']));
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final contract = web3.DeployedContract(
-      web3.ContractAbi.fromJson(erc20Abi, ''),
-      web3.EthereumAddress.fromHex(
-        tokenDetails['contractAddress'],
-      ),
-    );
-
-    final balanceFunction = contract.function('balanceOf');
-
-    final decimalsFunction = contract.function('decimals');
-
-    final decimals = (await client
-            .call(contract: contract, function: decimalsFunction, params: []))
-        .first
-        .toString();
-
-    final balance = (await client.call(
-      contract: contract,
-      function: balanceFunction,
-      params: [sendingAddress],
-    ))
-        .first
-        .toString();
-    await pref.put(
-      balanceKey,
-      jsonEncode({
-        'balance': balance,
-        'decimals': decimals,
-      }),
-    );
-    return double.parse(balance) / pow(10, double.parse(decimals));
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
-Future<double> getEtherTransactionFee(
-  String rpc,
-  Uint8List data,
-  web3.EthereumAddress sender,
-  web3.EthereumAddress to, {
-  double value,
-  EtherAmount gasPrice,
-}) async {
-  final client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final etherValue = value != null
-      ? web3.EtherAmount.inWei(
-          BigInt.from(value),
-        )
-      : null;
-
-  if (gasPrice == null || gasPrice.getInWei == BigInt.from(0)) {
-    gasPrice = await client.getGasPrice();
-  }
-
-  BigInt gasUnit;
-
-  try {
-    gasUnit = await client.estimateGas(
-      sender: sender,
-      to: to,
-      data: data,
-      value: etherValue,
-    );
-  } catch (_) {}
-
-  if (gasUnit == null) {
-    try {
-      gasUnit = await client.estimateGas(
-        sender: EthereumAddress.fromHex(zeroAddress),
-        to: to,
-        data: data,
-        value: etherValue,
-      );
-    } catch (_) {}
-  }
-
-  if (gasUnit == null) {
-    try {
-      gasUnit = await client.estimateGas(
-        sender: EthereumAddress.fromHex(deadAddress),
-        to: to,
-        data: data,
-        value: etherValue,
-      );
-    } catch (e) {
-      gasUnit = BigInt.from(0);
-    }
-  }
-
-  return gasPrice.getInWei.toDouble() * gasUnit.toDouble();
-}
-
-Future<String> etherPrivateKeyToAddress(String privateKey) async {
-  web3.EthPrivateKey ethereumPrivateKey =
-      web3.EthPrivateKey.fromHex(privateKey);
-  final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
-  return web3.EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
-}
-
-Future<Map> getTronFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'tronDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(
-    calculateTronKey,
-    {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-    },
-  );
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getXRPFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'xrpDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(calculateRippleKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getNearFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'nearDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(calculateNearKey, {
-    mnemonicKey: mnemonic,
-    seedRootKey: seedPhraseRoot,
-  });
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getAlgorandFromMemnomic(
-  String mnemonic,
-) async {
-  String key = 'algorandDetails$mnemonic';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-
-  final keys = await compute(
-    calculateAlgorandKey,
-    {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-    },
-  );
-
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
-}
-
-Future<Map> getEthereumFromMemnomic(
-  String mnemonic,
-  int coinType,
-) async {
-  String key = 'ethereumDetails$coinType';
-
-  final pref = Hive.box(secureStorageKey);
-  List mmenomicMapping = [];
-  if (pref.get(key) != null) {
-    mmenomicMapping = jsonDecode(pref.get(key)) as List;
-    for (int i = 0; i < mmenomicMapping.length; i++) {
-      if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
-        return mmenomicMapping[i]['key'];
-      }
-    }
-  }
-  final privatekeyStr = await compute(
-    calculateEthereumKey,
-    {
-      mnemonicKey: mnemonic,
-      'coinType': coinType,
-      seedRootKey: seedPhraseRoot,
-    },
-  );
-
-  final address = await etherPrivateKeyToAddress(privatekeyStr);
-
-  final keys = {
-    'eth_wallet_address': address,
-    'eth_wallet_privateKey': privatekeyStr,
-    mnemonicKey: mnemonic
-  };
-  mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
-  await pref.put(key, jsonEncode(mmenomicMapping));
-  return keys;
+String contractDetailsKey(String rpc, String contractAddress) {
+  return '$rpc$contractAddress';
 }
 
 Future<String> getCurrencyJson() async {
@@ -3202,231 +856,15 @@ Future<double> totalCryptoBalance({
 }) async {
   double totalBalance = 0.0;
 
-  for (String i in getBitCoinPOSBlockchains().keys) {
+  for (int i = 0; i < getAllBlockchains.length; i++) {
     try {
-      final Map posBlockchain = getBitCoinPOSBlockchains()[i];
-      double posBlockChainPrice =
-          (allCryptoPrice[coinGeckCryptoSymbolToID[posBlockchain['symbol']]]
-                  [defaultCurrency.toLowerCase()] as num)
-              .toDouble();
-
-      final getBitcoinDetails = await getBitcoinFromMemnomic(
-        mnemonic,
-        posBlockchain,
-      );
-
-      double posBlockChainBalance = await getBitcoinAddressBalance(
-        getBitcoinDetails['address'],
-        posBlockchain['POSNetwork'],
-        skipNetworkRequest: skipNetworkRequest,
-      );
-
-      totalBalance += posBlockChainPrice * posBlockChainBalance;
+      final balance = await getAllBlockchains[i].getBalance(skipNetworkRequest);
+      final priceDetails =
+          allCryptoPrice[coinGeckoID[getAllBlockchains[i].symbol_()]];
+      double price =
+          (priceDetails[defaultCurrency.toLowerCase()] as num).toDouble();
+      totalBalance += balance * price;
     } catch (_) {}
-  }
-
-  for (String i in getEVMBlockchains().keys) {
-    try {
-      final Map evmBlockchain = getEVMBlockchains()[i];
-      final cryptoEVMCompPrice =
-          (allCryptoPrice[coinGeckCryptoSymbolToID[evmBlockchain['symbol']]]
-                  [defaultCurrency.toLowerCase()] as num)
-              .toDouble();
-      final getEthereumDetails = await getEthereumFromMemnomic(
-        mnemonic,
-        evmBlockchain['coinType'],
-      );
-
-      final cryptoEVMCompBalance = await getEthereumAddressBalance(
-        getEthereumDetails['eth_wallet_address'],
-        evmBlockchain['rpc'],
-        coinType: evmBlockchain['coinType'],
-        skipNetworkRequest: skipNetworkRequest,
-      );
-
-      totalBalance += cryptoEVMCompBalance * cryptoEVMCompPrice;
-    } catch (_) {}
-  }
-
-  for (String i in getCosmosBlockChains().keys) {
-    final Map cosmosBlockchain = getCosmosBlockChains()[i];
-    final cosmosPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[cosmosBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getCosmosDetails = await getCosmosFromMemnomic(
-      mnemonic,
-      cosmosBlockchain['bech32Hrp'],
-      cosmosBlockchain['lcdUrl'],
-    );
-    final cosmosBalance = await getCosmosAddressBalance(
-      getCosmosDetails['address'],
-      cosmosBlockchain['lcdUrl'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += cosmosBalance * cosmosPrice;
-  }
-  for (String i in getNearBlockChains().keys) {
-    final Map nearBlockchain = getNearBlockChains()[i];
-    final nearPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[nearBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getNearDetails = await getNearFromMemnomic(mnemonic);
-    final nearBalance = await getNearAddressBalance(
-      getNearDetails['address'],
-      nearBlockchain['api'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += nearBalance * nearPrice;
-  }
-  for (String i in getStellarBlockChains().keys) {
-    final Map stellarBlockchain = getStellarBlockChains()[i];
-    final cryptoStellarCompPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[stellarBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getStellarDetails = await getStellarFromMemnomic(mnemonic);
-    final cryptoStellarBalance = await getStellarAddressBalance(
-      getStellarDetails['address'],
-      stellarBlockchain['sdk'],
-      stellarBlockchain['cluster'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += cryptoStellarBalance * cryptoStellarCompPrice;
-  }
-  for (String i in getSolanaBlockChains().keys) {
-    final Map solanaBlockchain = getSolanaBlockChains()[i];
-    final solanaPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[solanaBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getSolanaDetails = await getSolanaFromMemnomic(mnemonic);
-    final solanaBalance = await getSolanaAddressBalance(
-      getSolanaDetails['address'],
-      solanaBlockchain['solanaCluster'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += solanaBalance * solanaPrice;
-  }
-
-  for (String i in getFilecoinBlockChains().keys) {
-    final Map filecoinBlockchain = getFilecoinBlockChains()[i];
-    final filecoinPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[filecoinBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getFileCoinDetails = await getFileCoinFromMemnomic(
-      mnemonic,
-      filecoinBlockchain['prefix'],
-    );
-
-    final filecoinBalance = await getFileCoinAddressBalance(
-      getFileCoinDetails['address'],
-      baseUrl: filecoinBlockchain['baseUrl'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += filecoinBalance * filecoinPrice;
-  }
-
-  for (String i in getCardanoBlockChains().keys) {
-    final Map cardanoBlockchain = getCardanoBlockChains()[i];
-    final getCardanoDetails = await getCardanoFromMemnomic(
-      mnemonic,
-      cardanoBlockchain['cardano_network'],
-    );
-
-    final cardanoBalance = await getCardanoAddressBalance(
-      getCardanoDetails['address'],
-      cardanoBlockchain['cardano_network'],
-      cardanoBlockchain['blockFrostKey'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    final cardanoPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[cardanoBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-
-    totalBalance += cardanoBalance * cardanoPrice;
-  }
-
-  for (String i in getAlgorandBlockchains().keys) {
-    final Map algorandBlockchain = getAlgorandBlockchains()[i];
-    final algorandPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[algorandBlockchain['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getAlgorandDetails = await getAlgorandFromMemnomic(
-      mnemonic,
-    );
-
-    final algorandBalance = await getAlgorandAddressBalance(
-      getAlgorandDetails['address'],
-      algorandBlockchain['algoType'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += algorandBalance * algorandPrice;
-  }
-
-  for (String i in getTronBlockchains().keys) {
-    final Map tronBlockchains = getTronBlockchains()[i];
-    final tronPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[tronBlockchains['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getTronDetails = await getTronFromMemnomic(
-      mnemonic,
-    );
-
-    final tronBalance = await getTronAddressBalance(
-      getTronDetails['address'],
-      tronBlockchains['api'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += tronBalance * tronPrice;
-  }
-
-  for (String i in getTezosBlockchains().keys) {
-    final Map tezosBlockchains = getTezosBlockchains()[i];
-    final tezosPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[tezosBlockchains['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getTezosDetails =
-        await getTezorFromMemnomic(mnemonic, tezosBlockchains);
-
-    final tezoBalance = await getTezorAddressBalance(
-      getTezosDetails['address'],
-      tezosBlockchains,
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += tezoBalance * tezosPrice;
-  }
-
-  for (String i in getXRPBlockChains().keys) {
-    final Map xrpBlockchains = getXRPBlockChains()[i];
-    final xrpPrice =
-        (allCryptoPrice[coinGeckCryptoSymbolToID[xrpBlockchains['symbol']]]
-                [defaultCurrency.toLowerCase()] as num)
-            .toDouble();
-    final getXrpDetails = await getXRPFromMemnomic(mnemonic);
-
-    final xrpBalance = await getXRPAddressBalance(
-      getXrpDetails['address'],
-      xrpBlockchains['ws'],
-      skipNetworkRequest: skipNetworkRequest,
-    );
-
-    totalBalance += xrpBalance * xrpPrice;
   }
 
   return totalBalance;
@@ -3494,41 +932,6 @@ Uri blockChainToHttps(String value) {
   return Uri.parse('https://www.google.com/search?q=$value');
 }
 
-Future<double> getEthereumAddressBalance(
-  String address,
-  String rpcUrl, {
-  int coinType,
-  bool skipNetworkRequest = false,
-}) async {
-  final preferencesInst = Hive.box(secureStorageKey);
-
-  final tokenKey = '$rpcUrl$address/balance';
-  final storedBalance = preferencesInst.get(tokenKey);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) savedBalance = storedBalance;
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    final httpClient = Client();
-    final ethClient = Web3Client(rpcUrl, httpClient);
-
-    double ethBalance =
-        (await ethClient.getBalance(EthereumAddress.fromHex(address)))
-                .getInWei
-                .toDouble() /
-            pow(10, etherDecimals);
-
-    preferencesInst.put(tokenKey, ethBalance);
-
-    return ethBalance;
-  } catch (e) {
-    return savedBalance;
-  }
-}
-
 Future<Map> get1InchUrlList(int chainId) async {
   final response = await http
       .get(Uri.parse('https://tokens.1inch.io/v1.1/$chainId'))
@@ -3540,21 +943,18 @@ Future<Map> get1InchUrlList(int chainId) async {
   return jsonResponse;
 }
 
-Map getEthereumDetailsFromChainId(int chainId) {
-  List blockChains = getEVMBlockchains().values.toList();
+Map evmFromChainId(int chainId) {
+  List blockChains = getEVMBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['chainId'] == chainId) {
-      return Map.from(blockChains[i])
-        ..addAll({
-          'name': getEVMBlockchains().keys.toList()[i],
-        });
+      return Map.from(blockChains[i]);
     }
   }
   return null;
 }
 
-Map getBitcoinDetailsFromNetwork(NetworkType network) {
-  List blockChains = getBitCoinPOSBlockchains().values.toList();
+Map bitcoinFromNetwork(NetworkType network) {
+  List blockChains = getBitCoinPOSBlockchains();
   for (int i = 0; i < blockChains.length; i++) {
     if (blockChains[i]['POSNetwork'] == network) {
       return blockChains[i];
@@ -3599,169 +999,89 @@ bool seqEqual(Uint8List a, Uint8List b) {
   return true;
 }
 
-validateAddress(Map data, String recipient) {
-  if (data['default'] == 'XRP') {
-    final bytes = xrpBaseCodec.decode(recipient);
-
-    final computedCheckSum = sha256
-        .convert(sha256.convert(bytes.sublist(0, bytes.length - 4)).bytes)
-        .bytes
-        .sublist(0, 4);
-    final expectedCheckSum = bytes.sublist(bytes.length - 4);
-
-    if (!seqEqual(computedCheckSum, expectedCheckSum)) {
-      throw Exception('Invalid XRP address');
-    }
-  } else if (data['default'] == 'ALGO') {
-    algo_rand.Address.fromAlgorandAddress(
-      address: recipient,
-    );
-  } else if (data['default'] == 'NEAR') {
-    final bytes = HEX.decode(recipient);
-    const exceptedLength = 64;
-    const exceptedBytesLength = 32;
-    if (recipient.length != exceptedLength) {
-      throw Exception("Near address must have a length of 64");
-    }
-    if (bytes.length != exceptedBytesLength) {
-      throw Exception("Near address must have a decoded byte length of 32");
-    }
-  } else if (data['default'] == 'BCH') {
-    bitbox.Address.detectFormat(recipient);
-  } else if (data['default'] == 'XTZ') {
-    if (!validateTezosAddress(recipient)) {
-      throw Exception('Invalid ${data['default']} address');
-    }
-  } else if (data['default'] == 'TRX') {
-    if (!wallet.isValidTronAddress(recipient)) {
-      throw Exception('Invalid ${data['default']} address');
-    }
-  } else if (data['P2WPKH'] != null) {
-    final NetworkType nw =
-        getBitCoinPOSBlockchains()[data['name']]['POSNetwork'];
-    if (Address.validateAddress(recipient, nw)) {
-      return;
-    }
-
-    bool canReceivePayment = false;
-
-    try {
-      final base58DecodeRecipient = bs58check.decode(recipient);
-
-      final pubHashString = base58DecodeRecipient[0].toRadixString(16) +
-          base58DecodeRecipient[1].toRadixString(16);
-
-      canReceivePayment = hexToInt(pubHashString).toInt() == nw.pubKeyHash;
-    } catch (_) {}
-
-    if (!canReceivePayment) {
-      Bech32 sel = bech32.decode(recipient);
-      canReceivePayment = nw.bech32 == sel.hrp;
-    }
-
-    if (!canReceivePayment) {
-      throw Exception('Invalid ${data['symbol']} address');
-    }
-  } else if (data['default'] == 'SOL') {
-    solana.Ed25519HDPublicKey.fromBase58(recipient);
-  } else if (data['default'] == 'ADA') {
-    cardano.ShelleyAddress.fromBech32(recipient);
-  } else if (data['default'] == 'XLM') {
-    stellar.KeyPair.fromAccountId(recipient);
-  } else if (data['default'] == 'FIL') {
-    if (!validateFilecoinAddress(recipient)) {
-      throw Exception('not a valid filecoin address');
-    }
-  } else if (data['default'] == 'ATOM') {
-    Bech32 sel = bech32.decode(recipient);
-    if (sel.hrp != data['bech32Hrp']) {
-      throw Exception('not a valid cosmos address');
-    }
-  } else if (data['rpc'] != null) {
-    web3.EthereumAddress.fromHex(recipient);
-  }
-}
-
 addAddressBlockchain({
   Function onTap,
   BuildContext context,
   String blockchainName,
   Map excludeBlockchains,
 }) {
-  final blockchains = <Widget>[];
-  Map allBlockchains = getAllBlockchains();
+  //FIXME:
+  // final blockchains = <Widget>[];
+  // List<Coin> allBlockchains = getAllBlockchains();
 
-  for (String i in allBlockchains.keys) {
-    if (excludeBlockchains[i] != null) continue;
-    Map blockChainDetails = allBlockchains[i];
-    bool isSelected = false;
-    if (blockchainName != null && i == blockchainName) {
-      isSelected = true;
-    }
+  // for (int i = 0; i < allBlockchains.length; i++) {}
 
-    blockchains.add(
-      InkWell(
-        onTap: () {
-          blockChainDetails['name'] = i;
-          onTap(blockChainDetails);
-        },
-        child: buildRow(
-          blockChainDetails['image'],
-          i,
-          isSelected: isSelected,
-        ),
-      ),
-    );
-  }
-  slideUpPanel(
-    context,
-    Container(
-      color: Colors.transparent,
-      child: ListView(
-        shrinkWrap: true,
-        children: <Widget>[
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: null,
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-              Text(
-                AppLocalizations.of(context).selectBlockchains,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ...blockchains,
-          const SizedBox(height: 20),
-        ],
-      ),
-    ),
-    canDismiss: false,
-  );
+  // for (String i in allBlockchains.keys) {
+  //   if (excludeBlockchains[i] != null) continue;
+  //   Map blockChainDetails = allBlockchains[i];
+  //   bool isSelected = false;
+  //   if (blockchainName != null && i == blockchainName) {
+  //     isSelected = true;
+  //   }
+
+  //   blockchains.add(
+  //     InkWell(
+  //       onTap: () {
+  //         blockChainDetails['name'] = i;
+  //         onTap(blockChainDetails);
+  //       },
+  //       child: buildRow(
+  //         blockChainDetails['image'],
+  //         i,
+  //         isSelected: isSelected,
+  //       ),
+  //     ),
+  //   );
+  // }
+  // slideUpPanel(
+  //   context,
+  //   Container(
+  //     color: Colors.transparent,
+  //     child: ListView(
+  //       shrinkWrap: true,
+  //       children: <Widget>[
+  //         const SizedBox(height: 20),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             const Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: null,
+  //                 icon: Icon(
+  //                   Icons.close,
+  //                   color: Colors.transparent,
+  //                 ),
+  //               ),
+  //             ),
+  //             Text(
+  //               AppLocalizations.of(context).selectBlockchains,
+  //               style: const TextStyle(
+  //                 fontWeight: FontWeight.bold,
+  //                 fontSize: 20.0,
+  //               ),
+  //             ),
+  //             Align(
+  //               alignment: Alignment.centerRight,
+  //               child: IconButton(
+  //                 onPressed: () {
+  //                   if (Navigator.canPop(context)) {
+  //                     Navigator.pop(context);
+  //                   }
+  //                 },
+  //                 icon: const Icon(Icons.close),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 20),
+  //         ...blockchains,
+  //         const SizedBox(height: 20),
+  //       ],
+  //     ),
+  //   ),
+  //   canDismiss: false,
+  // );
 }
 
 showBlockChainDialog({
@@ -3770,28 +1090,28 @@ showBlockChainDialog({
   int selectedChainId,
 }) {
   final ethEnabledBlockChain = <Widget>[];
-  for (String i in getEVMBlockchains().keys) {
-    Map blockChainDetails = getEVMBlockchains()[i];
+  List evmBlockchain = getEVMBlockchains();
+  for (int i = 0; i < evmBlockchain.length; i++) {
     bool isSelected = false;
     if (selectedChainId != null &&
-        blockChainDetails['chainId'] == selectedChainId) {
+        evmBlockchain[i]['chainId'] == selectedChainId) {
       isSelected = true;
     }
 
     ethEnabledBlockChain.add(
       InkWell(
         onTap: () {
-          blockChainDetails['name'] = i;
-          onTap(blockChainDetails);
+          onTap(evmBlockchain[i]);
         },
         child: buildRow(
-          blockChainDetails['image'],
-          i,
+          evmBlockchain[i]['image'],
+          evmBlockchain[i]['name'],
           isSelected: isSelected,
         ),
       ),
     );
   }
+
   slideUpPanel(
     context,
     Container(
@@ -3843,17 +1163,18 @@ showBlockChainDialog({
   );
 }
 
-Future changeBlockChainAndReturnInit(
+Future returnInitEvm(
   int chainId,
   String rpc,
 ) async {
   final pref = Hive.box(secureStorageKey);
   await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
-  final coinType = getEthereumDetailsFromChainId(chainId)['coinType'];
-  final response = await getEthereumFromMemnomic(mnemonic, coinType);
+  final evmDetails = evmFromChainId(chainId);
+  final response =
+      await EthereumCoin.fromJson(Map.from(evmDetails)).fromMnemonic(mnemonic);
 
-  final address = response['eth_wallet_address'];
+  final address = response['address'];
   return '''
    (function() {
     let isFlutterInAppWebViewReady = false;
@@ -3901,14 +1222,16 @@ Future navigateToDappBrowser(
   if (pref.get(dappChainIdKey) == null) {
     await pref.put(
       dappChainIdKey,
-      getEVMBlockchains()[tokenContractNetwork]['chainId'],
+      getEVMBlockchains().firstWhere(
+        (element) => element['name'] == tokenContractNetwork,
+      )['chainId'],
     );
   }
 
   int chainId = pref.get(dappChainIdKey);
-  final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
+  final rpc = evmFromChainId(chainId)['rpc'];
 
-  final init = await changeBlockChainAndReturnInit(
+  final init = await returnInitEvm(
     chainId,
     rpc,
   );
@@ -4014,38 +1337,6 @@ Future addEthereumChain({
     ),
     canDismiss: false,
   );
-}
-
-Future<double> getTezorAddressBalance(
-  String address,
-  Map tezorDetails, {
-  bool skipNetworkRequest = false,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-
-  final key = '${tezorDetails['tezorType'].index}AddressBalance$address';
-  final storedBalance = pref.get(key);
-
-  double savedBalance = 0;
-
-  if (storedBalance != null) {
-    savedBalance = storedBalance;
-  }
-
-  if (skipNetworkRequest) return savedBalance;
-
-  try {
-    double balance = 0.0;
-
-    final res = await Dartez.getBalance(address, tezorDetails['server']);
-    balance = double.parse(res) / pow(10, tezorDecimals);
-
-    await pref.put(key, balance);
-
-    return balance;
-  } catch (e) {
-    return savedBalance;
-  }
 }
 
 switchEthereumChain({
@@ -4320,19 +1611,6 @@ signMessage({
   );
 }
 
-String decodeSolidityAbi(String dataStr) {
-  final Uint8List data = txDataToUintList(dataStr);
-  final String dataHex = '0x${HEX.encode(data)}'.trim();
-  final List knownMethodId = getKnownMethodId()['data'];
-
-  for (int i = 0; i < knownMethodId.length; i++) {
-    final contractFunction = knownMethodId[i];
-    final functionSig = solidityFunctionSig(contractFunction['methodId']);
-    if (dataHex.startsWith(functionSig)) return contractFunction['methodId'];
-  }
-  return null;
-}
-
 signTransaction({
   Function onReject,
   String gasPriceInWei_,
@@ -4349,7 +1627,7 @@ signTransaction({
   String title,
   int chainId,
 }) async {
-  final rpc = getEthereumDetailsFromChainId(chainId)['rpc'];
+  final rpc = evmFromChainId(chainId)['rpc'];
   final _wcClient = web3.Web3Client(
     rpc,
     Client(),
@@ -4542,7 +1820,7 @@ signTransaction({
                     String from_;
                     Map tokenDetails = await getERC20TokenDetails(
                       contractAddress: to,
-                      rpc: getEthereumDetailsFromChainId(chainId)['rpc'],
+                      rpc: evmFromChainId(chainId)['rpc'],
                     );
 
                     final decimals = tokenDetails['decimals'];
@@ -4972,7 +2250,7 @@ Future<Map> processEIP681(String eip681URL) async {
 
     final chainId = int.parse(parsedUrl['chainId'] ?? '1');
 
-    final cryptoBlock = getEthereumDetailsFromChainId(chainId);
+    final cryptoBlock = evmFromChainId(chainId);
 
     Map sendToken = {
       "rpc": cryptoBlock['rpc'],
@@ -4983,11 +2261,11 @@ Future<Map> processEIP681(String eip681URL) async {
     bool isContractTransfer =
         (parsedUrl['functionName'] ?? '').toString().toLowerCase() ==
             'transfer';
-    final networkName = getEVMBlockchains().keys.firstWhere((element) {
-      return (getEVMBlockchains()[element]['chainId'] == chainId);
+    final networkName = getEVMBlockchains().firstWhere((element) {
+      return element['chainId'] == chainId;
     });
     if (isContractTransfer) {
-      Map erc20Details = await getERC20TokenNameSymbolDecimal(
+      Map erc20Details = await savedERC20Details(
         contractAddress: parsedUrl['target_address'],
         rpc: sendToken['rpc'],
       );
@@ -5036,99 +2314,22 @@ Future<Map> processEIP681(String eip681URL) async {
   }
 }
 
-Map getAllBlockchains() {
-  return {
-    ...getEVMBlockchains(),
-    ...getBitCoinPOSBlockchains(),
-    ...getFilecoinBlockChains(),
-    ...getCardanoBlockChains(),
-    ...getCosmosBlockChains(),
-    ...getStellarBlockChains(),
-    ...getSolanaBlockChains(),
-    ...getAlgorandBlockchains(),
-    ...getTronBlockchains(),
-    ...getTezosBlockchains(),
-    ...getXRPBlockChains(),
-  };
-}
-
 Map getInfoScheme(String coinScheme) {
   String symbol = '';
-  for (String key in requestPaymentScheme.keys) {
-    if (requestPaymentScheme[key] == coinScheme) {
-      symbol = key;
-      break;
-    }
-  }
-  Map allBlockchains = getAllBlockchains();
-  for (String i in allBlockchains.keys) {
-    Map value = allBlockchains[i];
-    if (value['symbol'] == symbol) {
-      return Map.from(value)..addAll({'name': i});
-    }
-  }
+  // for (String key in requestPaymentScheme.keys) {
+  //   if (requestPaymentScheme[key] == coinScheme) {
+  //     symbol = key;
+  //     break;
+  //   }
+  // }
+  // Map allBlockchains = getAllBlockchains();
+  // for (String i in allBlockchains.keys) {
+  //   Map value = allBlockchains[i];
+  //   if (value['symbol'] == symbol) {
+  //     return Map.from(value)..addAll({'name': i});
+  //   }
+  // }
   return null;
-}
-
-Future<Map> getERC20TokenDetails({
-  String contractAddress,
-  String rpc,
-}) async {
-  final client = web3.Web3Client(
-    rpc,
-    Client(),
-  );
-
-  final contract = web3.DeployedContract(
-    web3.ContractAbi.fromJson(erc20Abi, ''),
-    web3.EthereumAddress.fromHex(contractAddress),
-  );
-
-  final nameFunction = contract.function('name');
-  final symbolFunction = contract.function('symbol');
-  final decimalsFunction = contract.function('decimals');
-
-  final name =
-      await client.call(contract: contract, function: nameFunction, params: []);
-
-  final symbol = await client
-      .call(contract: contract, function: symbolFunction, params: []);
-  final decimals = await client
-      .call(contract: contract, function: decimalsFunction, params: []);
-
-  return {
-    'name': name.first,
-    'symbol': symbol.first,
-    'decimals': decimals.first.toString()
-  };
-}
-
-Future<Map> getERC20TokenNameSymbolDecimal({
-  String contractAddress,
-  String rpc,
-  int chainId,
-}) async {
-  final pref = Hive.box(secureStorageKey);
-  String tokenDetailsKey = await contractDetailsKey(
-    rpc,
-    contractAddress,
-  );
-
-  String tokenDetailsSaved = pref.get(tokenDetailsKey);
-  Map erc20TokenDetails = {};
-  try {
-    erc20TokenDetails = await getERC20TokenDetails(
-      contractAddress: contractAddress,
-      rpc: rpc,
-    );
-  } catch (e) {
-    if (tokenDetailsSaved != null) {
-      erc20TokenDetails = json.decode(tokenDetailsSaved);
-    }
-  }
-
-  await pref.put(tokenDetailsKey, json.encode(erc20TokenDetails));
-  return erc20TokenDetails;
 }
 
 selectImage({
