@@ -287,6 +287,7 @@ Future<double> getERC20TokenBalance(
   );
 
   String mnemonic = pref.get(currentMmenomicKey);
+
   Map response =
       await EthereumCoin.fromJson(tokenDetails).fromMnemonic(mnemonic);
 
@@ -311,7 +312,7 @@ Future<double> getERC20TokenBalance(
   }
 
   if (skipNetworkRequest) return savedBalance;
-
+ 
   try {
     final contract = DeployedContract(
       ContractAbi.fromJson(erc20Abi, ''),
