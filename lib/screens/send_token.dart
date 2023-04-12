@@ -48,7 +48,7 @@ class _SendTokenState extends State<SendToken> {
   EthTokenType tokenType;
   String rpc;
   BigInt tokenId;
-  final bool showContacts = false;
+  final bool showContacts = true;
   Box pref;
 
   @override
