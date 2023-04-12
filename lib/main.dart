@@ -41,7 +41,7 @@ import '../coins/tron_coin.dart';
 import '../coins/xrp_coin.dart';
 
 List<Coin> getAllBlockchains = [];
-List<Coin> _getAllBlockchains() {
+Future<List<Coin>> _getAllBlockchains() async {
   return [
     ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
     ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
@@ -102,7 +102,7 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
-  getAllBlockchains = _getAllBlockchains();
+  getAllBlockchains = await _getAllBlockchains();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),
