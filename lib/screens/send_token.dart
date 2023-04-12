@@ -55,7 +55,6 @@ class _SendTokenState extends State<SendToken> {
     if (widget.tokenData is EthContractCoin) {
       tokenType = (widget.tokenData as EthContractCoin).tokenType;
       rpc = (widget.tokenData as EthContractCoin).rpcUrl;
-      isNFT = (widget.tokenData as EthContractCoin).isNFT;
       tokenId = (widget.tokenData as EthContractCoin).tokenId;
     }
     pref = Hive.box(secureStorageKey);

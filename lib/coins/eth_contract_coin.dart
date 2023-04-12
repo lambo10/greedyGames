@@ -21,10 +21,12 @@ enum EthTokenType {
 class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
   String tokenId;
-  bool isNFT;
+
   bool isContract = true;
   String contractAddress_;
   String network;
+  List parameters_;
+  ContractAbi contrAbi;
 
   @override
   bool noPrice() {
@@ -47,7 +49,6 @@ class EthContractCoin extends EthereumCoin {
     String name,
     this.tokenType,
     this.tokenId,
-    this.isNFT,
     this.isContract,
     this.contractAddress_,
     this.network,
@@ -60,7 +61,24 @@ class EthContractCoin extends EthereumCoin {
           coinType: coinType,
           rpcUrl: rpcUrl,
           name: name,
-        );
+        ) {
+    if (tokenType == EthTokenType.ERC20) {
+      contrAbi = ContractAbi.fromJson(
+        erc20Abi,
+        '',
+      );
+    } else if (tokenType == EthTokenType.ERC721) {
+      contrAbi = ContractAbi.fromJson(
+        erc721Abi,
+        '',
+      );
+    } else if (tokenType == EthTokenType.ERC1155) {
+      contrAbi = ContractAbi.fromJson(
+        erc1155Abi,
+        '',
+      );
+    }
+  }
 
   factory EthContractCoin.fromJson(Map<String, dynamic> json) {
     return EthContractCoin(
@@ -74,7 +92,6 @@ class EthContractCoin extends EthereumCoin {
       name: json['name'],
       tokenType: json['tokenType'],
       tokenId: json['tokenId'],
-      isNFT: json['isNFT'],
       isContract: json['isContract'],
       contractAddress_: json['contractAddress'],
       network: json['network'],
@@ -94,7 +111,6 @@ class EthContractCoin extends EthereumCoin {
     data['image'] = image;
     data['tokenType'] = tokenType;
     data['tokenId'] = tokenId;
-    data['isNFT'] = isNFT;
     data['isContract'] = isContract;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;
@@ -102,10 +118,76 @@ class EthContractCoin extends EthereumCoin {
     return data;
   }
 
+  fillParameter(String amount, String to) async {
+    final address = await address_();
+    if (tokenType == EthTokenType.ERC20) {
+      parameters_ = [
+        EthereumAddress.fromHex(to),
+        BigInt.from(
+          double.parse(amount) * pow(10, decimals()),
+        )
+      ];
+    } else if (tokenType == EthTokenType.ERC721) {
+      parameters_ = [
+        address,
+        EthereumAddress.fromHex(amount),
+        tokenId,
+      ];
+    } else if (tokenType == EthTokenType.ERC1155) {
+      parameters_ = [
+        address,
+        EthereumAddress.fromHex(to),
+        tokenId,
+        BigInt.from(
+          double.parse(amount),
+        ),
+        Uint8List(1)
+      ];
+    }
+  }
+
   @override
-  Future<String> transferToken(String amount, String to) {
-    // TODO: implement transferToken
-    return super.transferToken(amount, to);
+  Future<String> transferToken(String amount, String to) async {
+    await fillParameter(amount, to);
+    final client = Web3Client(
+      rpcUrl,
+      Client(),
+    );
+
+    Map response = await fromMnemonic(pref.get(currentMmenomicKey));
+    final credentials = EthPrivateKey.fromHex(
+      response['eth_wallet_privateKey'],
+    );
+
+    final contract = DeployedContract(
+      contrAbi,
+      EthereumAddress.fromHex(
+        contractAddress_,
+      ),
+    );
+
+    ContractFunction transfer;
+
+    if (tokenType == EthTokenType.ERC20) {
+      transfer = contract.function('transfer');
+    } else {
+      transfer = contract.findFunctionsByName('safeTransferFrom').toList()[0];
+    }
+
+    final trans = await client.signTransaction(
+      credentials,
+      Transaction.callContract(
+        contract: contract,
+        function: transfer,
+        parameters: parameters_,
+      ),
+      chainId: chainId,
+    );
+
+    final transactionHash = await client.sendRawTransaction(trans);
+
+    await client.dispose();
+    return transactionHash;
   }
 
   @override
@@ -127,7 +209,7 @@ class EthContractCoin extends EthereumCoin {
     );
 
     ContractAbi contrAbi;
-    if (!isNFT) {
+    if (tokenType == EthTokenType.ERC20) {
       contrAbi = ContractAbi.fromJson(
         erc20Abi,
         '',
@@ -149,22 +231,15 @@ class EthContractCoin extends EthereumCoin {
       EthereumAddress.fromHex(contractAddress()),
     );
 
-    ContractFunction decimalsFunction;
-
-    BigInt decimals;
-
-    if (!isNFT) {
-      decimalsFunction = contract.function('decimals');
-      decimals = (await client
+    final transfer = tokenType == EthTokenType.ERC20
+        ? contract.function('transfer')
+        : contract.findFunctionsByName('safeTransferFrom').toList()[0];
+    List _parameters;
+    if (tokenType == EthTokenType.ERC20) {
+      ContractFunction decimalsFunction = contract.function('decimals');
+      BigInt decimals = (await client
               .call(contract: contract, function: decimalsFunction, params: []))
           .first;
-    }
-
-    final transfer = isNFT
-        ? contract.findFunctionsByName('safeTransferFrom').toList()[0]
-        : contract.function('transfer');
-    List _parameters;
-    if (!isNFT) {
       _parameters = [
         EthereumAddress.fromHex(to),
         BigInt.from(
