@@ -13,19 +13,92 @@ import '../utils/rpc_urls.dart';
 enum EthTokenType {
   ERC1155,
   ERC721,
+  ERC20,
 }
 
 class EthContractCoin extends EthereumCoin {
   EthTokenType tokenType;
   String tokenId;
   bool isNFT;
-  bool isContract;
+  bool isContract = true;
+  String contractAddress_;
+  String network;
+
+  @override
+  bool noPrice() {
+    return true;
+  }
+
+  @override
+  String contractAddress() {
+    return contractAddress_;
+  }
+
   EthContractCoin({
+    String blockExplorer,
+    int chainId,
+    String symbol,
+    String default_,
+    String image,
+    int coinType,
+    String rpcUrl,
+    String name,
     this.tokenType,
     this.tokenId,
     this.isNFT,
     this.isContract,
-  });
+    this.contractAddress_,
+    this.network,
+  }) : super(
+          blockExplorer: blockExplorer,
+          chainId: chainId,
+          symbol: symbol,
+          default_: default_,
+          image: image,
+          coinType: coinType,
+          rpcUrl: rpcUrl,
+          name: name,
+        );
+
+  factory EthContractCoin.fromJson(Map<String, dynamic> json) {
+    return EthContractCoin(
+      chainId: json['chainId'],
+      rpcUrl: json['rpcUrl'],
+      coinType: json['coinType'],
+      blockExplorer: json['blockExplorer'],
+      default_: json['default'],
+      symbol: json['symbol'],
+      image: json['image'],
+      name: json['name'],
+      tokenType: json['tokenType'],
+      tokenId: json['tokenId'],
+      isNFT: json['isNFT'],
+      isContract: json['isContract'],
+      contractAddress_: json['contractAddress'],
+      network: json['network'],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['chainId'] = chainId;
+    data['rpcUrl'] = rpcUrl;
+    data['default'] = default_;
+    data['symbol'] = symbol;
+    data['name'] = name;
+    data['blockExplorer'] = blockExplorer;
+    data['coinType'] = coinType;
+    data['image'] = image;
+    data['tokenType'] = tokenType;
+    data['tokenId'] = tokenId;
+    data['isNFT'] = isNFT;
+    data['isContract'] = isContract;
+    data['contractAddress'] = contractAddress;
+    data['network'] = network;
+
+    return data;
+  }
 
   @override
   Future<double> getTransactionFee(String amount, String to) async {
