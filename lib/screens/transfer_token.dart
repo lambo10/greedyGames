@@ -44,12 +44,18 @@ class _TransferTokenState extends State<TransferToken> {
   ContractAbi contrAbi;
   bool isContract = false;
   bool isNFT = false;
-  String tokenId;
+  BigInt tokenId;
   String mnemonic;
 
   @override
   void initState() {
     super.initState();
+    if (widget.tokenData is EthContractCoin) {
+      final ethContractCoin = widget.tokenData as EthContractCoin;
+      isNFT = ethContractCoin.tokenType == EthTokenType.ERC1155 ||
+          ethContractCoin.tokenType == EthTokenType.ERC721;
+      tokenId = ethContractCoin.tokenId;
+    }
     getTransactionFee();
     timer = Timer.periodic(
       httpPollingDelay,
@@ -170,7 +176,7 @@ class _TransferTokenState extends State<TransferToken> {
                       height: 10,
                     ),
                     Text(
-                      tokenId,
+                      '$tokenId',
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(
@@ -265,7 +271,7 @@ class _TransferTokenState extends State<TransferToken> {
                                         );
 
                                         String tokenSent =
-                                            isNFT ? tokenId : widget.amount;
+                                            isNFT ? '#$tokenId' : widget.amount;
 
                                         NotificationApi.showNotification(
                                           title:

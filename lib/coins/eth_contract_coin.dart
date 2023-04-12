@@ -115,6 +115,7 @@ class EthContractCoin extends EthereumCoin {
 
   fillParameter(String amount, String to) async {
     final address = await address_();
+
     if (tokenType == EthTokenType.ERC20) {
       parameters_ = [
         EthereumAddress.fromHex(to),
@@ -124,13 +125,13 @@ class EthContractCoin extends EthereumCoin {
       ];
     } else if (tokenType == EthTokenType.ERC721) {
       parameters_ = [
-        address,
-        EthereumAddress.fromHex(amount),
+        EthereumAddress.fromHex(address),
+        EthereumAddress.fromHex(to),
         tokenId,
       ];
     } else if (tokenType == EthTokenType.ERC1155) {
       parameters_ = [
-        address,
+        EthereumAddress.fromHex(address),
         EthereumAddress.fromHex(to),
         tokenId,
         BigInt.from(
