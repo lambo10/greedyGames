@@ -14,6 +14,8 @@ import 'package:intl/intl.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../coins/eth_contract_coin.dart';
+
 class TransferToken extends StatefulWidget {
   final Coin tokenData;
   final String cryptoDomain;
@@ -183,18 +185,10 @@ class _TransferTokenState extends State<TransferToken> {
                   const SizedBox(
                     height: 10,
                   ),
-                  widget.tokenData.default__() != null
-                      ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.tokenData.default__()}',
-                          style: const TextStyle(fontSize: 16),
-                        )
-                      : Container(),
-                  widget.tokenData.contractAddress() != null
-                      ? Text(
-                          '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.tokenData.default__()}',
-                          style: const TextStyle(fontSize: 16),
-                        )
-                      : Container(),
+                  Text(
+                    '${transactionFeeMap != null ? Decimal.parse(transactionFeeMap['transactionFee'].toString()) : '--'}  ${widget.tokenData.default__() ?? (widget.tokenData as EthContractCoin).network}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                   const SizedBox(
                     height: 20,
                   ),
