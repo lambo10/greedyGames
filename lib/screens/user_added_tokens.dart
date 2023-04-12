@@ -109,7 +109,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
 
               if (tokenList.isEmpty) return false;
               String customTokenDetailsKey = contractDetailsKey(
-                tokenList[i].rpcUrl,
+                tokenList[i].rpc,
                 tokenList[i].contractAddress_,
               );
 

@@ -20,7 +20,7 @@ const etherDecimals = 18;
 class EthereumCoin extends Coin {
   int coinType;
   int chainId;
-  String rpcUrl;
+  String rpc;
   String blockExplorer;
   String symbol;
   String default_;
@@ -33,7 +33,7 @@ class EthereumCoin extends Coin {
     this.default_,
     this.image,
     this.coinType,
-    this.rpcUrl,
+    this.rpc,
     this.chainId,
     this.name,
   });
@@ -71,7 +71,7 @@ class EthereumCoin extends Coin {
   factory EthereumCoin.fromJson(Map<String, dynamic> json) {
     return EthereumCoin(
       chainId: json['chainId'],
-      rpcUrl: json['rpcUrl'],
+      rpc: json['rpc'],
       coinType: json['coinType'],
       blockExplorer: json['blockExplorer'],
       default_: json['default'],
@@ -84,7 +84,7 @@ class EthereumCoin extends Coin {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['chainId'] = chainId;
-    data['rpcUrl'] = rpcUrl;
+    data['rpc'] = rpc;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -142,7 +142,7 @@ class EthereumCoin extends Coin {
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final address = await address_();
-    final tokenKey = '$rpcUrl$address/balance';
+    final tokenKey = '$rpc$address/balance';
     final storedBalance = pref.get(tokenKey);
 
     double savedBalance = 0;
@@ -152,7 +152,7 @@ class EthereumCoin extends Coin {
     if (skipNetworkRequest) return savedBalance;
 
     try {
-      final ethClient = Web3Client(rpcUrl, Client());
+      final ethClient = Web3Client(rpc, Client());
 
       final userAddress = EthereumAddress.fromHex(address);
 
@@ -164,9 +164,7 @@ class EthereumCoin extends Coin {
       await pref.put(tokenKey, ethBalance);
       await ethClient.dispose();
       return ethBalance;
-    } catch (e, sk) {
-      // print(sk);
-
+    } catch (e) {
       return savedBalance;
     }
   }
@@ -183,7 +181,7 @@ class EthereumCoin extends Coin {
   @override
   Future<String> transferToken(String amount, String to) async {
     final client = Web3Client(
-      rpcUrl,
+      rpc,
       Client(),
     );
 
@@ -226,7 +224,7 @@ class EthereumCoin extends Coin {
   Future<double> getTransactionFee(String amount, String to) async {
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final transactionFee = await getEtherTransactionFee(
-      rpcUrl,
+      rpc,
       null,
       EthereumAddress.fromHex(response['address']),
       EthereumAddress.fromHex(to),

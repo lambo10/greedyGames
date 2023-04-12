@@ -56,7 +56,7 @@ class EthContractCoin extends EthereumCoin {
           default_: default_,
           image: image,
           coinType: coinType,
-          rpcUrl: rpcUrl,
+          rpc: rpcUrl,
           name: name,
         ) {
     if (tokenType == EthTokenType.ERC20) {
@@ -98,7 +98,7 @@ class EthContractCoin extends EthereumCoin {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['chainId'] = chainId;
-    data['rpcUrl'] = rpcUrl;
+    data['rpcUrl'] = rpc;
     data['default'] = default_;
     data['symbol'] = symbol;
     data['name'] = name;
@@ -145,7 +145,7 @@ class EthContractCoin extends EthereumCoin {
   Future<String> transferToken(String amount, String to) async {
     await fillParameter(amount, to);
     final client = Web3Client(
-      rpcUrl,
+      rpc,
       Client(),
     );
 
@@ -193,7 +193,7 @@ class EthContractCoin extends EthereumCoin {
   @override
   Future<double> getTransactionFee(String amount, String to) async {
     final client = Web3Client(
-      rpcUrl,
+      rpc,
       Client(),
     );
 
@@ -258,7 +258,7 @@ class EthContractCoin extends EthereumCoin {
     Uint8List contractData = transfer.encodeCall(_parameters);
 
     final transactionFee = await getEtherTransactionFee(
-      rpcUrl,
+      rpc,
       contractData,
       sendingAddress,
       EthereumAddress.fromHex(

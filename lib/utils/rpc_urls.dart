@@ -671,7 +671,7 @@ Future<Map> ensToAddress({String cryptoDomainName}) async {
     final ethereumDetails = getEVMBlockchains().firstWhere(
       (element) => element['name'] == 'Ethereum',
     );
-    final rpcUrl = EthereumCoin.fromJson(ethereumDetails).rpcUrl;
+    final rpcUrl = EthereumCoin.fromJson(ethereumDetails).rpc;
     final client = web3.Web3Client(rpcUrl, Client());
     final nameHash_ = nameHash(cryptoDomainName);
     web3.DeployedContract ensResolverContract =
