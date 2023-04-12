@@ -22,6 +22,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:upgrader/upgrader.dart';
 import '../coins/eth_contract_coin.dart';
 import '../coins/ethereum_coin.dart';
+import '../interface/coin.dart';
 import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/get_blockchain_widget.dart';
@@ -319,76 +320,70 @@ class _WalletMainBodyState extends State<WalletMainBody>
                             if (snapshot.hasData) {
                               final appTokenWidget = <Widget>[];
 
-                              for (final appToken
-                                  in (snapshot.data['elementList'] as List)) {
-                                appTokenWidget.add(
-                                  InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (ctx) =>
-                                              Token(tokenData: appToken),
-                                        ),
-                                      );
-                                    },
-                                    child: GetBlockChainWidget(
-                                      name_: appToken['name'],
-                                      image_: appToken['image'] != null
-                                          ? AssetImage(appToken['image'])
-                                          : null,
-                                      priceWithCurrency_:
-                                          snapshot.data['nativeCurrency'] + '0',
-                                      hasPrice_: false,
-                                      cryptoChange_: 0,
-                                      symbol_: appToken['symbol'],
-                                      cryptoAmount_: ValueListenableBuilder(
-                                        valueListenable: walletNotifier,
-                                        builder: ((_, double value, Widget __) {
-                                          if (value == null) {
-                                            () async {
-                                              try {
-                                                walletNotifier.value =
-                                                    await getERC20TokenBalance(
-                                                  appToken,
-                                                  skipNetworkRequest:
-                                                      walletNotifier.value ==
-                                                          null,
-                                                );
-                                              } catch (_) {}
+                              final Coin appToken =
+                                  snapshot.data['appTokenDetails'];
 
-                                              cryptoBalancesTimer.add(
-                                                Timer.periodic(httpPollingDelay,
-                                                    (timer) async {
-                                                  try {
-                                                    walletNotifier.value =
-                                                        await getERC20TokenBalance(
-                                                      appToken,
-                                                      skipNetworkRequest:
+                              appTokenWidget.add(
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (ctx) =>
+                                            Token(tokenData: appToken),
+                                      ),
+                                    );
+                                  },
+                                  child: GetBlockChainWidget(
+                                    name_: appToken.name_(),
+                                    image_: appToken.image_() != null
+                                        ? AssetImage(appToken.image_())
+                                        : null,
+                                    priceWithCurrency_:
+                                        snapshot.data['nativeCurrency'] + '0',
+                                    hasPrice_: false,
+                                    cryptoChange_: 0,
+                                    symbol_: appToken.symbol_(),
+                                    cryptoAmount_: ValueListenableBuilder(
+                                      valueListenable: walletNotifier,
+                                      builder: ((_, double value, Widget __) {
+                                        if (value == null) {
+                                          () async {
+                                            try {
+                                              walletNotifier.value =
+                                                  await appToken.getBalance(
+                                                      walletNotifier.value ==
+                                                          null);
+                                            } catch (_) {}
+
+                                            cryptoBalancesTimer.add(
+                                              Timer.periodic(httpPollingDelay,
+                                                  (timer) async {
+                                                try {
+                                                  walletNotifier.value =
+                                                      await appToken.getBalance(
                                                           walletNotifier
                                                                   .value ==
-                                                              null,
-                                                    );
-                                                  } catch (_) {}
-                                                }),
-                                              );
-                                            }();
-                                            return Container();
-                                          }
-                                          return UserBalance(
-                                            symbol: appToken['symbol'],
-                                            balance: value,
-                                          );
-                                        }),
-                                      ),
+                                                              null);
+                                                } catch (_) {}
+                                              }),
+                                            );
+                                          }();
+                                          return Container();
+                                        }
+                                        return UserBalance(
+                                          symbol: appToken.symbol_(),
+                                          balance: value,
+                                        );
+                                      }),
                                     ),
                                   ),
-                                );
+                                ),
+                              );
 
-                                appTokenWidget.add(
-                                  const Divider(),
-                                );
-                              }
+                              appTokenWidget.add(
+                                const Divider(),
+                              );
 
                               return Column(
                                 children: appTokenWidget,
@@ -414,10 +409,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
   }
 
   Future getWalletToken() async {
-    //FIXME:
-    return null;
-    final pref = Hive.box(secureStorageKey);
-    Map appTokenDetails = {};
+    Coin appCoinInfo;
     const appTokenKey = 'appTokenDetails';
     final evmBlockchain = getEVMBlockchains().firstWhere(
       (element) => element['name'] == tokenContractNetwork,
@@ -429,7 +421,7 @@ class _WalletMainBodyState extends State<WalletMainBody>
       );
 
       if (erc20AppTokenDetails.isNotEmpty) {
-        appTokenDetails = {
+        appCoinInfo = EthContractCoin.fromJson({
           'name': erc20AppTokenDetails['name'],
           'symbol': erc20AppTokenDetails['symbol'],
           'decimals': erc20AppTokenDetails['decimals'],
@@ -440,15 +432,18 @@ class _WalletMainBodyState extends State<WalletMainBody>
           'coinType': evmBlockchain['coinType'],
           'blockExplorer': evmBlockchain['blockExplorer'],
           'image': 'assets/logo.png',
-          'noPrice': true
-        };
+          'noPrice': true,
+          'isNFT': false,
+          'isContract': true,
+          'tokenType': EthTokenType.ERC20,
+        });
         await pref.put(
           appTokenKey,
-          jsonEncode(appTokenDetails),
+          jsonEncode(appCoinInfo),
         );
       }
     } else {
-      appTokenDetails = jsonDecode(pref.get(appTokenKey));
+      appCoinInfo = jsonDecode(pref.get(appTokenKey));
     }
 
     final currencyWithSymbol =
@@ -456,9 +451,9 @@ class _WalletMainBodyState extends State<WalletMainBody>
 
     final defaultCurrency = pref.get('defaultCurrency') ?? "USD";
 
-    if (appTokenDetails.isNotEmpty) {
+    if (appCoinInfo != null) {
       return {
-        'elementList': [appTokenDetails],
+        'appTokenDetails': appCoinInfo,
         'nativeCurrency': currencyWithSymbol[defaultCurrency]['symbol'],
       };
     }
