@@ -2495,18 +2495,18 @@ Future<Map> processEIP681(String eip681URL) async {
 
 List<Coin> getAllBlockchains() {
   return [
-    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(e)),
-    ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(e)),
-    ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(e)),
-    ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(e)),
-    ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(e)),
-    ...getStellarBlockChains().map((e) => StellarCoin.fromJson(e)),
-    ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(e)),
-    ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(e)),
-    ...getTronBlockchains().map((e) => TronCoin.fromJson(e)),
-    ...getTezosBlockchains().map((e) => TezosCoin.fromJson(e)),
-    ...getXRPBlockChains().map((e) => XRPCoin.fromJson(e)),
-    ...getNearBlockChains().map((e) => NearCoin.fromJson(e)),
+    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
+    ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
+    ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(Map.from(e))),
+    ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(Map.from(e))),
+    ...getCosmosBlockChains().map((e) => CosmosCoin.fromJson(Map.from(e))),
+    ...getStellarBlockChains().map((e) => StellarCoin.fromJson(Map.from(e))),
+    ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
+    ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
+    ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
+    ...getTezosBlockchains().map((e) => TezosCoin.fromJson(Map.from(e))),
+    ...getXRPBlockChains().map((e) => XRPCoin.fromJson(Map.from(e))),
+    ...getNearBlockChains().map((e) => NearCoin.fromJson(Map.from(e))),
   ];
 }
 
