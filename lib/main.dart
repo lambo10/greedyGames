@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cryptowallet/coins/polkadot_coin.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -50,6 +51,7 @@ Future<List<Coin>> getAllBlockchains_fun() async {
     ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
     ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
+    ...getPolkadoBlockChains().map((e) => PolkadotCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 

@@ -105,7 +105,7 @@ class PolkadotCoin extends Coin {
   }
 
   @override
-  validateAddress(String address) async {
+  validateAddress(String address) {
     throw UnimplementedError();
   }
 }
