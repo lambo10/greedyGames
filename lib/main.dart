@@ -3,6 +3,9 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:bip39/bip39.dart';
+import 'package:bs58check/bs58check.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin, Wallet;
 import 'package:cryptowallet/coins/polkadot_coin.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
@@ -12,6 +15,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
+import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +25,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:pointycastle/pointycastle.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:web3dart/crypto.dart';
 import 'interface/coin.dart';
 import 'screens/main_screen.dart';
 import '../coins/algorand_coin.dart';

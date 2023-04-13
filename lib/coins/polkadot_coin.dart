@@ -1,8 +1,19 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
+
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:bs58check/bs58check.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin;
+import 'package:ed25519_hd_key/ed25519_hd_key.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hex/hex.dart';
 
 import '../interface/coin.dart';
 import '../main.dart';
+import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
+import '../utils/rpc_urls.dart';
 
 const polkadotDecimals = 10;
 
@@ -51,10 +62,28 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
-    return {
-      'address': '',
-      'privateKey': '',
-    };
+    final keyName = 'polkadotDetails$mnemonic';
+    List mmenomicMapping = [];
+    if (pref.get(keyName) != null) {
+      mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
+      for (int i = 0; i < mmenomicMapping.length; i++) {
+        if (mmenomicMapping[i]['mmenomic'] == mnemonic) {
+          return mmenomicMapping[i]['key'];
+        }
+      }
+    }
+
+    final keys = await compute(
+      calculatePolkadotKey,
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          seedRootKey: seedPhraseRoot,
+        }),
+    );
+    mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
+    await pref.put(keyName, jsonEncode(mmenomicMapping));
+    return keys;
   }
 
   @override
@@ -151,3 +180,26 @@ final polkadot = {
     "documentation": "https://polkadot.js.org/api/substrate/rpc.html"
   }
 };
+
+calculatePolkadotKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final derivedKey =
+      await ED25519_HD_KEY.derivePath("m/44'/354'/0'/0'/0'", seedRoot_.seed);
+
+  final publicKey = await ED25519_HD_KEY.getPublicKey(derivedKey.key);
+  const SS58_PREFIX = [83, 83, 53, 56, 80, 82, 69];
+
+  final hash = blake2bHash(
+    Uint8List.fromList([...SS58_PREFIX, ...publicKey]),
+    digestSize: 64,
+  );
+
+  final address = base58.encode(Uint8List.fromList([
+    ...publicKey,
+    ...hash.sublist(0, [32, 33].contains(publicKey.length) ? 2 : 1)
+  ]));
+  return {
+    'address': address,
+    'privateKey': HEX.encode(derivedKey.key),
+  };
+}
