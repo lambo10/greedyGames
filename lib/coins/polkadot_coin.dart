@@ -184,7 +184,7 @@ List<Map> getPolkadoBlockChains() {
   return blockChains;
 }
 
-sshash(Uint8List bytes) {
+List<int> sshash(Uint8List bytes) {
   const SS58_PREFIX = [83, 83, 53, 56, 80, 82, 69];
   return blake2bHash(
     Uint8List.fromList([...SS58_PREFIX, ...bytes]),
