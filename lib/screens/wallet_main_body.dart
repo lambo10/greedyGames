@@ -44,12 +44,9 @@ Future<void> handleAllIntent(String value, BuildContext context) async {
   if (isWalletConnect) {
     await WcConnector.qrScanHandler(value);
   } else {
-    Map scannedData = await processEIP681(value);
-    navigateWidget = scannedData['success']
-        ? SendToken(
-            tokenData: scannedData['msg'],
-          )
-        : null;
+    navigateWidget = SendToken(
+      tokenData: await processEIP681(value),
+    );
   }
 
   if (navigateWidget == null) return;

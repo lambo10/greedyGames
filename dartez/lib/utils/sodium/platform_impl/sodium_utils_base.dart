@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 abstract class SodiumUtilsBase {
-
   Future<void> init();
 
   getSodium();

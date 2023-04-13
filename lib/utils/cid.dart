@@ -114,4 +114,3 @@ Uint8List encodeCid(version, code, Uint8List fullBytes) {
   bytes.setAll(hashOffset, fullBytes);
   return bytes;
 }
-

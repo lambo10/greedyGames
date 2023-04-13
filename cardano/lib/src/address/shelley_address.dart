@@ -17,6 +17,7 @@ import '../util/blake2bhash.dart';
 /// [reference](https://hydra.iohk.io/build/6141104/download/1/delegation_design_spec.pdf)
 ///
 enum AddressType { base, pointer, enterprise, reward }
+
 enum CredentialType { key, script }
 
 const String defaultAddrHrp = 'addr';

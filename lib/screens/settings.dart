@@ -2,7 +2,9 @@
 
 import 'dart:convert';
 
+import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/user_details_placeholder.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/screens/contact.dart';
 import 'package:cryptowallet/screens/dark_mode_toggler.dart';
 import 'package:cryptowallet/screens/language.dart';
@@ -415,7 +417,10 @@ class _SettingsState extends State<Settings> {
                                     ),
                                   );
                                 });
-                            Map scannedData;
+                            String amount;
+                            String recipient;
+                            Coin getCoin;
+                            bool success = false;
                             try {
                               CoinPay cpData = CoinPay.parseUri(data);
 
@@ -423,33 +428,30 @@ class _SettingsState extends State<Settings> {
                                 throw Exception("invalid request payment");
                               }
 
-                              Map getInfo = getInfoScheme(cpData.coinScheme);
+                              getCoin = getInfoScheme(cpData.coinScheme);
 
-                              if (getInfo == null) {
+                              if (getCoin == null) {
                                 throw Exception("coin data not available");
                               }
-                              scannedData = {
-                                'msg': {
-                                  'recipient': cpData.recipient,
-                                  'amount': cpData.amount.toString(),
-                                  ...getInfo
-                                },
-                                'success': true,
-                              };
+                              recipient = cpData.recipient;
+                              amount = cpData.amount.toString();
+                              success = true;
                             } catch (e) {
-                              scannedData = await processEIP681(data);
+                              getCoin = await processEIP681(data);
                             }
 
                             if (Navigator.canPop(context)) {
                               Navigator.pop(context);
                             }
 
-                            if (scannedData['success']) {
+                            if (success) {
                               await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (ctx) => SendToken(
-                                    tokenData: scannedData['msg'],
+                                    amount: amount,
+                                    recipient: recipient,
+                                    tokenData: getCoin,
                                   ),
                                 ),
                               );
@@ -459,7 +461,7 @@ class _SettingsState extends State<Settings> {
                               SnackBar(
                                 backgroundColor: Colors.red,
                                 content: Text(
-                                  scannedData['msg'],
+                                  AppLocalizations.of(context).errorTryAgain,
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 duration: Duration(seconds: 2),

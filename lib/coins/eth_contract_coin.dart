@@ -88,7 +88,7 @@ class EthContractCoin extends EthereumCoin {
       symbol: json['symbol'],
       image: json['image'],
       name: json['name'],
-      tokenType: json['tokenType'],
+      tokenType: json['tokenType'] ?? EthTokenType.ERC20,
       tokenId: json['tokenId'],
       contractAddress_: json['contractAddress'],
       network: json['network'],
