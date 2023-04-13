@@ -36,9 +36,10 @@ import '../coins/tron_coin.dart';
 import '../coins/xrp_coin.dart';
 
 List<Coin> getAllBlockchains = [];
-Future<List<Coin>> getAllBlockchains_fun() async {
+Future<List<Coin>> getAllBlockchains_fun([bool getUserAddedEvm = true]) async {
   return [
-    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
+    ...getEVMBlockchains(getUserAddedEvm)
+        .map((e) => EthereumCoin.fromJson(Map.from(e))),
     ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
     ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(Map.from(e))),
     ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(Map.from(e))),

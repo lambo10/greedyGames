@@ -6,7 +6,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 abstract class Coin {
-  validateAddress(String address);
+  void validateAddress(String address);
   Future<Map> fromMnemonic(String mnemonic);
   Map toJson();
   Future<double> getBalance(bool skipNetworkRequest);

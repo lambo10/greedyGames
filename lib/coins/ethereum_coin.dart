@@ -222,10 +222,12 @@ class EthereumCoin extends Coin {
   }
 }
 
-List<Map> getEVMBlockchains() {
+List<Map> getEVMBlockchains([bool getUserAddedEVM = true]) {
   Map userAddedEVM = {};
-  if (pref.get(newEVMChainKey) != null) {
-    userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
+  if (getUserAddedEVM) {
+    if (pref.get(newEVMChainKey) != null) {
+      userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
+    }
   }
   List<Map> blockChains = [
     {
@@ -302,7 +304,7 @@ List<Map> getEVMBlockchains() {
     {
       'name': 'Ethereum Classic',
       'symbol': 'ETC',
-      'default': 'ETH',
+      'default': 'ETC',
       'blockExplorer':
           'https://blockscout.com/etc/mainnet/tx/$transactionhashTemplateKey',
       'rpc': 'https://www.ethercluster.com/etc',

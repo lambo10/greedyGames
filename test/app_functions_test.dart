@@ -6,19 +6,11 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'dart:convert';
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
-import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart';
-import 'package:cryptowallet/coins/algorand_coin.dart';
-import 'package:cryptowallet/coins/cardano_coin.dart';
-import 'package:cryptowallet/coins/cosmos_coin.dart';
 import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/coins/filecoin_coin.dart';
-import 'package:cryptowallet/coins/solana_coin.dart';
-import 'package:cryptowallet/coins/stellar_coin.dart';
-import 'package:cryptowallet/coins/tron_coin.dart';
-import 'package:cryptowallet/coins/xrp_coin.dart';
 import 'package:cryptowallet/eip/eip681.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/utils/cid.dart';
@@ -28,25 +20,19 @@ import 'package:cryptowallet/utils/coin_pay.dart';
 import 'package:cryptowallet/utils/ethereum_blockies.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/xrp_transaction/xrp_transaction.dart';
-import 'package:elliptic/elliptic.dart';
-import 'package:flutter/services.dart';
-import 'package:hex/hex.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_test/hive_test.dart';
-import 'package:leb128/leb128.dart';
-import 'package:sacco/sacco.dart' as cosmos;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   setUp(() async {
     await setUpTestHive();
     await Hive.openBox(secureStorageKey);
+    getAllBlockchains = await getAllBlockchains_fun(false);
   });
 
   tearDown(() async {
@@ -116,6 +102,7 @@ void main() async {
     expect(cid3,
         'yPzGMXOoxqlmjIPlAFU2swX8VcwBaeDJho+RUNMy/PA17wJ5H1Cq86yPVvyQlLIau5tEmQZlavWtqmFwFppdIgE=');
   });
+
   test('can generate filecoin cid', () {
     expect(
       genCid(
@@ -422,87 +409,138 @@ void main() async {
       'rPRiXRLGkw5hVwP5NePE2tXTQPi684bzrz',
     );
   });
-  // test('validate addresses', () {
-  //   final btcMap = {'default': "BTC", 'name': 'Bitcoin', 'P2WPKH': ''};
-  //   final ethMap = {
-  //     'default': "ETH",
-  //     'rpc': getEVMBlockchains()['Ethereum']['rpc']
-  //   };
-  //   final bchMap = {'default': "BCH"};
-  //   final ltcMap = {'default': "LTC", 'name': 'Litecoin', 'P2WPKH': ''};
-  //   final dashMap = {'default': "DASH", 'name': 'Dash', 'P2WPKH': ''};
-  //   final trxMap = {'default': "TRX"};
-  //   final solMap = {'default': "SOL"};
-  //   final xlmMap = {'default': "XLM"};
-  //   final algoMap = {'default': "ALGO"};
-  //   final cosmosMap = {'default': "ATOM", 'bech32Hrp': 'cosmos'};
-  //   final zecMap = {'default': "ZEC", 'name': 'ZCash', 'P2WPKH': ''};
-  //   final xtz = {'default': "XTZ"};
-  //   final adaMap = {'default': "ADA"};
-  //   final xrpMap = {'default': "XRP"};
-  //   final filMap = {'default': "FIL"};
-
-  //   // valid addresses
-  //   validateAddress(btcMap, 'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
-  //   validateAddress(ethMap, '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF');
-  //   validateAddress(bchMap, 'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
-  //   validateAddress(ltcMap, 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
-  //   validateAddress(dashMap, 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
-  //   validateAddress(trxMap, 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-  //   validateAddress(solMap, '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W');
-  //   validateAddress(
-  //       xlmMap, 'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
-  //   validateAddress(
-  //       algoMap, 'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
-  //   validateAddress(cosmosMap, 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
-  //   validateAddress(zecMap, 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
-  //   validateAddress(xtz, 'tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
-  //   validateAddress(adaMap,
-  //       'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
-  //   validateAddress(xrpMap, 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
-  //   validateAddress(filMap, 'f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
-  //   validateAddress(filMap, 'f01782');
-  //   validateAddress(filMap,
-  //       'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
-
-  //   // invalid address
-
-  //   const invalidAddress = 'bc1qzmy4dtruaf';
-
-  //   expect(() => validateAddress(btcMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(ethMap, invalidAddress),
-  //       throwsA(isA<ArgumentError>()));
-  //   expect(() => validateAddress(bchMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(ltcMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(dashMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(trxMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(solMap, invalidAddress),
-  //       throwsA(isA<ArgumentError>()));
-  //   expect(() => validateAddress(xlmMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(algoMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(cosmosMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(zecMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(
-  //       () => validateAddress(xtz, invalidAddress), throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(adaMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(xrpMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  //   expect(() => validateAddress(filMap, invalidAddress),
-  //       throwsA(isA<Exception>()));
-  // });
+  test('validate addresses', () {
+    const invalidAddress = 'bc1qzmy4dtruaf';
+    for (int i = 0; i < getAllBlockchains.length; i++) {
+      Coin blockchainInfo = getAllBlockchains[i];
+      switch (blockchainInfo.default__()) {
+        case 'BTC':
+          if (blockchainInfo.name_() == 'Bitcoin') {
+            blockchainInfo
+                .validateAddress('bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
+            expect(
+              () => blockchainInfo.validateAddress(invalidAddress),
+              throwsA(isA<Exception>()),
+            );
+          }
+          break;
+        case 'ETH':
+          blockchainInfo
+              .validateAddress('0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<ArgumentError>()),
+          );
+          break;
+        case 'BCH':
+          blockchainInfo
+              .validateAddress('qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'LTC':
+          blockchainInfo
+              .validateAddress('ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'DASH':
+          blockchainInfo.validateAddress('Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'TRX':
+          blockchainInfo.validateAddress('TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'SOL':
+          blockchainInfo
+              .validateAddress('5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<ArgumentError>()),
+          );
+          break;
+        case 'XLM':
+          blockchainInfo.validateAddress(
+              'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'ALGO':
+          blockchainInfo.validateAddress(
+              'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'ATOM':
+          blockchainInfo
+              .validateAddress('cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'ZEC':
+          blockchainInfo.validateAddress('t1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'XTZ':
+          blockchainInfo
+              .validateAddress('tz1RcTV9WGm2Tiok995LncZDgZHFjVXbnnWK');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'ADA':
+          blockchainInfo.validateAddress(
+              'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'XRP':
+          blockchainInfo.validateAddress('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        case 'FIL':
+          blockchainInfo
+              .validateAddress('f1st7wiqbxz5plebdu32jpqgxrcduf2y6p22fmz3i');
+          blockchainInfo.validateAddress('f01782');
+          blockchainInfo.validateAddress(
+              'f3sg22lqqjewwczqcs2cjr3zp6htctbovwugzzut2nkvb366wzn5tp2zkfvu5xrfqhreowiryxump7l5e6jaaq');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
+        default:
+      }
+    }
+  });
 
   test('all blockchain have important fields', () async {
-    getAllBlockchains = await getAllBlockchains_fun();
     for (int i = 0; i < getAllBlockchains.length; i++) {
       expect(getAllBlockchains[i].name_(), isNotNull);
       expect(getAllBlockchains[i].symbol_(), isNotNull);
@@ -511,190 +549,128 @@ void main() async {
       expect(getAllBlockchains[i].image_(), isNotNull);
     }
   });
-  // test('check if seed phrase generates the correct crypto address', () async {
-  //   // WARNING: These accounts, and their private keys, are publicly known.
-  //   // Any funds sent to them on Mainnet or any other live network WILL BE LOST.
-  //   const mnemonic =
-  //       'express crane road good warm suggest genre organ cradle tuition strike manual';
+  test('check if seed phrase generates the correct crypto address', () async {
+    // WARNING: These accounts, and their private keys, are publicly known.
+    // Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+    const mnemonic =
+        'express crane road good warm suggest genre organ cradle tuition strike manual';
 
-  //   seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
+    seedPhraseRoot = await compute(seedFromMnemonic, mnemonic);
 
-  //   final bitcoinKeyLive = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['Bitcoin'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
+    for (int i = 0; i < getAllBlockchains.length; i++) {
+      Coin blockchainInfo = getAllBlockchains[i];
+      Map cryptoKeys = {};
+      if (blockchainInfo.default__() != "XTZ") {
+        cryptoKeys = await blockchainInfo.fromMnemonic(mnemonic);
+      }
 
-  //   final litecoinKey = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['Litecoin'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
+      switch (blockchainInfo.default__()) {
+        case 'BTC':
+          if (blockchainInfo.name_() == 'Bitcoin') {
+            expect(cryptoKeys['address'],
+                'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
+          } else if (blockchainInfo.name_() == 'Bitcoin(Test)') {
+            expect(
+              cryptoKeys['address'],
+              'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E',
+            );
+          }
+          break;
+        case 'ETH':
+          expect(
+            cryptoKeys['address'],
+            '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF',
+          );
 
-  //   final bitcoinCashKey = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['BitcoinCash'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
+          break;
+        case 'ETC':
+          expect(
+            cryptoKeys['address'],
+            '0x5C4b9839FDD8D5156549bE3eD5a00c933AaA3544',
+          );
 
-  //   final dogecoinKey = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['Dogecoin'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
+          break;
+        case 'BCH':
+          expect(cryptoKeys['address'],
+              'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
+          break;
+        case 'LTC':
+          expect(cryptoKeys['address'],
+              'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
 
-  //   final zcashKey = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['ZCash'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
-  //   final dashKey = await compute(
-  //     calculateBitCoinKey,
-  //     Map.from(getBitCoinPOSBlockchains()['Dash'])
-  //       ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //   );
+          break;
+        case 'DASH':
+          expect(cryptoKeys['address'], 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
 
-  //   // final tezosKey = await compute(
-  //   //   calculateTezorKey,
-  //   //   {seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic},
-  //   // );
+          break;
+        case 'TRX':
+          expect(cryptoKeys['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
 
-  //   final ethereumKey = await compute(
-  //     calculateEthereumKey,
-  //     {
-  //       seedRootKey: seedPhraseRoot,
-  //       mnemonicKey: mnemonic,
-  //       'coinType': getEVMBlockchains()['Ethereum']['coinType'],
-  //     },
-  //   );
-  //   final ethereumClassicKey = await compute(
-  //     calculateEthereumKey,
-  //     {
-  //       seedRootKey: seedPhraseRoot,
-  //       mnemonicKey: mnemonic,
-  //       'coinType': getEVMBlockchains()['Ethereum Classic']['coinType'],
-  //     },
-  //   );
-  //   final cardanoLiveKey = await compute(
-  //     calculateCardanoKey,
-  //     {mnemonicKey: mnemonic, 'network': cardano.NetworkId.mainnet},
-  //   );
-  //   final cardanoTestNetKey = await compute(
-  //     calculateCardanoKey,
-  //     {mnemonicKey: mnemonic, 'network': cardano.NetworkId.testnet},
-  //   );
-  //   final stellarKey = await compute(
-  //     calculateStellarKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
+          break;
+        case 'SOL':
+          expect(
+            cryptoKeys['address'],
+            '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
+          );
 
-  //   final filecoinKey = await compute(calculateFileCoinKey, {
-  //     mnemonicKey: mnemonic,
-  //     seedRootKey: seedPhraseRoot,
-  //     'addressPrefix': 'f'
-  //   });
+          break;
+        case 'XLM':
+          expect(cryptoKeys['address'],
+              'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
 
-  //   final cosmosKey = await compute(calculateCosmosKey, {
-  //     mnemonicKey: mnemonic,
-  //     seedRootKey: seedPhraseRoot,
-  //     "networkInfo": cosmos.NetworkInfo(
-  //       bech32Hrp: 'cosmos',
-  //       lcdUrl: Uri.parse(''),
-  //     )
-  //   });
-  //   final solanaKey = await compute(
-  //     calculateSolanaKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
+          break;
+        case 'ALGO':
+          expect(cryptoKeys['address'],
+              'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
 
-  //   final rippleKey = await compute(
-  //     calculateRippleKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
+          break;
+        case 'ATOM':
+          expect(cryptoKeys['address'],
+              'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
 
-  //   final algorandKey = await compute(
-  //     calculateAlgorandKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
-  //   final tronKey = await compute(
-  //     calculateTronKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
-  //   final nearKey = await compute(
-  //     calculateNearKey,
-  //     {
-  //       mnemonicKey: mnemonic,
-  //       seedRootKey: seedPhraseRoot,
-  //     },
-  //   );
+          break;
+        case 'ZEC':
+          expect(cryptoKeys['address'], 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
 
-  //   if (enableTestNet) {
-  //     final bitcoinKeyTest = await compute(
-  //       calculateBitCoinKey,
-  //       Map.from(getBitCoinPOSBlockchains()['Bitcoin(Test)'])
-  //         ..addAll({seedRootKey: seedPhraseRoot, mnemonicKey: mnemonic}),
-  //     );
-  //     expect(bitcoinKeyTest['address'], 'n4fpz8NjzHwBkyzHBhSYoAegc7LjWZ175E');
-  //   }
-  //   expect(bitcoinKeyLive['address'],
-  //       'bc1qzd9a563p9hfd93e3e2k3986m3ve0nmy4dtruaf');
+          break;
+        case 'XTZ':
+          // expect(cryptoKeys['address'], '');
 
-  //   expect(bitcoinCashKey['address'],
-  //       'qr4rwp766lf2xysphv8wz2qglphuzx5y7gku3hqruj');
-  //   expect(rippleKey['address'], 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+          break;
+        case 'ADA':
+          if (blockchainInfo.name_() == 'Cardano') {
+            expect(
+              cryptoKeys['address'],
+              'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
+            );
+          } else if (blockchainInfo.name_() == 'Cardano(Prepod)') {
+            expect(
+              cryptoKeys['address'],
+              'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
+            );
+          }
 
-  //   expect(
-  //       litecoinKey['address'], 'ltc1qsru3fe2ttd3zgjfhn3r5eqz6tpe5cfzqszg8s7');
-  //   expect(dashKey['address'], 'Xy1VVEXaiJstcmA9Jr1k38rcr3sGn3kQti');
-  //   expect(dogecoinKey['address'], 'DF6pp77Q4ms37ABLberK4EuBtREiB1BGJz');
-  //   expect(zcashKey['address'], 't1UNRtPu3WJUVTwwpFQHUWcu2LAhCrwDWuU');
-  //   expect(algorandKey['address'],
-  //       'GYFNCWZJM3NKKXXFIHNDGNL2BLKBMPKA5UZBUWZUQKUIGYWCG5L2SBPB2U');
-  //   expect(nearKey['address'],
-  //       'a0c8aed1a106c99fa1b35858a1588e9504bde5fc38428358e6ceadb1c2b1850e');
-  //   expect(tronKey['address'], 'TSwpGWaJtfZfyE8kd1NYD1xYgTQUSGLsSM');
-  //   // expect(tezosKey['address'], 'tz1dSW1iQguZHMEZoAgNTU6VBRcNnyfb5BA7');
-  //   expect(
-  //       cosmosKey['address'], 'cosmos1f36h4udjp9yxaewrrgyrv75phtemqsagep85ne');
-  //   expect(stellarKey['address'],
-  //       'GA5MO26YHJK7VMDCTODG7DYO5YATNMRYQVTXNMNKKRFYXZOINJYQEXYT');
-  //   expect(
-  //     await etherPrivateKeyToAddress(ethereumKey),
-  //     '0x4AA3f03885Ad09df3d0CD08CD1Fe9cC52Fc43dBF',
-  //   );
-  //   expect(
-  //     await etherPrivateKeyToAddress(ethereumClassicKey),
-  //     '0x5C4b9839FDD8D5156549bE3eD5a00c933AaA3544',
-  //   );
-  //   expect(filecoinKey['address'], 'f16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa');
-  //   expect(
-  //     solanaKey['address'],
-  //     '5rxJLW9p2NQPMRjKM1P3B7CQ7v2RASpz45T7QP39bX5W',
-  //   );
-  //   expect(
-  //     cardanoLiveKey['address'],
-  //     'addr1q9r4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsq34lpxc',
-  //   );
-  //   expect(
-  //     cardanoTestNetKey['address'],
-  //     'addr_test1qpr4l5l6xzsvum2g5s7u99wt630p8qd9xpepf73reyyrmxpqde5sugs7jg27gp04fcq7a9z90gz3ac8mq7p7k5vwedsqjrzp28',
-  //   );
-  // });
+          break;
+        case 'XRP':
+          expect(cryptoKeys['address'], 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+
+          break;
+        case 'FIL':
+          if (blockchainInfo.name_() == 'Filecoin') {
+            expect(cryptoKeys['address'],
+                'f16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa');
+          } else if (blockchainInfo.name_() == 'Filecoin(Testnet)') {
+            expect(
+              cryptoKeys['address'],
+              't16kbqwbyroghqd76fm5j4uiat5vasumclk7nezpa',
+            );
+          }
+
+          break;
+        default:
+      }
+    }
+  });
 
   test('user pin length and pin trials is secured and correct.', () async {
     expect(pinLength, greaterThanOrEqualTo(4));
@@ -712,7 +688,7 @@ void main() async {
   test('can import token from blockchain', () async {
     Map bep20TokenDetails = await getERC20TokenDetails(
       contractAddress: busdContractAddress,
-      rpc: getEVMBlockchains().firstWhere(
+      rpc: getEVMBlockchains(false).firstWhere(
         (element) => element['name'] == 'Smart Chain',
       )['rpc'],
     );
