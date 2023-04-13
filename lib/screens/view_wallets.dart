@@ -55,7 +55,6 @@ class _ViewWalletsState extends State<ViewWallets> {
                 },
                 child: GestureDetector(
                   onTap: () async {
-                    final pref = Hive.box(secureStorageKey);
                     final currentPhrase = pref.get(currentMmenomicKey);
                     await pref.put(
                       currentMmenomicKey,
@@ -163,7 +162,6 @@ class _ViewWalletsState extends State<ViewWallets> {
   Future<bool> _editWalletName(int index) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    final pref = Hive.box(secureStorageKey);
     List mnemonicsList = json.decode(pref.get(mnemonicListKey));
     String currentmnemonic = pref.get(currentMmenomicKey);
 
@@ -252,7 +250,6 @@ class _ViewWalletsState extends State<ViewWallets> {
   Future<bool> _deleteWallet(int index) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    final pref = Hive.box(secureStorageKey);
     List mnemonicsList = json.decode(pref.get(mnemonicListKey));
 
     if (pref.get(currentMmenomicKey).toString().toLowerCase() ==

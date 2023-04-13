@@ -10,10 +10,10 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../utils/alt_ens.dart';
 import '../utils/app_config.dart';
 
-final pref = Hive.box(secureStorageKey);
 const cosmosDecimals = 6;
 
 class CosmosCoin extends Coin {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
@@ -35,7 +36,7 @@ class _PrivateSaleState extends State<PrivateSale> {
   Map privateSaleDetails;
   double networkBalance;
   double tokenBalance;
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+  final mnemonic = pref.get(currentMmenomicKey);
   Timer timer;
   final Map networkDetails = getEVMBlockchains().firstWhere(
     (e) => e['name'] == tokenContractNetwork,

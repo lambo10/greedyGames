@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:hive/hive.dart';
 
+import '../main.dart';
 import '../utils/app_config.dart';
 
 class SavedUrls extends StatefulWidget {
@@ -62,7 +63,6 @@ class _SavedUrlsState extends State<SavedUrls> {
           direction: DismissDirection.endToStart,
           confirmDismiss: (DismissDirection direction) async {
             if (direction.name == 'endToStart') {
-              final pref = Hive.box(secureStorageKey);
               final List currentArrayState = [...savedUrl.value];
               currentArrayState.removeAt(i);
               savedUrl.value = currentArrayState;
@@ -143,7 +143,6 @@ class _SavedUrlsState extends State<SavedUrls> {
                   Navigator.pop(context, false);
                 },
                 btnOkOnPress: () async {
-                  final pref = Hive.box(secureStorageKey);
                   await pref.delete(widget.savedKey);
                   savedUrl.value = [];
                   if (mounted) {

@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../main.dart';
+
 abstract class Coin {
   void validateAddress(String address);
   Future<Map> fromMnemonic(String mnemonic);
@@ -13,7 +15,6 @@ abstract class Coin {
   Future<String> transferToken(String amount, String to);
   Future<Map> getTransactions() async {
     final address = await address_();
-    final pref = Hive.box(secureStorageKey);
     return {
       'trx': jsonDecode(pref.get(savedTransKey())),
       'currentUser': address

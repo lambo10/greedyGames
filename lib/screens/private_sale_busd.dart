@@ -15,6 +15,7 @@ import '../components/loader.dart';
 import '../components/user_balance.dart';
 import '../config/colors.dart';
 import '../config/styles.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/slide_up_panel.dart';
 import 'package:web3dart/web3dart.dart' as web3;
@@ -142,7 +143,7 @@ class _PrivateSaleBusdState extends State<PrivateSaleBusd> {
     }
   }
 
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+  final mnemonic = pref.get(currentMmenomicKey);
 
   @override
   Widget build(BuildContext context) {

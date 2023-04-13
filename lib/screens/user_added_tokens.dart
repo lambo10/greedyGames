@@ -8,6 +8,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+import '../main.dart';
 import '../utils/get_blockchain_widget.dart';
 import '../utils/rpc_urls.dart';
 
@@ -43,7 +44,6 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
 
   final List<EthContractCoin> tokenList = [];
   Future getUserAddedToken() async {
-    final pref = Hive.box(secureStorageKey);
     final userTokenListKey = getAddTokenKey();
     final prefToken = pref.get(userTokenListKey);
 
@@ -103,8 +103,6 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
               setState(() {});
             },
             confirmDismiss: (DismissDirection direction) async {
-              final pref = Hive.box(secureStorageKey);
-
               final userTokenListKey = getAddTokenKey();
 
               if (tokenList.isEmpty) return false;

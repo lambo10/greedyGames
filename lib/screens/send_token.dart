@@ -59,7 +59,6 @@ class _SendTokenState extends State<SendToken> {
       rpc = (widget.tokenData as EthContractCoin).rpc;
       tokenId = (widget.tokenData as EthContractCoin).tokenId;
     }
-    pref = Hive.box(secureStorageKey);
   }
 
   @override

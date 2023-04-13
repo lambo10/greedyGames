@@ -10,9 +10,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar
     hide Row;
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 
-final pref = Hive.box(secureStorageKey);
 const stellarDecimals = 6;
 
 class StellarCoin extends Coin {

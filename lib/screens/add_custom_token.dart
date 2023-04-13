@@ -9,6 +9,7 @@ import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 import '../coins/eth_contract_coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/qr_scan_view.dart';
 
@@ -311,7 +312,6 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                     ),
                     onPressed: () async {
                       FocusManager.instance.primaryFocus?.unfocus();
-                      final pref = Hive.box(secureStorageKey);
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       final contractAddr = contractAddrContrl.text.trim();
                       final contractName = nameContrl.text.trim();

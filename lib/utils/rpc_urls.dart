@@ -104,7 +104,7 @@ Future<Map> viewUserTokens(
   String address, {
   bool skipNetworkRequest,
 }) async {
-  final pref = Hive.box(secureStorageKey);
+
   final tokenListKey = 'tokenListKey_$chainId-$address/__';
   final tokenList = pref.get(tokenListKey);
   Map userTokens = {
@@ -373,7 +373,7 @@ Future<bool> authenticateIsAvailable() async {
 }
 
 Future<bool> localAuthentication() async {
-  final pref = Hive.box(secureStorageKey);
+
   if (!pref.get(biometricsKey, defaultValue: true)) {
     return false;
   }
@@ -413,7 +413,7 @@ Future<bool> authenticate(BuildContext context,
 }
 
 String getAddTokenKey() {
-  final pref = Hive.box(secureStorageKey);
+
   final String mnemonicHash = sha3(pref.get(currentMmenomicKey));
   return 'userTokenList$mnemonicHash'.toLowerCase();
 }
@@ -468,7 +468,7 @@ final List<String> months = [
 ];
 
 Future reInstianteSeedRoot() async {
-  final pref = Hive.box(secureStorageKey);
+
   final currentPhrase = pref.get(currentMmenomicKey);
   if (currentPhrase != null) {
     seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
@@ -760,7 +760,7 @@ Future<String> getCryptoPrice({
   }
   const secondsToResendRequest = 15;
 
-  final pref = Hive.box(secureStorageKey);
+
   final savedCryptoPrice = pref.get(coinGeckoCryptoPriceKey);
 
   if (savedCryptoPrice != null) {
@@ -1136,7 +1136,7 @@ Future returnInitEvm(
   int chainId,
   String rpc,
 ) async {
-  final pref = Hive.box(secureStorageKey);
+
   await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
   final evmDetails = evmFromChainId(chainId);
@@ -1187,7 +1187,6 @@ Future navigateToDappBrowser(
   final provider = await rootBundle.loadString('js/trust.min.js');
   final webNotifer = await rootBundle.loadString('js/web_notification.js');
 
-  final pref = Hive.box(secureStorageKey);
   if (pref.get(dappChainIdKey) == null) {
     await pref.put(
       dappChainIdKey,

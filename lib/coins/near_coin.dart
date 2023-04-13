@@ -10,11 +10,11 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const nearDecimals = 24;
 
 class NearCoin extends Coin {
@@ -93,7 +93,6 @@ class NearCoin extends Coin {
   Future<Map> fromMnemonic(String mnemonic) async {
     String key = 'nearDetails$mnemonic';
 
-    final pref = Hive.box(secureStorageKey);
     List mmenomicMapping = [];
 
     if (pref.get(key) != null) {

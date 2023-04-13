@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cryptowallet/components/user_balance.dart';
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/foundation.dart';
@@ -39,7 +40,7 @@ class _ExchangeTokenState extends State<ExchangeToken>
   String payAddress = nativeTokenAddress;
   String getAddress = nativeTokenAddress;
   Map tokenList;
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+  final mnemonic = pref.get(currentMmenomicKey);
   Map selectedItemPay = {};
   Map selectedItemGet = {};
   String networkImage;

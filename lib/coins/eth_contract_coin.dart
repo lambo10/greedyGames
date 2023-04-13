@@ -9,6 +9,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
+import '../main.dart';
 import '../utils/alt_ens.dart';
 import '../utils/rpc_urls.dart';
 

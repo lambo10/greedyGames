@@ -4,14 +4,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' as cardano;
 
-final pref = Hive.box(secureStorageKey);
 const cardanoDecimals = 6;
 const int maxFeeGuessForCardano = 200000;
 

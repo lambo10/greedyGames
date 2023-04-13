@@ -15,6 +15,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
 import '../coins/eth_contract_coin.dart';
+import '../main.dart';
 
 class TransferToken extends StatefulWidget {
   final Coin tokenData;
@@ -240,8 +241,6 @@ class _TransferTokenState extends State<TransferToken> {
                                         });
                                       }
                                       try {
-                                        final pref = Hive.box(secureStorageKey);
-
                                         String transactionHash = await widget
                                             .tokenData
                                             .transferToken(

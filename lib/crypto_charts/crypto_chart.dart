@@ -15,6 +15,7 @@ import 'package:charts_flutter/src/text_element.dart' as TextElement;
 import 'package:charts_flutter/src/text_style.dart' as style;
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 
 class CryptoChart extends StatefulWidget {
@@ -91,7 +92,6 @@ class _CryptoChartState extends State<CryptoChart> {
                               width: double.infinity,
                               height: 250,
                               child: FutureBuilder(future: () async {
-                                final pref = Hive.box(secureStorageKey);
                                 String defaultCurrency =
                                     pref.get('defaultCurrency') ?? "usd";
 

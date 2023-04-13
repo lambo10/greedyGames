@@ -31,8 +31,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setUp(() async {
     await setUpTestHive();
-    await Hive.openBox(secureStorageKey);
-    getAllBlockchains = await getAllBlockchains_fun(false);
+    pref = await Hive.openBox(secureStorageKey);
+    getAllBlockchains = await getAllBlockchains_fun();
   });
 
   tearDown(() async {
@@ -688,7 +688,7 @@ void main() async {
   test('can import token from blockchain', () async {
     Map bep20TokenDetails = await getERC20TokenDetails(
       contractAddress: busdContractAddress,
-      rpc: getEVMBlockchains(false).firstWhere(
+      rpc: getEVMBlockchains().firstWhere(
         (element) => element['name'] == 'Smart Chain',
       )['rpc'],
     );

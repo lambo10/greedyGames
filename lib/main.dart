@@ -36,10 +36,9 @@ import '../coins/tron_coin.dart';
 import '../coins/xrp_coin.dart';
 
 List<Coin> getAllBlockchains = [];
-Future<List<Coin>> getAllBlockchains_fun([bool getUserAddedEvm = true]) async {
+Future<List<Coin>> getAllBlockchains_fun() async {
   return [
-    ...getEVMBlockchains(getUserAddedEvm)
-        .map((e) => EthereumCoin.fromJson(Map.from(e))),
+    ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
     ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
     ...getFilecoinBlockChains().map((e) => FilecoinCoin.fromJson(Map.from(e))),
     ...getCardanoBlockChains().map((e) => CardanoCoin.fromJson(Map.from(e))),
@@ -54,6 +53,7 @@ Future<List<Coin>> getAllBlockchains_fun([bool getUserAddedEvm = true]) async {
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 
+Box pref;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
@@ -93,8 +93,10 @@ void main() async {
 
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: _secureEncryptionKey));
-  final pref = await Hive.openBox(secureStorageKey,
-      encryptionCipher: HiveAesCipher(encryptionKey));
+  pref = await Hive.openBox(
+    secureStorageKey,
+    encryptionCipher: HiveAesCipher(encryptionKey),
+  );
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
@@ -200,7 +202,6 @@ class _MyHomePageState extends State<MyHomePage> {
         disableNavigation: true,
         splash: 'assets/logo.png',
         screenFunction: () async {
-          final pref = Hive.box(secureStorageKey);
           final bool hasWallet = pref.get(currentMmenomicKey) != null;
 
           final bool hasPasscode = pref.get(userUnlockPasscodeKey) != null;

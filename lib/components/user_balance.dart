@@ -1,3 +1,4 @@
+import 'package:cryptowallet/main.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../utils/app_config.dart';
@@ -33,8 +34,7 @@ class _UserBalanceState extends State<UserBalance> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable:
-          Hive.box(secureStorageKey).listenable(keys: [hideBalanceKey]),
+      valueListenable: pref.listenable(keys: [hideBalanceKey]),
       builder: (context, box, _) {
         if (box.get(hideBalanceKey, defaultValue: false)) {
           return SizedBox(

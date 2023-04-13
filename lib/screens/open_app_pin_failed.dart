@@ -27,7 +27,6 @@ class _OpenAppPinFailedState extends State<OpenAppPinFailed> {
         1000 * (widget.remainSec ?? 60) * minutesForUnlock;
     controller = CountdownTimerController(endTime: endTime, onEnd: onEnd);
     controller.addListener(() async {
-      final pref = Hive.box(secureStorageKey);
       final remaininTime = controller.currentRemainingTime;
       if (remaininTime == null) return;
       await pref.put(appUnlockTime, remaininTime.sec);

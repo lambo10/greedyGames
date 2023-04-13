@@ -13,6 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+import '../main.dart';
 import '../screens/build_row.dart';
 import '../utils/app_config.dart';
 import '../utils/slide_up_panel.dart';
@@ -51,8 +52,6 @@ class _PortfolioState extends State<Portfolio> {
           skipNetworkRequest: true,
         ),
       ) as Map;
-
-      final pref = Hive.box(secureStorageKey);
 
       final currencyWithSymbol =
           jsonDecode(await rootBundle.loadString('json/currency_symbol.json'));
@@ -131,7 +130,6 @@ class _PortfolioState extends State<Portfolio> {
                     if (userBalance != null)
                       GestureDetector(
                         onTap: () async {
-                          final pref = Hive.box(secureStorageKey);
                           final userPreviousHidingBalance =
                               pref.get(hideBalanceKey, defaultValue: false);
 

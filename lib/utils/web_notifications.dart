@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:hive/hive.dart';
 
+import '../main.dart';
+
 // ignore: constant_identifier_names
 enum WebNotificationPermission { GRANTED, DENIED, DEFAULT }
 
@@ -155,8 +157,7 @@ abstract class WebNotificationPermissionDb {
   static const key = 'WebNotificationPermissionDb';
 
   static Future<void> loadSavedPermissions() async {
-    final prefs = Hive.box(secureStorageKey);
-    final json = prefs.get(key);
+    final json = pref.get(key);
     if (json != null) {
       _db.addAll(jsonDecode(json).cast<String, String>());
     }
@@ -165,8 +166,7 @@ abstract class WebNotificationPermissionDb {
   static Future<bool> clear() async {
     _db.clear();
     try {
-      final prefs = Hive.box(secureStorageKey);
-      await prefs.delete(key);
+      await pref.delete(key);
       return true;
     } catch (e) {
       return false;
@@ -177,8 +177,8 @@ abstract class WebNotificationPermissionDb {
       String host, WebNotificationPermission permission) async {
     try {
       _db[host] = permission.name.toLowerCase();
-      final prefs = Hive.box(secureStorageKey);
-      await prefs.put(key, jsonEncode(_db));
+
+      await pref.put(key, jsonEncode(_db));
       return true;
     } catch (e) {
       return false;

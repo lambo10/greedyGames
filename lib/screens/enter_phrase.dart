@@ -12,6 +12,7 @@ import 'package:bip39/bip39.dart' as bip39;
 import 'package:screenshot_callback/screenshot_callback.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import '../components/loader.dart';
+import '../main.dart';
 import '../utils/qr_scan_view.dart';
 
 class EnterPhrase extends StatefulWidget {
@@ -235,7 +236,6 @@ class _EnterPhraseState extends State<EnterPhrase> with WidgetsBindingObserver {
                                 return;
                               }
                               if (isLoading) return;
-                              final pref = Hive.box(secureStorageKey);
                               setState(() {
                                 isLoading = true;
                               });

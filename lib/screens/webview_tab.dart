@@ -23,6 +23,7 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../coins/ethereum_coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/json_model_callback.dart';
 import '../utils/web_notifications.dart';
@@ -159,7 +160,7 @@ class _WebViewTabState extends State<WebViewTab> with WidgetsBindingObserver {
       TextEditingController();
   PullToRefreshController _pullToRefreshController;
   FindInteractionController _findInteractionController;
-  final pref = Hive.box(secureStorageKey);
+
   @override
   void initState() {
     super.initState();

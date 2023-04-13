@@ -7,12 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import 'package:solana/solana.dart' as solana;
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const solanaDecimals = 9;
 
 class SolanaCoin extends Coin {

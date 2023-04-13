@@ -9,11 +9,11 @@ import 'package:hex/hex.dart';
 import 'package:hive/hive.dart';
 import 'package:algorand_dart/algorand_dart.dart' as algo_rand;
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const algorandDecimals = 6;
 
 class AlgorandCoin extends Coin {

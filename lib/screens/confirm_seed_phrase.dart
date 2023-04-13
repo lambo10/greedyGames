@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/wallet.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:flutter/foundation.dart';
@@ -289,7 +290,6 @@ class _ConfirmmnemonicState extends State<Confirmmnemonic> {
                             setState(() {
                               isLoading = true;
                             });
-                            final pref = Hive.box(secureStorageKey);
                             String mnemonics = widget.mmenomic.join(' ');
                             try {
                               final mnemonicsList = pref.get(mnemonicListKey);

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/wallet_connect_preview.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
@@ -21,16 +22,14 @@ class WalletConnect extends StatefulWidget {
 }
 
 class _WalletConnectState extends State<WalletConnect> {
-  Box prefs;
   TextEditingController _textEditingController;
   String connectedWebsiteUrl = "";
   List previousSessions;
 
   @override
   void initState() {
-    prefs = Hive.box(secureStorageKey);
-    if (prefs.get(wcSessionKey) != null) {
-      previousSessions = jsonDecode(prefs.get(wcSessionKey)) as List;
+    if (pref.get(wcSessionKey) != null) {
+      previousSessions = jsonDecode(pref.get(wcSessionKey)) as List;
       previousSessions = previousSessions.reversed.toList();
     }
     super.initState();
@@ -62,8 +61,7 @@ class _WalletConnectState extends State<WalletConnect> {
             child: Padding(
               padding: const EdgeInsets.all(25.0),
               child: ValueListenableBuilder(
-                  valueListenable: Hive.box(secureStorageKey)
-                      .listenable(keys: [wcSessionKey]),
+                  valueListenable: pref.listenable(keys: [wcSessionKey]),
                   builder: (context, _, __) {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -312,16 +310,16 @@ class _WalletConnectState extends State<WalletConnect> {
                                   (DismissDirection direction) async {
                                 if (direction.name == 'endToStart') {
                                   try {
-                                    if (prefs.get(wcSessionKey) == null) {
+                                    if (pref.get(wcSessionKey) == null) {
                                       return false;
                                     }
                                     List sessions =
-                                        jsonDecode(prefs.get(wcSessionKey))
+                                        jsonDecode(pref.get(wcSessionKey))
                                             as List;
 
                                     sessions.removeAt(i);
                                     previousSessions = sessions;
-                                    await prefs.put(
+                                    await pref.put(
                                         wcSessionKey, jsonEncode(sessions));
                                     return true;
                                   } catch (_) {

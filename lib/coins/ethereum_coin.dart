@@ -10,11 +10,11 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const etherDecimals = 18;
 
 class EthereumCoin extends Coin {
@@ -222,13 +222,13 @@ class EthereumCoin extends Coin {
   }
 }
 
-List<Map> getEVMBlockchains([bool getUserAddedEVM = true]) {
+List<Map> getEVMBlockchains() {
   Map userAddedEVM = {};
-  if (getUserAddedEVM) {
-    if (pref.get(newEVMChainKey) != null) {
-      userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
-    }
+
+  if (pref.get(newEVMChainKey) != null) {
+    userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
   }
+
   List<Map> blockChains = [
     {
       "rpc": 'https://mainnet.infura.io/v3/$infuraApiKey',

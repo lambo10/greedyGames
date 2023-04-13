@@ -26,6 +26,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import '../components/loader.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/qr_scan_view.dart';
 
@@ -275,7 +276,6 @@ class _SettingsState extends State<Settings> {
                         const Divider(),
                         InkWell(
                           onTap: () async {
-                            final pref = Hive.box(secureStorageKey);
                             final mnemonics = pref.get(mnemonicListKey);
 
                             final currentPhrase = pref.get(currentMmenomicKey);
@@ -573,8 +573,7 @@ class _SettingsState extends State<Settings> {
                           const Divider(),
                           InkWell(
                             onTap: () async {
-                              String mnemonic = (Hive.box(secureStorageKey))
-                                  .get(currentMmenomicKey);
+                              String mnemonic = pref.get(currentMmenomicKey);
                               if (await authenticate(context)) {
                                 ScaffoldMessenger.of(context)
                                     .hideCurrentSnackBar();
@@ -733,7 +732,6 @@ class _SettingsState extends State<Settings> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              final pref = Hive.box(secureStorageKey);
                               List data = [];
                               if (pref.get(bookMarkKey) != null) {
                                 data =

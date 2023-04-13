@@ -27,7 +27,6 @@ class Contact extends StatefulWidget {
 }
 
 class _ContactState extends State<Contact> {
-  final pref = Hive.box(secureStorageKey);
   List contacts = [];
   List languages;
   String languageCode;

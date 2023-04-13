@@ -8,6 +8,8 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../main.dart';
+
 class SetCurrency extends StatefulWidget {
   final String data;
   const SetCurrency({this.data, Key key}) : super(key: key);
@@ -36,7 +38,6 @@ class _SetCurrencyState extends State<SetCurrency> {
                     if (kDebugMode) {
                       print('debugging');
                     }
-                    final pref = Hive.box(secureStorageKey);
                     final defaultCurrency =
                         pref.get('defaultCurrency') ?? 'USD';
 
@@ -58,7 +59,6 @@ class _SetCurrencyState extends State<SetCurrency> {
                           InkWell(
                             onTap: () async {
                               try {
-                                final pref = Hive.box(secureStorageKey);
                                 final responseBody = jsonDecode((await get(
                                         Uri.parse(
                                             coinGeckoSupportedCurrencies)))

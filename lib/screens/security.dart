@@ -7,6 +7,8 @@ import 'package:pinput/pinput.dart';
 import 'package:screenshot_callback/screenshot_callback.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../main.dart';
+
 class Security extends StatefulWidget {
   final bool isEnterPin;
   final bool isChangingPin;
@@ -105,7 +107,6 @@ class _SecurityState extends State<Security> {
                     enabled: false,
                     onCompleted: (_) async {
                       FocusManager.instance.primaryFocus?.unfocus();
-                      final pref = Hive.box(secureStorageKey);
                       if (widget.isEnterPin != null &&
                           widget.isEnterPin == true) {
                         currentTrial++;
