@@ -82,6 +82,7 @@ class TronCoin extends Coin {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['api'] = api;
