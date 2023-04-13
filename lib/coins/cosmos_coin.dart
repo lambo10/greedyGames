@@ -111,23 +111,15 @@ class CosmosCoin extends Coin {
 
     final keys = await compute(
       calculateCosmosKey,
-      {
-        mnemonicKey: mnemonic,
-        "networkInfo": networkInfo,
-      },
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          "networkInfo": networkInfo,
+        }),
     );
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  calculateCosmosKey(Map config) {
-    final wallet = cosmos.Wallet.derive(
-      config[mnemonicKey].split(' '),
-      config['networkInfo'],
-    );
-
-    return {'address': wallet.bech32Address};
   }
 
   @override
@@ -266,4 +258,13 @@ List<Map> getCosmosBlockChains() {
     });
   }
   return blockChains;
+}
+
+calculateCosmosKey(Map config) {
+  final wallet = cosmos.Wallet.derive(
+    config[mnemonicKey].split(' '),
+    config['networkInfo'],
+  );
+
+  return {'address': wallet.bech32Address};
 }

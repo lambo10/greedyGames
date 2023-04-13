@@ -75,32 +75,16 @@ class AlgorandCoin extends Coin {
 
     final keys = await compute(
       calculateAlgorandKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          seedRootKey: seedPhraseRoot,
+        }),
     );
 
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(key, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Future calculateAlgorandKey(Map config) async {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    KeyData masterKey =
-        await ED25519_HD_KEY.derivePath("m/44'/283'/0'/0'/0'", seedRoot_.seed);
-
-    final account =
-        await algo_rand.Account.fromPrivateKey(HEX.encode(masterKey.key));
-    if (config['getAlgorandKeys'] != null &&
-        config['getAlgorandKeys'] == true) {
-      return account;
-    }
-
-    return {
-      'address': account.publicAddress,
-    };
   }
 
   @override
@@ -262,4 +246,20 @@ algo_rand.Algorand getAlgorandClient(AlgorandTypes type) {
     indexerClient: _indexerClient,
     kmdClient: _kmdClient,
   );
+}
+
+Future calculateAlgorandKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  KeyData masterKey =
+      await ED25519_HD_KEY.derivePath("m/44'/283'/0'/0'/0'", seedRoot_.seed);
+
+  final account =
+      await algo_rand.Account.fromPrivateKey(HEX.encode(masterKey.key));
+  if (config['getAlgorandKeys'] != null && config['getAlgorandKeys'] == true) {
+    return account;
+  }
+
+  return {
+    'address': account.publicAddress,
+  };
 }

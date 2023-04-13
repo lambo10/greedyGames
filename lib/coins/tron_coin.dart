@@ -111,32 +111,16 @@ class TronCoin extends Coin {
 
     final keys = await compute(
       calculateTronKey,
-      {
-        mnemonicKey: mnemonic,
-        seedRootKey: seedPhraseRoot,
-      },
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          seedRootKey: seedPhraseRoot,
+        }),
     );
 
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(key, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  calculateTronKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    final master =
-        wallet.ExtendedPrivateKey.master(seedRoot_.seed, wallet.xprv);
-    final root = master.forPath("m/44'/195'/0'/0/0");
-
-    final privateKey =
-        wallet.PrivateKey((root as wallet.ExtendedPrivateKey).key);
-    final publicKey = wallet.tron.createPublicKey(privateKey);
-    final address = wallet.tron.createAddress(publicKey);
-
-    return {
-      'privateKey': HEX.encode(privateKey.value.toUint8List()),
-      'address': address,
-    };
   }
 
   @override
@@ -306,4 +290,19 @@ Future<Map> tronTrxInfo(
   }
 
   return json.decode(request.body);
+}
+
+calculateTronKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final master = wallet.ExtendedPrivateKey.master(seedRoot_.seed, wallet.xprv);
+  final root = master.forPath("m/44'/195'/0'/0/0");
+
+  final privateKey = wallet.PrivateKey((root as wallet.ExtendedPrivateKey).key);
+  final publicKey = wallet.tron.createPublicKey(privateKey);
+  final address = wallet.tron.createAddress(publicKey);
+
+  return {
+    'privateKey': HEX.encode(privateKey.value.toUint8List()),
+    'address': address,
+  };
 }

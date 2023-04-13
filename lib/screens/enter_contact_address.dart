@@ -1,4 +1,5 @@
 import 'package:cryptowallet/coins/ethereum_coin.dart';
+import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,8 +10,13 @@ import '../utils/coin_pay.dart';
 import '../utils/qr_scan_view.dart';
 
 class EnterContactAddress extends StatefulWidget {
-  final Map blockchainData;
-  const EnterContactAddress({Key key, this.blockchainData}) : super(key: key);
+  final Coin tokenData;
+  final String recipient;
+  const EnterContactAddress({
+    Key key,
+    this.tokenData,
+    this.recipient,
+  }) : super(key: key);
 
   @override
   State<EnterContactAddress> createState() => _EnterContactAddressState();
@@ -44,7 +50,7 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${widget.blockchainData['symbol']} ${AppLocalizations.of(context).address}',
+          '${widget.tokenData.symbol_()} ${AppLocalizations.of(context).address}',
         ),
       ),
       body: SafeArea(
@@ -73,7 +79,7 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
                       }
                     },
                     controller: recipientAddressController
-                      ..text = widget.blockchainData['address'],
+                      ..text = widget.recipient,
                     decoration: InputDecoration(
                       suffixIcon: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -122,7 +128,7 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
                         ],
                       ),
                       hintText:
-                          '${widget.blockchainData['symbol']} ${AppLocalizations.of(context).address}',
+                          '${widget.tokenData.symbol_()} ${AppLocalizations.of(context).address}',
 
                       focusedBorder: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -168,11 +174,10 @@ class _EnterContactAddressState extends State<EnterContactAddress> {
                         String recipient =
                             recipientAddressController.text.trim();
                         try {
-                          EthereumCoin.fromJson(widget.blockchainData)
-                              .validateAddress(recipient);
+                          widget.tokenData.validateAddress(recipient);
 
                           Navigator.pop(context, {
-                            ...widget.blockchainData,
+                            ...widget.tokenData.toJson(),
                             'address': recipient,
                           });
                         } catch (e) {

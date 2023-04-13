@@ -116,58 +116,18 @@ class FilecoinCoin extends Coin {
         }
       }
     }
-    final keys = await compute(calculateFileCoinKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-      'addressPrefix': prefix,
-    });
+    final keys = await compute(
+      calculateFileCoinKey,
+      Map.from(toJson())
+        ..addAll({
+          mnemonicKey: mnemonic,
+          seedRootKey: seedPhraseRoot,
+          'addressPrefix': prefix,
+        }),
+    );
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Uint8List _hexToU8a(String hex) {
-    RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
-    if (!hexRegex.hasMatch(hex)) {
-      throw ArgumentError('Provided string is not valid hex value');
-    }
-    final value = hex.startsWith('0x') ? hex.substring(2) : hex;
-    final valLength = value.length ~/ 2;
-
-    final bufLength = (valLength).ceil();
-
-    final result = Uint8List(bufLength);
-    final offset = (bufLength - valLength).clamp(0, bufLength);
-    for (var index = 0; index < bufLength; index++) {
-      result[index + offset] =
-          int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
-    }
-    return result;
-  }
-
-  Map calculateFileCoinKey(Map config) {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
-    final rs0 = node.derive(0);
-
-    final pk = _hexToU8a(HEX.encode(rs0.privateKey));
-    final e = getSecp256k1();
-
-    final publickEy =
-        e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
-
-    final protocolByte = Leb128.encodeUnsigned(1);
-    final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
-
-    final addressBytes = [...protocolByte, ...payload];
-    final checksum = blake2bHash(addressBytes, digestSize: 4);
-    Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
-    final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
-
-    return {
-      "address": address.toLowerCase(),
-      'privateKey': HEX.encode(rs0.privateKey),
-    };
   }
 
   @override
@@ -347,51 +307,6 @@ class FilecoinCoin extends Coin {
     return blake2bHash(data, digestSize: 4);
   }
 
-  String transactionSignLotus(Map msg, String privateKeyHex) {
-    final to = addressAsBytes(msg['To']);
-    final from = addressAsBytes(msg['From']);
-    final value = serializeBigNum(msg['Value']);
-    final gasfeecap = serializeBigNum(msg['GasFeeCap']);
-    final gaspremium = serializeBigNum(msg['GasPremium']);
-    final gaslimit = msg['GasLimit'];
-    int method = msg['Method'];
-    final params = msg['Params'];
-    int nonce = msg['Nonce'];
-    int version = msg['Version'];
-
-    final messageToEncode = [
-      version ?? 0,
-      to,
-      from,
-      nonce ?? 0,
-      value,
-      gaslimit,
-      gasfeecap,
-      gaspremium,
-      method ?? 0,
-      base64.decode(params ?? '')
-    ];
-    cbor.init();
-    final output = cbor.OutputStandard();
-    final encoder = cbor.Encoder(output);
-    output.clear();
-    encoder.writeArray(messageToEncode);
-    final unsignedMessage = output.getDataAsList();
-    Uint8List privateKey = HEX.decode(privateKeyHex);
-
-    final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
-
-    final signatureEC = sign(messageDigest, privateKey);
-    final recid = signatureEC.v - 27;
-
-    final cid = base64.encode([
-      ...signatureEC.r.toUint8List(),
-      ...signatureEC.s.toUint8List(),
-      recid,
-    ]);
-    return cid;
-  }
-
   Map constructFilecoinMsg(
     String destinationAddress,
     String from,
@@ -534,4 +449,93 @@ List<Map> getFilecoinBlockChains() {
     });
   }
   return blockChains;
+}
+
+Map calculateFileCoinKey(Map config) {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  final node = seedRoot_.root.derivePath("m/44'/461'/0'/0");
+  final rs0 = node.derive(0);
+
+  final pk = _hexToU8a(HEX.encode(rs0.privateKey));
+  final e = getSecp256k1();
+
+  final publickEy =
+      e.privateToPublicKey(PrivateKey.fromBytes(getSecp256k1(), pk));
+
+  final protocolByte = Leb128.encodeUnsigned(1);
+  final payload = blake2bHash(HEX.decode(publickEy.toHex()), digestSize: 20);
+
+  final addressBytes = [...protocolByte, ...payload];
+  final checksum = blake2bHash(addressBytes, digestSize: 4);
+  Uint8List bytes = Uint8List.fromList([...payload, ...checksum]);
+  final address = '${config['addressPrefix']}1${Base32.encode(bytes)}';
+
+  return {
+    "address": address.toLowerCase(),
+    'privateKey': HEX.encode(rs0.privateKey),
+  };
+}
+
+Uint8List _hexToU8a(String hex) {
+  RegExp hexRegex = RegExp(r'^(0x)?[a-fA-F0-9]+$');
+  if (!hexRegex.hasMatch(hex)) {
+    throw ArgumentError('Provided string is not valid hex value');
+  }
+  final value = hex.startsWith('0x') ? hex.substring(2) : hex;
+  final valLength = value.length ~/ 2;
+
+  final bufLength = (valLength).ceil();
+
+  final result = Uint8List(bufLength);
+  final offset = (bufLength - valLength).clamp(0, bufLength);
+  for (var index = 0; index < bufLength; index++) {
+    result[index + offset] =
+        int.parse(value.substring(index * 2, index * 2 + 2), radix: 16);
+  }
+  return result;
+}
+
+String transactionSignLotus(Map msg, String privateKeyHex) {
+  final to = addressAsBytes(msg['To']);
+  final from = addressAsBytes(msg['From']);
+  final value = serializeBigNum(msg['Value']);
+  final gasfeecap = serializeBigNum(msg['GasFeeCap']);
+  final gaspremium = serializeBigNum(msg['GasPremium']);
+  final gaslimit = msg['GasLimit'];
+  int method = msg['Method'];
+  final params = msg['Params'];
+  int nonce = msg['Nonce'];
+  int version = msg['Version'];
+
+  final messageToEncode = [
+    version ?? 0,
+    to,
+    from,
+    nonce ?? 0,
+    value,
+    gaslimit,
+    gasfeecap,
+    gaspremium,
+    method ?? 0,
+    base64.decode(params ?? '')
+  ];
+  cbor.init();
+  final output = cbor.OutputStandard();
+  final encoder = cbor.Encoder(output);
+  output.clear();
+  encoder.writeArray(messageToEncode);
+  final unsignedMessage = output.getDataAsList();
+  Uint8List privateKey = HEX.decode(privateKeyHex);
+
+  final messageDigest = getDigest(Uint8List.fromList(unsignedMessage));
+
+  final signatureEC = sign(messageDigest, privateKey);
+  final recid = signatureEC.v - 27;
+
+  final cid = base64.encode([
+    ...signatureEC.r.toUint8List(),
+    ...signatureEC.s.toUint8List(),
+    recid,
+  ]);
+  return cid;
 }

@@ -1,8 +1,8 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:bip39/bip39.dart';
-import 'package:cryptowallet/model/seed_phrase_root.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -11,19 +11,14 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
-import 'package:flutter_js/extensions/xhr.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hex/hex.dart';
 // import 'package:pointycastle/pointycastle.dart';
-import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart';
 import 'package:page_transition/page_transition.dart';
 import 'interface/coin.dart';
 import 'screens/main_screen.dart';
@@ -41,7 +36,7 @@ import '../coins/tron_coin.dart';
 import '../coins/xrp_coin.dart';
 
 List<Coin> getAllBlockchains = [];
-Future<List<Coin>> _getAllBlockchains() async {
+Future<List<Coin>> getAllBlockchains_fun() async {
   return [
     ...getEVMBlockchains().map((e) => EthereumCoin.fromJson(Map.from(e))),
     ...getBitCoinPOSBlockchains().map((e) => BitcoinCoin.fromJson(Map.from(e))),
@@ -102,7 +97,7 @@ void main() async {
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
-  getAllBlockchains = await _getAllBlockchains();
+  getAllBlockchains = await getAllBlockchains_fun();
   runApp(
     MyApp(
       userDarkMode: pref.get(darkModekey, defaultValue: true),

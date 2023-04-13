@@ -73,34 +73,20 @@ class CardanoCoin extends Coin {
         }
       }
     }
-    final keys = await compute(calculateCardanoKey, {
-      mnemonicKey: mnemonic,
-      'network': cardano_network,
-    });
+    final keys = await compute(
+        calculateCardanoKey,
+        Map.from(toJson())
+          ..addAll(
+            {
+              mnemonicKey: mnemonic,
+              'network': cardano_network,
+            },
+          ));
 
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
 
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Map calculateCardanoKey(Map config) {
-    final wallet = cardano.HdWallet.fromMnemonic(config[mnemonicKey]);
-    const cardanoAccountHardOffsetKey = 0x80000000;
-
-    String userWalletAddress = wallet
-        .deriveUnusedBaseAddressKit(
-            networkId: config['network'],
-            index: 0,
-            account: cardanoAccountHardOffsetKey,
-            role: 0,
-            unusedCallback: (cardano.ShelleyAddress address) => true)
-        .address
-        .toString();
-
-    return {
-      'address': userWalletAddress,
-    };
   }
 
   @override
@@ -289,4 +275,23 @@ List<Map> getCardanoBlockChains() {
     });
   }
   return blockChains;
+}
+
+Map calculateCardanoKey(Map config) {
+  final wallet = cardano.HdWallet.fromMnemonic(config[mnemonicKey]);
+  const cardanoAccountHardOffsetKey = 0x80000000;
+
+  String userWalletAddress = wallet
+      .deriveUnusedBaseAddressKit(
+          networkId: config['network'],
+          index: 0,
+          account: cardanoAccountHardOffsetKey,
+          role: 0,
+          unusedCallback: (cardano.ShelleyAddress address) => true)
+      .address
+      .toString();
+
+  return {
+    'address': userWalletAddress,
+  };
 }

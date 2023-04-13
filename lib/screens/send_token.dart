@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/components/loader.dart';
@@ -46,7 +48,7 @@ class _SendTokenState extends State<SendToken> {
   EthTokenType tokenType;
   String rpc;
   BigInt tokenId;
-
+  final bool showContacts = true;
   Box pref;
 
   @override
@@ -133,7 +135,7 @@ class _SendTokenState extends State<SendToken> {
                             } catch (_) {}
                           },
                         ),
-                        if (pref.get(addcontactKey) != null)
+                        if (showContacts)
                           IconButton(
                             icon: const Icon(
                               FontAwesomeIcons.user,
@@ -217,7 +219,11 @@ class _SendTokenState extends State<SendToken> {
                           AppLocalizations.of(context).max,
                           textAlign: TextAlign.end,
                         ),
-                        onPressed: () async {},
+                        onPressed: () async {
+                          final maxTransfer =
+                              await widget.tokenData.getMaxTransfer();
+                          amountContrl.text = maxTransfer.toString();
+                        },
                       ),
                       hintText: AppLocalizations.of(context).amount,
 

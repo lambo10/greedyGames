@@ -104,28 +104,17 @@ class NearCoin extends Coin {
       }
     }
 
-    final keys = await compute(calculateNearKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-    });
+    final keys = await compute(
+        calculateNearKey,
+        Map.from(toJson())
+          ..addAll({
+            mnemonicKey: mnemonic,
+            seedRootKey: seedPhraseRoot,
+          }));
 
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(key, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Future calculateNearKey(Map config) async {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-    KeyData masterKey =
-        await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
-    final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
-
-    final address = HEX.encode(publicKey).substring(2);
-
-    return {
-      'privateKey': HEX.encode(masterKey.key),
-      'address': address,
-    };
   }
 
   @override
@@ -263,4 +252,18 @@ class NearRpcProvider extends RPCProvider {
   final String endpoint;
 
   NearRpcProvider(this.endpoint) : super(endpoint);
+}
+
+Future calculateNearKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+  KeyData masterKey =
+      await ED25519_HD_KEY.derivePath("m/44'/397'/0'", seedRoot_.seed);
+  final publicKey = await ED25519_HD_KEY.getPublicKey(masterKey.key);
+
+  final address = HEX.encode(publicKey).substring(2);
+
+  return {
+    'privateKey': HEX.encode(masterKey.key),
+    'address': address,
+  };
 }

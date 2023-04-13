@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/enter_contact_address.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:hive/hive.dart';
 
+import '../interface/coin.dart';
 import '../utils/app_config.dart';
 
 class AddContact extends StatefulWidget {
@@ -126,11 +128,18 @@ class _AddContactState extends State<AddContact> {
                             children: [
                               GestureDetector(
                                 onTap: () async {
+                                  Coin blockChain =
+                                      getAllBlockchains.firstWhere(
+                                    (element) => (element.name_() == key),
+                                  );
+
                                   Map addressData = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (ctx) => EnterContactAddress(
-                                        blockchainData: addressDataMap[key],
+                                        tokenData: blockChain,
+                                        recipient: addressDataMap[key]
+                                            ['address'],
                                       ),
                                     ),
                                   );
@@ -234,10 +243,12 @@ class _AddContactState extends State<AddContact> {
                               context,
                               MaterialPageRoute(
                                 builder: (ctx) => EnterContactAddress(
-                                  blockchainData: blockChainData,
+                                  tokenData: blockChainData,
                                 ),
                               ),
                             );
+
+                            print(addressData);
 
                             if (addressData == null) return;
 

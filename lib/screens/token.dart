@@ -230,40 +230,33 @@ class _TokenState extends State<Token> {
               : widget.tokenData.name_(),
         ),
         actions: [
-          IconButton(
-            onPressed: widget.tokenData.default__() != null
-                ? () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => CryptoChart(
-                          name: widget.tokenData.name_(),
-                          symbol: widget.tokenData.default__(),
-                        ),
-                      ),
-                    );
-                  }
-                : null,
-            icon: SvgPicture.asset(
-              'assets/chart-mixed.svg',
-              color: widget.tokenData.default__() != null
-                  ? Colors.white
-                  : const Color(0x00aaaaaa),
-            ),
-          ),
-          if (rampName != null)
+          if (widget.tokenData.default__() != null)
             IconButton(
-              onPressed: widget.tokenData.default__() != null
-                  ? () async {
-                      final buyLink = getRampLink(rampName, rampCurrentAddress);
-                      await navigateToDappBrowser(context, buyLink);
-                    }
-                  : null,
-              icon: Icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => CryptoChart(
+                      name: widget.tokenData.name_(),
+                      symbol: widget.tokenData.default__(),
+                    ),
+                  ),
+                );
+              },
+              icon: SvgPicture.asset(
+                'assets/chart-mixed.svg',
+                color: Colors.white,
+              ),
+            ),
+          if (rampName != null && widget.tokenData.default__() != null)
+            IconButton(
+              onPressed: () async {
+                final buyLink = getRampLink(rampName, rampCurrentAddress);
+                await navigateToDappBrowser(context, buyLink);
+              },
+              icon: const Icon(
                 Icons.shopping_bag,
-                color: widget.tokenData.default__() != null
-                    ? Colors.white
-                    : const Color(0x00aaaaaa),
+                color: Colors.white,
               ),
             ),
           if (widget.tokenData.contractAddress() != null)

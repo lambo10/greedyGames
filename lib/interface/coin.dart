@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 abstract class Coin {
   validateAddress(String address);
   Future<Map> fromMnemonic(String mnemonic);
+  Map toJson();
   Future<double> getBalance(bool skipNetworkRequest);
   Future<String> transferToken(String amount, String to);
   Future<Map> getTransactions() async {
@@ -17,6 +18,10 @@ abstract class Coin {
       'trx': jsonDecode(pref.get(savedTransKey())),
       'currentUser': address
     };
+  }
+
+  Future<double> getMaxTransfer() async {
+    return await getBalance(true);
   }
 
   String savedTransKey() => '${default__()} Details';

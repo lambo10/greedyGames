@@ -115,19 +115,6 @@ class TezosCoin extends Coin {
     return keys;
   }
 
-  Future<Map> calculateTezorKey(Map config) async {
-    List<String> keys = await Dartez.restoreIdentityFromDerivationPath(
-      "m/44'/1729'/0'/0'",
-      config[mnemonicKey],
-    );
-
-    return {
-      'address': keys[2],
-      'private_key': keys[0],
-      'public_key': keys[1],
-    };
-  }
-
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final address = await address_();
@@ -429,4 +416,17 @@ final Map<String, int> prefixLength = {
 enum TezosTypes {
   mainNet,
   ghostNet,
+}
+
+Future<Map> calculateTezorKey(Map config) async {
+  List<String> keys = await Dartez.restoreIdentityFromDerivationPath(
+    "m/44'/1729'/0'/0'",
+    config[mnemonicKey],
+  );
+
+  return {
+    'address': keys[2],
+    'private_key': keys[0],
+    'public_key': keys[1],
+  };
 }

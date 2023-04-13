@@ -100,31 +100,16 @@ class SolanaCoin extends Coin {
       }
     }
 
-    final keys = await compute(calculateSolanaKey, {
-      mnemonicKey: mnemonic,
-      seedRootKey: seedPhraseRoot,
-    });
+    final keys = await compute(
+        calculateSolanaKey,
+        Map.from(toJson())
+          ..addAll({
+            mnemonicKey: mnemonic,
+            seedRootKey: seedPhraseRoot,
+          }));
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
-  }
-
-  Future calculateSolanaKey(Map config) async {
-    SeedPhraseRoot seedRoot_ = config[seedRootKey];
-
-    final solana.Ed25519HDKeyPair keyPair =
-        await solana.Ed25519HDKeyPair.fromSeedWithHdPath(
-      seed: seedRoot_.seed,
-      hdPath: "m/44'/501'/0'",
-    );
-
-    if (config['getSolanaKeys'] != null && config['getSolanaKeys'] == true) {
-      return keyPair;
-    }
-
-    return {
-      'address': keyPair.address,
-    };
   }
 
   @override
@@ -247,4 +232,22 @@ enum SolanaClusters {
   mainNet,
   devNet,
   testNet,
+}
+
+Future calculateSolanaKey(Map config) async {
+  SeedPhraseRoot seedRoot_ = config[seedRootKey];
+
+  final solana.Ed25519HDKeyPair keyPair =
+      await solana.Ed25519HDKeyPair.fromSeedWithHdPath(
+    seed: seedRoot_.seed,
+    hdPath: "m/44'/501'/0'",
+  );
+
+  if (config['getSolanaKeys'] != null && config['getSolanaKeys'] == true) {
+    return keyPair;
+  }
+
+  return {
+    'address': keyPair.address,
+  };
 }
