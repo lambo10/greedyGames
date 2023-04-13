@@ -148,7 +148,7 @@ class PolkadotCoin extends Coin {
     decoded.sublist(ss58Length, endPos);
   }
 
-  _polkaChecksum(Uint8List decoded) {
+  List _polkaChecksum(Uint8List decoded) {
     final ss58Length = (decoded[0] & 64) != 0 ? 2 : 1;
     final ss58Decoded = ss58Length == 1
         ? decoded[0]
