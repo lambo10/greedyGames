@@ -64,6 +64,7 @@ class PolkadotCoin extends Coin {
   Future<Map> fromMnemonic(String mnemonic) async {
     final keyName = 'polkadotDetails$mnemonic';
     List mmenomicMapping = [];
+
     if (pref.get(keyName) != null) {
       mmenomicMapping = jsonDecode(pref.get(keyName)) as List;
       for (int i = 0; i < mmenomicMapping.length; i++) {
@@ -135,7 +136,36 @@ class PolkadotCoin extends Coin {
 
   @override
   validateAddress(String address) {
-    throw UnimplementedError();
+    final decoded = base58.decode(address);
+    final checksum = _polkaChecksum(decoded);
+    final bool isValid = checksum[0];
+    final int endPos = checksum[1];
+    final int ss58Length = checksum[2];
+
+    if (!isValid) {
+      throw Exception('Invalid decoded address checksum');
+    }
+    decoded.sublist(ss58Length, endPos);
+  }
+
+  _polkaChecksum(Uint8List decoded) {
+    final ss58Length = (decoded[0] & 64) != 0 ? 2 : 1;
+    final ss58Decoded = ss58Length == 1
+        ? decoded[0]
+        : ((decoded[0] & 63) << 2) |
+            (decoded[1] >> 6) |
+            ((decoded[1] & 63) << 8);
+    final isPublicKey =
+        [34 + ss58Length, 35 + ss58Length].contains(decoded.length);
+    final length = decoded.length - (isPublicKey ? 2 : 1);
+    final hash = sshash(Uint8List.fromList(decoded.sublist(0, length)));
+    final isValid = (decoded[0] & 128) == 0 &&
+        ![46, 47].contains(decoded[0]) &&
+        (isPublicKey
+            ? decoded[decoded.length - 2] == hash[0] &&
+                decoded[decoded.length - 1] == hash[1]
+            : decoded[decoded.length - 1] == hash[0]);
+    return [isValid, length, ss58Length, ss58Decoded];
   }
 }
 
@@ -154,32 +184,13 @@ List<Map> getPolkadoBlockChains() {
   return blockChains;
 }
 
-final polkadot = {
-  "id": "polkadot",
-  "name": "Polkadot",
-  "coinId": 354,
-  "symbol": "DOT",
-  "decimals": 10,
-  "blockchain": "Polkadot",
-  "derivation": [
-    {"path": "m/44'/354'/0'/0'/0'"}
-  ],
-  "curve": "ed25519",
-  "publicKeyType": "ed25519",
-  "addressHasher": "keccak256",
-  "ss58Prefix": 0,
-  "explorer": {
-    "url": "https://polkadot.subscan.io",
-    "txPath": "/extrinsic/",
-    "accountPath": "/account/"
-  },
-  "info": {
-    "url": "https://polkadot.network/",
-    "source": "https://github.com/paritytech/polkadot",
-    "rpc": "",
-    "documentation": "https://polkadot.js.org/api/substrate/rpc.html"
-  }
-};
+sshash(Uint8List bytes) {
+  const SS58_PREFIX = [83, 83, 53, 56, 80, 82, 69];
+  return blake2bHash(
+    Uint8List.fromList([...SS58_PREFIX, ...bytes]),
+    digestSize: 64,
+  );
+}
 
 calculatePolkadotKey(Map config) async {
   SeedPhraseRoot seedRoot_ = config[seedRootKey];
@@ -187,16 +198,11 @@ calculatePolkadotKey(Map config) async {
       await ED25519_HD_KEY.derivePath("m/44'/354'/0'/0'/0'", seedRoot_.seed);
 
   final publicKey = await ED25519_HD_KEY.getPublicKey(derivedKey.key);
-  const SS58_PREFIX = [83, 83, 53, 56, 80, 82, 69];
-
-  final hash = blake2bHash(
-    Uint8List.fromList([...SS58_PREFIX, ...publicKey]),
-    digestSize: 64,
-  );
 
   final address = base58.encode(Uint8List.fromList([
     ...publicKey,
-    ...hash.sublist(0, [32, 33].contains(publicKey.length) ? 2 : 1)
+    ...sshash(Uint8List.fromList(publicKey))
+        .sublist(0, [32, 33].contains(publicKey.length) ? 2 : 1)
   ]));
   return {
     'address': address,
