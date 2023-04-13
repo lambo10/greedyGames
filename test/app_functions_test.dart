@@ -667,6 +667,13 @@ void main() async {
           }
 
           break;
+        case 'DOT':
+          expect(
+            cryptoKeys['address'],
+            '15jjuhBx4AdCCKN99Tr2cVAbqjNKosFQYuRZRUiDoCQEab7g',
+          );
+
+          break;
         default:
       }
     }
