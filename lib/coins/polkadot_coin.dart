@@ -23,6 +23,7 @@ class PolkadotCoin extends Coin {
   String default_;
   String image;
   String name;
+  String api;
 
   @override
   Future<String> address_() async {
@@ -103,6 +104,7 @@ class PolkadotCoin extends Coin {
     this.default_,
     this.image,
     this.name,
+    this.api,
   });
 
   factory PolkadotCoin.fromJson(Map<String, dynamic> json) {
@@ -112,6 +114,7 @@ class PolkadotCoin extends Coin {
       symbol: json['symbol'],
       image: json['image'],
       name: json['name'],
+      api: json['api'],
     );
   }
 
@@ -123,8 +126,8 @@ class PolkadotCoin extends Coin {
     data['symbol'] = symbol;
     data['name'] = name;
     data['blockExplorer'] = blockExplorer;
-
     data['image'] = image;
+    data['api'] = api;
 
     return data;
   }
@@ -178,6 +181,7 @@ List<Map> getPolkadoBlockChains() {
       'name': 'Polkadot',
       'default': 'DOT',
       'image': 'assets/polkadot.png',
+      'api': 'https://rpc.polkadot.io/'
     }
   ];
 
