@@ -535,6 +535,14 @@ void main() async {
             throwsA(isA<Exception>()),
           );
           break;
+        case 'DOT':
+          blockchainInfo.validateAddress(
+              '15jjuhBx4AdCCKN99Tr2cVAbqjNKosFQYuRZRUiDoCQEab7g');
+          expect(
+            () => blockchainInfo.validateAddress(invalidAddress),
+            throwsA(isA<Exception>()),
+          );
+          break;
         default:
       }
     }
