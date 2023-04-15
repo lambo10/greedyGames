@@ -12,6 +12,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:pointycastle/pointycastle.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'coins/ronin_coin.dart';
 import 'interface/coin.dart';
 import 'screens/main_screen.dart';
 import '../coins/algorand_coin.dart';
@@ -52,6 +54,7 @@ Future<List<Coin>> getAllBlockchains_fun() async {
     ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
     ...getPolkadoBlockChains().map((e) => PolkadotCoin.fromJson(Map.from(e))),
+    ...getRoninBlockchains().map((e) => RoninCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 
@@ -171,6 +174,7 @@ class _MyAppState extends State<MyApp> {
           darkTheme: darkTheme,
           themeMode: currentMode,
           home: const MyHomePage(),
+          scrollBehavior: const CupertinoScrollBehavior(),
         );
       },
     );

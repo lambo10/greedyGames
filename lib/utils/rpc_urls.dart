@@ -476,6 +476,7 @@ const coinGeckoID = {
   "XTZ": "tezos",
   "TRX": "tron",
   "ETH": "ethereum",
+  "RON": "ronin",
   "ALGO": "algorand",
   "BNB": "binancecoin",
   "AVAX": "avalanche-2",
