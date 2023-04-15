@@ -39,17 +39,15 @@ class RoninCoin extends EthereumCoin {
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
     final mnemonicDetails = await super.fromMnemonic(mnemonic);
-    final String address = mnemonicDetails['address'];
     return {
       ...mnemonicDetails,
-      'address': address.replaceFirst('0x', 'ronin:')
+      'address': ethAddrToRonin(mnemonicDetails['address']),
     };
   }
 
   @override
   void validateAddress(String address) {
-    final address_ = address.replaceFirst('ronin:', '0x');
-    super.validateAddress(address_);
+    super.validateAddress(roninAddrToEth(address));
   }
 }
 
@@ -71,7 +69,7 @@ List<Map> getRoninBlockchains() {
   if (enableTestNet) {
     blockChains.addAll([
       {
-        "rpc": ' https://saigon-testnet.roninchain.com/rpc',
+        "rpc": 'https://saigon-testnet.roninchain.com/rpc',
         'chainId': 2021,
         'blockExplorer':
             'https://saigon-explorer.roninchain.com/tx/$transactionhashTemplateKey',

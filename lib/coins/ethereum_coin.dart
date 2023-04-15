@@ -133,8 +133,7 @@ class EthereumCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    String address = await address_();
-    address = address.replaceAll('ronin:', '0x');
+    String address = roninAddrToEth(await address_());
     final tokenKey = '$rpc$address/balance';
     final storedBalance = pref.get(tokenKey);
 
@@ -187,7 +186,7 @@ class EthereumCoin extends Coin {
       credentials,
       Transaction(
         from: credentials.address,
-        to: EthereumAddress.fromHex(to),
+        to: EthereumAddress.fromHex(roninAddrToEth(to)),
         value: EtherAmount.inWei(
           BigInt.from(wei),
         ),
@@ -215,8 +214,8 @@ class EthereumCoin extends Coin {
     final transactionFee = await getEtherTransactionFee(
       rpc,
       null,
-      EthereumAddress.fromHex(response['address']),
-      EthereumAddress.fromHex(to),
+      EthereumAddress.fromHex(roninAddrToEth(response['address'])),
+      EthereumAddress.fromHex(roninAddrToEth(to)),
     );
 
     return transactionFee / pow(10, etherDecimals);
@@ -325,7 +324,7 @@ List<Map> getEVMBlockchains() {
     },
     {
       'name': 'Milkomeda Cardano',
-      "rpc": ' https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
+      "rpc": 'https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
       'chainId': 2001,
       'blockExplorer':
           'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/tx/$transactionhashTemplateKey',
@@ -555,4 +554,12 @@ Future<String> etherPrivateKeyToAddress(String privateKey) async {
   EthPrivateKey ethereumPrivateKey = EthPrivateKey.fromHex(privateKey);
   final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
   return EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
+}
+
+String roninAddrToEth(String address) {
+  return address.replaceFirst('ronin:', '0x');
+}
+
+String ethAddrToRonin(String address) {
+  return address.replaceFirst('0x', 'ronin:');
 }
