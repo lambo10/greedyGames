@@ -267,6 +267,12 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                 }
                                                 String userAddress =
                                                     snapshot.data;
+
+                                                if (userAddress.contains(':')) {
+                                                  userAddress =
+                                                      userAddress.split(':')[1];
+                                                }
+
                                                 FocusManager
                                                     .instance.primaryFocus
                                                     ?.unfocus();
