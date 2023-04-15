@@ -133,7 +133,8 @@ class EthereumCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    final address = await address_();
+    String address = await address_();
+    address = address.replaceAll('ronin:', '0x');
     final tokenKey = '$rpc$address/balance';
     final storedBalance = pref.get(tokenKey);
 
@@ -185,7 +186,7 @@ class EthereumCoin extends Coin {
     final trans = await client.signTransaction(
       credentials,
       Transaction(
-        from: EthereumAddress.fromHex(response['address']),
+        from: credentials.address,
         to: EthereumAddress.fromHex(to),
         value: EtherAmount.inWei(
           BigInt.from(wei),

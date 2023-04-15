@@ -68,5 +68,21 @@ List<Map> getRoninBlockchains() {
     }
   ];
 
+  if (enableTestNet) {
+    blockChains.addAll([
+      {
+        "rpc": ' https://saigon-testnet.roninchain.com/rpc',
+        'chainId': 2021,
+        'blockExplorer':
+            'https://saigon-explorer.roninchain.com/tx/$transactionhashTemplateKey',
+        'symbol': 'RON',
+        'default': 'RON',
+        'name': 'Ronin(Testnet)',
+        'image': 'assets/ronin.jpeg',
+        'coinType': 60
+      },
+    ]);
+  }
+
   return blockChains;
 }
