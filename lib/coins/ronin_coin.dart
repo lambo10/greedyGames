@@ -63,7 +63,7 @@ List<Map> getRoninBlockchains() {
       'symbol': 'RON',
       'default': 'RON',
       'name': 'Ronin',
-      'image': 'assets/ronin.png',
+      'image': 'assets/ronin.jpeg',
       'coinType': 60
     }
   ];
