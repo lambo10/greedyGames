@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:cryptowallet/coins/eth_contract_coin.dart';
 import 'package:cryptowallet/coins/ethereum_coin.dart';
 import 'package:cryptowallet/coins/filecoin_coin.dart';
+import 'package:cryptowallet/coins/polkadot_coin.dart';
 import 'package:cryptowallet/eip/eip681.dart';
 import 'package:cryptowallet/interface/coin.dart';
 import 'package:cryptowallet/main.dart';
@@ -48,6 +49,10 @@ void main() async {
   const eip681String =
       'ethereum:ethereum-$busdContractAddress@56/transfer?address=$address&uint256=1000000000000000000';
   const unstoppableAddress = 'brad.crypto';
+  test('polkadot hashes are correct', () {
+    expect(xxhashAsHex('System'), '26aa394eea5630e07c48ae0c9558cef7');
+    expect(xxhashAsHex('Account'), 'b99d880ec681799c0cf30e8886371da9');
+  });
 
   test('can generate transactionSignLotus cid', () {
     final cid = transactionSignLotus(

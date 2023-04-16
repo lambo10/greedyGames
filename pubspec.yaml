@@ -148,6 +148,7 @@ dependency_overrides:
   petitparser: ^4.0.0
   fixnum: ^1.0.0
   ffi: ^2.0.0
+  xxh64: ^0.0.3+1
 flutter_icons:
   android: true
   ios: true

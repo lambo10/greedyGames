@@ -3,12 +3,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:algorand_dart/algorand_dart.dart';
 import 'package:bs58check/bs58check.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin;
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
-
+import 'package:http/http.dart';
+import 'package:xxh64/xxh64.dart';
 import '../interface/coin.dart';
 import '../main.dart';
 import '../model/seed_phrase_root.dart';
@@ -16,6 +18,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 const polkadotDecimals = 10;
+final systemAccount = '0x${xxhashAsHex('System')}${xxhashAsHex('Account')}';
 
 class PolkadotCoin extends Coin {
   String blockExplorer;
@@ -24,6 +27,7 @@ class PolkadotCoin extends Coin {
   String image;
   String name;
   String api;
+  static List rpcMethods;
 
   @override
   Future<String> address_() async {
@@ -90,6 +94,19 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
+    print(systemAccount);
+    if (rpcMethods == null) {
+      final result = await _queryRpc('rpc_methods', []);
+      rpcMethods = result['result']['methods'];
+    } else {
+      String getHead =
+          rpcMethods.firstWhere((element) => element == 'chain_getHead');
+
+      getHead ??=
+          rpcMethods.firstWhere((element) => element == 'chain_getBlockHash');
+      final result = await _queryRpc(getHead, []);
+      print(result);
+    }
     return 0;
   }
 
@@ -130,6 +147,28 @@ class PolkadotCoin extends Coin {
     data['api'] = api;
 
     return data;
+  }
+
+  Future<Map> _queryRpc(String rpcMethod, List params) async {
+    try {
+      final response = await post(
+        Uri.parse(api),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "jsonrpc": "2.0",
+          "id": "1",
+          "method": rpcMethod,
+          "params": params
+        }),
+      );
+      final responseBody = response.body;
+      if (response.statusCode ~/ 100 == 4 || response.statusCode ~/ 100 == 5) {
+        throw Exception(responseBody);
+      }
+      return jsonDecode(responseBody);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -194,6 +233,10 @@ List<int> sshash(Uint8List bytes) {
     Uint8List.fromList([...SS58_PREFIX, ...bytes]),
     digestSize: 64,
   );
+}
+
+String xxhashAsHex(String data) {
+  return HEX.encode(xxh128(data).toList());
 }
 
 calculatePolkadotKey(Map config) async {
@@ -345,3 +388,39 @@ final ass = {
     ]
   ]
 };
+
+Uint8List xxh128(String data) {
+  List storage_key1 = XXH64
+      .digest(data: data, seed: BigInt.from(0))
+      .toUint8List()
+      .reversed
+      .toList();
+
+  List storage_key2 = XXH64
+      .digest(data: data, seed: BigInt.from(1))
+      .toUint8List()
+      .reversed
+      .toList();
+
+  return Uint8List.fromList(storage_key1 + storage_key2);
+}
+
+
+//  const nameB = `${nameA}Api`;
+//             console.log(nameA);
+//             console.log(blake2AsHex(nameA, 64));
+//             console.log(nameB);
+//             console.log(blake2AsHex(nameB, 64));
+//             console.log('------------------')
+//             this._runtimeMap[blake2AsHex(nameA, 64)] = nameA;
+//             this._runtimeMap[blake2AsHex(nameB, 64)] = nameB;
+//         }
+
+// 1583kEDq2YqxMNBXpJHWKZXydTLRmjNcYVPf7a2Pf3LGFYdW
+// {"id":1,"jsonrpc":"2.0","method":"chain_getBlockHash","params":[0]}
+// {"id":2,"jsonrpc":"2.0","method":"state_getRuntimeVersion","params":[]}
+// {"id":3,"jsonrpc":"2.0","method":"system_chain","params":[]}
+// {"id":4,"jsonrpc":"2.0","method":"system_properties","params":[]}
+// {"id":5,"jsonrpc":"2.0","method":"rpc_methods","params":[]}
+// {"id":6,"jsonrpc":"2.0","method":"state_getMetadata","params":[]}
+// {"id":7,"jsonrpc":"2.0","method":"state_queryStorageAt","params":[["0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da901fb316253adf0c91272dcc3040df8edb650e4a750edfdf7e797855afaef2b5ed4c9c8ccec117f40b951d50842da5627"]]}
