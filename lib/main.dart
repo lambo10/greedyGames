@@ -63,7 +63,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
-
+// 01fb316253adf0c91272dcc3040df8edb650e4a750edfdf7e797855afaef2b5ed4c9c8ccec117f40b951d50842da5627
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([
