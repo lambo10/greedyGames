@@ -134,7 +134,7 @@ class PolkadotCoin extends Coin {
 
       final storageResult =
           await _queryRpc(getStorageAt, [storageKey, blockHashRes['result']]);
-      print(storageResult);
+      print(storageResult['result']);
 
       await pref.put(key, balanceInFileCoin);
 
