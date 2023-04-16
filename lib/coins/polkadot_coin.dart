@@ -94,21 +94,54 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    print(systemAccount);
-    if (rpcMethods == null) {
-      final result = await _queryRpc('rpc_methods', []);
-      rpcMethods = result['result']['methods'];
-    } else {
+    final address = await address_();
+    final key = 'polkadotAddressBalance$address$api';
+
+    final storedBalance = pref.get(key);
+
+    double savedBalance = 0;
+
+    if (storedBalance != null) {
+      savedBalance = storedBalance;
+    }
+
+    if (skipNetworkRequest) return savedBalance;
+
+    try {
+      double balanceInFileCoin = 0;
+      if (rpcMethods == null) {
+        final result = await _queryRpc('rpc_methods', []);
+        rpcMethods = result['result']['methods'];
+      }
       String getHead =
           rpcMethods.firstWhere((element) => element == 'chain_getHead');
 
       getHead ??=
           rpcMethods.firstWhere((element) => element == 'chain_getBlockHash');
-      final result = await _queryRpc(getHead, []);
-      print(result);
-      // util_crypto.blake2AsHex(keyring.decodeAddress("1583kEDq2YqxMNBXpJHWKZXydTLRmjNcYVPf7a2Pf3LGFYdW"), 128)
+      final blockHashRes = await _queryRpc(getHead, []);
+      String address = await address_();
+      //TODO: remove
+      address = '1583kEDq2YqxMNBXpJHWKZXydTLRmjNcYVPf7a2Pf3LGFYdW';
+      final decodedAddr = decodeDOTAddress(address);
+      final storageName = blake2_128_concat(decodedAddr);
+      final storageKey = '$systemAccount${HEX.encode(storageName)}';
+
+      String getStorageAt =
+          rpcMethods.firstWhere((element) => element == 'state_getStorageAt');
+
+      getStorageAt ??=
+          rpcMethods.firstWhere((element) => element == 'state_getStorage');
+
+      final storageResult =
+          await _queryRpc(getStorageAt, [storageKey, blockHashRes['result']]);
+      print(storageResult);
+
+      await pref.put(key, balanceInFileCoin);
+
+      return balanceInFileCoin;
+    } catch (e) {
+      return savedBalance;
     }
-    return 0;
   }
 
   @override
@@ -179,37 +212,26 @@ class PolkadotCoin extends Coin {
 
   @override
   validateAddress(String address) {
-    final decoded = base58.decode(address);
-    final checksum = _polkaChecksum(decoded);
-    final bool isValid = checksum[0];
-    final int endPos = checksum[1];
-    final int ss58Length = checksum[2];
-
-    if (!isValid) {
-      throw Exception('Invalid decoded address checksum');
-    }
-    decoded.sublist(ss58Length, endPos);
+    decodeDOTAddress(address);
   }
+}
 
-  List _polkaChecksum(Uint8List decoded) {
-    final ss58Length = (decoded[0] & 64) != 0 ? 2 : 1;
-    final ss58Decoded = ss58Length == 1
-        ? decoded[0]
-        : ((decoded[0] & 63) << 2) |
-            (decoded[1] >> 6) |
-            ((decoded[1] & 63) << 8);
-    final isPublicKey =
-        [34 + ss58Length, 35 + ss58Length].contains(decoded.length);
-    final length = decoded.length - (isPublicKey ? 2 : 1);
-    final hash = sshash(Uint8List.fromList(decoded.sublist(0, length)));
-    final isValid = (decoded[0] & 128) == 0 &&
-        ![46, 47].contains(decoded[0]) &&
-        (isPublicKey
-            ? decoded[decoded.length - 2] == hash[0] &&
-                decoded[decoded.length - 1] == hash[1]
-            : decoded[decoded.length - 1] == hash[0]);
-    return [isValid, length, ss58Length, ss58Decoded];
-  }
+List _polkaChecksum(Uint8List decoded) {
+  final ss58Length = (decoded[0] & 64) != 0 ? 2 : 1;
+  final ss58Decoded = ss58Length == 1
+      ? decoded[0]
+      : ((decoded[0] & 63) << 2) | (decoded[1] >> 6) | ((decoded[1] & 63) << 8);
+  final isPublicKey =
+      [34 + ss58Length, 35 + ss58Length].contains(decoded.length);
+  final length = decoded.length - (isPublicKey ? 2 : 1);
+  final hash = sshash(Uint8List.fromList(decoded.sublist(0, length)));
+  final isValid = (decoded[0] & 128) == 0 &&
+      ![46, 47].contains(decoded[0]) &&
+      (isPublicKey
+          ? decoded[decoded.length - 2] == hash[0] &&
+              decoded[decoded.length - 1] == hash[1]
+          : decoded[decoded.length - 1] == hash[0]);
+  return [isValid, length, ss58Length, ss58Decoded];
 }
 
 List<Map> getPolkadoBlockChains() {
@@ -226,6 +248,19 @@ List<Map> getPolkadoBlockChains() {
   ];
 
   return blockChains;
+}
+
+Uint8List decodeDOTAddress(String address) {
+  final decoded = base58.decode(address);
+  final checksum = _polkaChecksum(decoded);
+  final bool isValid = checksum[0];
+  final int endPos = checksum[1];
+  final int ss58Length = checksum[2];
+
+  if (!isValid) {
+    throw Exception('Invalid decoded address checksum');
+  }
+  return decoded.sublist(ss58Length, endPos);
 }
 
 List<int> sshash(Uint8List bytes) {
@@ -268,7 +303,7 @@ final ass = {
   "method": "state_queryStorageAt",
   "params": [
     [
-      "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9cfc61ff47f1f55dd7e8dbb229c0bf362b1fdf42c5bfbeb6450a71bb937110d5da6f167fc569cd25d73fc445c9ea9bf8f"
+      "0x26aa394eea5630e07c48ae0c9558cef7 b99d880ec681799c0cf30e8886371da9 cfc61ff47f1f55dd7e8dbb229c0bf362b1fdf42c5bfbeb6450a71bb937110d5da6f167fc569cd25d73fc445c9ea9bf8f"
     ]
   ]
 };

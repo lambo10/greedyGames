@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin, Wallet;
 import 'package:cryptowallet/coins/polkadot_coin.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
@@ -63,7 +64,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
-// 01fb316253adf0c91272dcc3040df8edb650e4a750edfdf7e797855afaef2b5ed4c9c8ccec117f40b951d50842da5627
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([
