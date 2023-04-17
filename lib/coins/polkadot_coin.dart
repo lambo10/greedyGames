@@ -323,3 +323,6 @@ Uint8List xxh128(String data) {
 
   return Uint8List.fromList(storage_key1 + storage_key2);
 }
+
+
+// extending ScaleDecoder
