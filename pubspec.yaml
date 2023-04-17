@@ -116,10 +116,13 @@ dependencies:
   hive_test: ^1.0.1
   youtube_player_flutter:
     path: ./youtube_player_flutter
+  polkadart_scale_codec:
+    path: ./polkadart_scale_codec
   hash: ^1.0.4
   base_x: ^2.0.0
   cbor: ^4.1.0
   upgrader: ^6.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

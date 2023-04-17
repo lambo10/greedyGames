@@ -6,10 +6,12 @@ import 'dart:typed_data';
 import 'package:algorand_dart/algorand_dart.dart';
 import 'package:bs58check/bs58check.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin;
+import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart';
+import 'package:polkadart_scale_codec/polkadart_scale_codec.dart';
 import 'package:xxh64/xxh64.dart';
 import '../interface/coin.dart';
 import '../main.dart';
@@ -119,9 +121,7 @@ class PolkadotCoin extends Coin {
       getHead ??=
           rpcMethods.firstWhere((element) => element == 'chain_getBlockHash');
       final blockHashRes = await _queryRpc(getHead, []);
-      String address = await address_();
-      //TODO: remove
-      address = '1583kEDq2YqxMNBXpJHWKZXydTLRmjNcYVPf7a2Pf3LGFYdW';
+      final String address = await address_();
       final decodedAddr = decodeDOTAddress(address);
       final storageName = blake2_128_concat(decodedAddr);
       final storageKey = '$systemAccount${HEX.encode(storageName)}';
@@ -134,12 +134,20 @@ class PolkadotCoin extends Coin {
 
       final storageResult =
           await _queryRpc(getStorageAt, [storageKey, blockHashRes['result']]);
-      print(storageResult['result']);
+      String storageData = storageResult['result'];
+      if (storageData != null) {
+        storageData = storageData.replaceFirst('0x', '');
 
+        final input = Input.fromHex(storageData.substring(32, 32 + 48));
+
+        final BigInt balanceBigInt = U128Codec.codec.decode(input);
+
+        balanceInFileCoin =
+            (balanceBigInt / BigInt.from(10).pow(polkadotDecimals)).toDouble();
+      }
       await pref.put(key, balanceInFileCoin);
-
       return balanceInFileCoin;
-    } catch (e) {
+    } catch (_) {
       return savedBalance;
     }
   }
@@ -297,17 +305,6 @@ List<int> blake2_128_concat(List data) {
   return blake2bHash(data, digestSize: 16) + data;
 }
 
-final ass = {
-  "jsonrpc": "2.0",
-  "id": "1",
-  "method": "state_queryStorageAt",
-  "params": [
-    [
-      "0x26aa394eea5630e07c48ae0c9558cef7 b99d880ec681799c0cf30e8886371da9 cfc61ff47f1f55dd7e8dbb229c0bf362b1fdf42c5bfbeb6450a71bb937110d5da6f167fc569cd25d73fc445c9ea9bf8f"
-    ]
-  ]
-};
-
 Uint8List xxh128(String data) {
   List storage_key1 = XXH64
       .digest(data: data, seed: BigInt.from(0))
@@ -326,3 +323,7 @@ Uint8List xxh128(String data) {
 
 
 // extending ScaleDecoder
+// removing the 0x
+// 'f9170000000000000100000000000000503b9566ad6d01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'.substr(32,48)
+// balance is a U128 // gotten from 32 -> 48
+// nonce is a U32 // gotten from 0 -> 4
