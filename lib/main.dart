@@ -174,7 +174,6 @@ class _MyAppState extends State<MyApp> {
           darkTheme: darkTheme,
           themeMode: currentMode,
           home: const MyHomePage(),
-          scrollBehavior: const CupertinoScrollBehavior(),
         );
       },
     );
