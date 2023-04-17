@@ -20,6 +20,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 const polkadotDecimals = 10;
+const westendDecimals = 12;
 final systemAccount = '0x${xxhashAsHex('System')}${xxhashAsHex('Account')}';
 
 class PolkadotCoin extends Coin {
@@ -141,9 +142,10 @@ class PolkadotCoin extends Coin {
         final input = Input.fromHex(storageData.substring(32, 32 + 48));
 
         final BigInt balanceBigInt = U128Codec.codec.decode(input);
-
+        final DOTDecimals =
+            name == 'Polkadot' ? polkadotDecimals : westendDecimals;
         balanceInFileCoin =
-            (balanceBigInt / BigInt.from(10).pow(polkadotDecimals)).toDouble();
+            (balanceBigInt / BigInt.from(10).pow(DOTDecimals)).toDouble();
       }
       await pref.put(key, balanceInFileCoin);
       return balanceInFileCoin;
@@ -254,6 +256,20 @@ List<Map> getPolkadoBlockChains() {
       'api': 'https://rpc.polkadot.io/'
     }
   ];
+
+  if (enableTestNet) {
+    blockChains.addAll([
+      {
+        'blockExplorer':
+            'https://westend.subscan.io/extrinsic/$transactionhashTemplateKey',
+        'symbol': 'DOT',
+        'name': 'Polkadot(Westend)',
+        'default': 'DOT',
+        'image': 'assets/polkadot.png',
+        'api': 'https://westend-rpc.polkadot.io'
+      },
+    ]);
+  }
 
   return blockChains;
 }
