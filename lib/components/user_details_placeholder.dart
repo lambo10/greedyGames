@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
@@ -25,8 +26,6 @@ class _UserDetailsPlaceHolderState extends State<UserDetailsPlaceHolder> {
   Map userDetails_ = {};
   Future<void> getUserDetails() async {
     try {
-      final pref = Hive.box(secureStorageKey);
-
       final currentWalletName = pref.get(currentUserWalletNameKey);
       final mnemonic = pref.get(currentMmenomicKey);
       Map ethereumMap =

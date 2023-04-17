@@ -18,17 +18,17 @@ import 'package:web3dart/web3dart.dart' hide Wallet;
 import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
+import '../main.dart';
+
 class WcConnector {
   BuildContext context;
   static WCClient wcClient;
-  static Box _prefs;
   String _walletAddress, _privateKey;
   int _chainId;
   Web3Client _web3client;
   String _currencySymbol;
   WcConnector() {
     context = NavigationService.navigatorKey.currentContext;
-    _prefs = Hive.box(secureStorageKey);
     wcClient = WCClient(
       onSessionRequest: _onSessionRequest,
       onFailure: _onSessionError,
@@ -65,7 +65,7 @@ class WcConnector {
 
   static Future removedCurrentSession() async {
     try {
-      String wcSessions = _prefs.get(wcSessionKey);
+      String wcSessions = pref.get(wcSessionKey);
       if (wcSessions != null) {
         List sessions_ = jsonDecode(wcSessions);
         for (int i = 0; i < sessions_.length; i++) {
@@ -77,7 +77,7 @@ class WcConnector {
 
           if (sameTopic && sameKey) {
             sessions_.removeAt(i);
-            await _prefs.put(wcSessionKey, jsonEncode(sessions_));
+            await pref.put(wcSessionKey, jsonEncode(sessions_));
           }
         }
       }
@@ -85,7 +85,7 @@ class WcConnector {
   }
 
   static Future wcReconnect() async {
-    String wcSessions = _prefs.get(wcSessionKey);
+    String wcSessions = pref.get(wcSessionKey);
     if (wcSessions != null && !wcClient.isConnected) {
       List sessions_ = jsonDecode(wcSessions);
       for (Map session in sessions_) {
@@ -100,7 +100,7 @@ class WcConnector {
 
   setSigningDetails(int chainId) async {
     Map blockChainData = evmFromChainId(chainId);
-    final _mnemonic = _prefs.get(currentMmenomicKey);
+    final _mnemonic = pref.get(currentMmenomicKey);
 
     final response =
         await EthereumCoin.fromJson(blockChainData).fromMnemonic(_mnemonic);
@@ -196,7 +196,7 @@ class WcConnector {
                                   },
                                 ),
                             );
-                            await _prefs.put(
+                            await pref.put(
                               wcSessionKey,
                               jsonEncode(sessions),
                             );

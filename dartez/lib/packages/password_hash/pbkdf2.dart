@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 
-
 /// Instances of this type derive a key from a password, salt, and hash function.
 ///
 /// https://en.wikipedia.org/wiki/PBKDF2
@@ -89,7 +88,8 @@ class PBKDF2Exception implements Exception {
 
 class _XORDigestSink extends Sink<Digest> {
   _XORDigestSink(ByteData inputBuffer, Hmac hmac) {
-    lastDigest = hmac.convert(inputBuffer.buffer.asUint8List()).bytes as Uint8List;
+    lastDigest =
+        hmac.convert(inputBuffer.buffer.asUint8List()).bytes as Uint8List;
     bytes = new ByteData(lastDigest.length)
       ..buffer.asUint8List().setRange(0, lastDigest.length, lastDigest);
   }

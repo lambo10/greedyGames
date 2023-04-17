@@ -57,7 +57,6 @@ class _LanguageState extends State<Language> {
                         onTap: () async {
                           try {
                             MyApp.of(context).setLocale(locale);
-                            final pref = Hive.box(secureStorageKey);
                             await pref.put(languageKey, locale.languageCode);
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(

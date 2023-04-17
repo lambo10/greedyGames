@@ -12,12 +12,12 @@ import 'package:http/http.dart';
 import 'package:crypto/crypto.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 import '../xrp_transaction/xrp_transaction.dart';
 
-final pref = Hive.box(secureStorageKey);
 const xrpDecimals = 6;
 
 class XRPCoin extends Coin {

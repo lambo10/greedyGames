@@ -265,8 +265,14 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                 if (Navigator.canPop(context)) {
                                                   Navigator.pop(context);
                                                 }
-                                                Map blockchainData =
-                                                    snapshot.data as Map;
+                                                String userAddress =
+                                                    snapshot.data;
+
+                                                if (userAddress.contains(':')) {
+                                                  userAddress =
+                                                      userAddress.split(':')[1];
+                                                }
+
                                                 FocusManager
                                                     .instance.primaryFocus
                                                     ?.unfocus();
@@ -292,9 +298,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                                     .symbol_()],
                                                         amount: amountEntered
                                                             .toDouble(),
-                                                        recipient:
-                                                            blockchainData[
-                                                                'address'],
+                                                        recipient: userAddress,
                                                       ).toUri();
                                                     } else {
                                                       requestUrl = EIP681.build(
@@ -320,9 +324,7 @@ class _ReceiveTokenState extends State<ReceiveToken> {
                                                                         ).toString()))
                                                                     .toString(),
                                                             'address':
-                                                                (snapshot.data
-                                                                        as Map)[
-                                                                    'address']
+                                                                userAddress
                                                           });
                                                     }
                                                   } catch (e) {

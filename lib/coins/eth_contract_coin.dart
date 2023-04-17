@@ -9,6 +9,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
+import '../main.dart';
 import '../utils/alt_ens.dart';
 import '../utils/rpc_urls.dart';
 
@@ -87,7 +88,7 @@ class EthContractCoin extends EthereumCoin {
       symbol: json['symbol'],
       image: json['image'],
       name: json['name'],
-      tokenType: json['tokenType'],
+      tokenType: json['tokenType'] ?? EthTokenType.ERC20,
       tokenId: json['tokenId'],
       contractAddress_: json['contractAddress'],
       network: json['network'],

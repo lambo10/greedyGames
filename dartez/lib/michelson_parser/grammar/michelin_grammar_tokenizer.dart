@@ -104,10 +104,7 @@ class MichelinGrammarTokenizer {
           }
           seq += chunk[j];
         }
-        
-      }
-     
-      else if (char == '"') {
+      } else if (char == '"') {
         var nextIndex = i + 200;
         if (nextIndex >= chunk.length - 1) nextIndex = chunk.length;
         var data = chunk.substring(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/screens/nft_image_webview.dart';
 import 'package:cryptowallet/screens/send_token.dart';
 import 'package:cryptowallet/utils/app_config.dart';
@@ -144,7 +145,7 @@ class _BlockChainNFTsState extends State<BlockChainNFTs> {
 
   Future getAllNFTs() async {
     try {
-      final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+      final mnemonic = pref.get(currentMmenomicKey);
       final response = await coin.fromMnemonic(mnemonic);
       final data = await viewUserTokens(
         widget.chainId,

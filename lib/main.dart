@@ -3,6 +3,8 @@
 import 'dart:convert';
 
 import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin, Wallet;
+import 'package:cryptowallet/coins/polkadot_coin.dart';
 import 'package:cryptowallet/screens/navigator_service.dart';
 import 'package:cryptowallet/screens/open_app_pin_failed.dart';
 import 'package:cryptowallet/screens/security.dart';
@@ -11,6 +13,7 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:cryptowallet/utils/wc_connector.dart';
 import 'package:cryptowallet/utils/web_notifications.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +23,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:pointycastle/pointycastle.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'coins/ronin_coin.dart';
 import 'interface/coin.dart';
 import 'screens/main_screen.dart';
 import '../coins/algorand_coin.dart';
@@ -50,14 +54,16 @@ Future<List<Coin>> getAllBlockchains_fun() async {
     ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
     ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
+    ...getPolkadoBlockChains().map((e) => PolkadotCoin.fromJson(Map.from(e))),
+    ...getRoninBlockchains().map((e) => RoninCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
 
+Box pref;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize();
   await Hive.initFlutter();
-
   FocusManager.instance.primaryFocus?.unfocus();
   // make app always in portrait mode
   SystemChrome.setPreferredOrientations([
@@ -92,8 +98,10 @@ void main() async {
 
   var encryptionKey =
       base64Url.decode(await secureStorage.read(key: _secureEncryptionKey));
-  final pref = await Hive.openBox(secureStorageKey,
-      encryptionCipher: HiveAesCipher(encryptionKey));
+  pref = await Hive.openBox(
+    secureStorageKey,
+    encryptionCipher: HiveAesCipher(encryptionKey),
+  );
 
   await reInstianteSeedRoot();
   await WebNotificationPermissionDb.loadSavedPermissions();
@@ -199,7 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
         disableNavigation: true,
         splash: 'assets/logo.png',
         screenFunction: () async {
-          final pref = Hive.box(secureStorageKey);
           final bool hasWallet = pref.get(currentMmenomicKey) != null;
 
           final bool hasPasscode = pref.get(userUnlockPasscodeKey) != null;

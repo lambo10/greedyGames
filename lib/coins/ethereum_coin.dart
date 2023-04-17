@@ -10,11 +10,11 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const etherDecimals = 18;
 
 class EthereumCoin extends Coin {
@@ -133,7 +133,7 @@ class EthereumCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    final address = await address_();
+    String address = roninAddrToEth(await address_());
     final tokenKey = '$rpc$address/balance';
     final storedBalance = pref.get(tokenKey);
 
@@ -185,8 +185,8 @@ class EthereumCoin extends Coin {
     final trans = await client.signTransaction(
       credentials,
       Transaction(
-        from: EthereumAddress.fromHex(response['address']),
-        to: EthereumAddress.fromHex(to),
+        from: credentials.address,
+        to: EthereumAddress.fromHex(roninAddrToEth(to)),
         value: EtherAmount.inWei(
           BigInt.from(wei),
         ),
@@ -214,8 +214,8 @@ class EthereumCoin extends Coin {
     final transactionFee = await getEtherTransactionFee(
       rpc,
       null,
-      EthereumAddress.fromHex(response['address']),
-      EthereumAddress.fromHex(to),
+      EthereumAddress.fromHex(roninAddrToEth(response['address'])),
+      EthereumAddress.fromHex(roninAddrToEth(to)),
     );
 
     return transactionFee / pow(10, etherDecimals);
@@ -224,9 +224,11 @@ class EthereumCoin extends Coin {
 
 List<Map> getEVMBlockchains() {
   Map userAddedEVM = {};
+
   if (pref.get(newEVMChainKey) != null) {
     userAddedEVM = Map.from(jsonDecode(pref.get(newEVMChainKey)));
   }
+
   List<Map> blockChains = [
     {
       "rpc": 'https://mainnet.infura.io/v3/$infuraApiKey',
@@ -302,7 +304,7 @@ List<Map> getEVMBlockchains() {
     {
       'name': 'Ethereum Classic',
       'symbol': 'ETC',
-      'default': 'ETH',
+      'default': 'ETC',
       'blockExplorer':
           'https://blockscout.com/etc/mainnet/tx/$transactionhashTemplateKey',
       'rpc': 'https://www.ethercluster.com/etc',
@@ -322,7 +324,7 @@ List<Map> getEVMBlockchains() {
     },
     {
       'name': 'Milkomeda Cardano',
-      "rpc": ' https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
+      "rpc": 'https://rpc-mainnet-cardano-evm.c1.milkomeda.com',
       'chainId': 2001,
       'blockExplorer':
           'https://explorer-mainnet-cardano-evm.c1.milkomeda.com/tx/$transactionhashTemplateKey',
@@ -552,4 +554,12 @@ Future<String> etherPrivateKeyToAddress(String privateKey) async {
   EthPrivateKey ethereumPrivateKey = EthPrivateKey.fromHex(privateKey);
   final uncheckedSumAddress = await ethereumPrivateKey.extractAddress();
   return EthereumAddress.fromHex(uncheckedSumAddress.toString()).hexEip55;
+}
+
+String roninAddrToEth(String address) {
+  return address.replaceFirst('ronin:', '0x');
+}
+
+String ethAddrToRonin(String address) {
+  return address.replaceFirst('0x', 'ronin:');
 }

@@ -1410,6 +1410,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.6.1"
+  polkadart_scale_codec:
+    dependency: "direct main"
+    description:
+      path: polkadart_scale_codec
+      relative: true
+    source: path
+    version: "1.1.0-pre.3"
   pool:
     dependency: transitive
     description:
@@ -2103,6 +2110,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.3.1"
+  xxh64:
+    dependency: "direct overridden"
+    description:
+      name: xxh64
+      sha256: "49428d087a09c4769a80f104f3f8011b5c43bad2a283118583ce56d192ee7eb7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3+1"
   yaml:
     dependency: transitive
     description:

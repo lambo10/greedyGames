@@ -12,6 +12,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:share/share.dart';
+import '../main.dart';
 import '../utils/rpc_urls.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 
@@ -88,7 +89,6 @@ class _DappState extends State<Dapp> {
     final localize = AppLocalizations.of(context);
     final historyTitle = localize.history;
     final historyEmpty = localize.noHistory;
-    final pref = Hive.box(secureStorageKey);
     return PreferredSize(
       child: SafeArea(
         child: SizedBox(
@@ -478,8 +478,6 @@ class _DappState extends State<Dapp> {
                                             width: 10,
                                           ),
                                           FutureBuilder(future: () async {
-                                            final pref =
-                                                Hive.box(secureStorageKey);
                                             final chainId =
                                                 pref.get(dappChainIdKey);
                                             return evmFromChainId(

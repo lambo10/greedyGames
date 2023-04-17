@@ -23,9 +23,9 @@ import 'package:cryptowallet/utils/app_config.dart';
 import 'package:web3dart/crypto.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 
-final pref = Hive.box(secureStorageKey);
 const filecoinfaucet = 'https://faucet.calibration.fildev.network/';
 const fileCoinDecimals = 18;
 
@@ -187,7 +187,6 @@ class FilecoinCoin extends Coin {
     String baseUrl,
   ) async {
     try {
-      final pref = Hive.box(secureStorageKey);
       String mnemonic = pref.get(currentMmenomicKey);
       final fileCoinDetails = await fromMnemonic(mnemonic);
 

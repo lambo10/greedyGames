@@ -22,8 +22,8 @@ import '../../util/codec.dart';
 /// with Dart generators or https://github.com/reaster/schema-gen to generate these classes.
 ///
 
-class CborDeserializationException implements Exception {
-} //TODO replace with Result?
+class CborDeserializationException
+    implements Exception {} //TODO replace with Result?
 
 /// an single asset name and value under a MultiAsset policyId
 class ShelleyAsset {

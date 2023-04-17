@@ -20,6 +20,8 @@ import 'package:hive/hive.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:intl/intl.dart';
 
+import '../main.dart';
+
 class Token extends StatefulWidget {
   final Coin tokenData;
   const Token({this.tokenData, Key key}) : super(key: key);
@@ -35,7 +37,6 @@ class _TokenState extends State<Token> {
   bool skipNetworkRequest = true;
   Timer timer;
   ValueNotifier trxOpen = ValueNotifier(true);
-  final pref = Hive.box(secureStorageKey);
   String rampName;
   String currentAddress;
   String rampCurrentAddress;

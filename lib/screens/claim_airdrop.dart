@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -52,7 +53,7 @@ class _ClaimAirdropState extends State<ClaimAirdrop> {
     );
   }
 
-  final mnemonic = Hive.box(secureStorageKey).get(currentMmenomicKey);
+  final mnemonic = pref.get(currentMmenomicKey);
   @override
   void dispose() {
     timer?.cancel();

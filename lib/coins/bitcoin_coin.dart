@@ -21,11 +21,11 @@ import 'package:cryptowallet/utils/rpc_urls.dart';
 import 'package:http/http.dart' as http;
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/alt_ens.dart';
 import '../utils/app_config.dart';
 
-final pref = Hive.box(secureStorageKey);
 const sochainApi = 'https://sochain.com/api/v2/';
 const bitCoinDecimals = 8;
 

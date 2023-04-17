@@ -8,11 +8,11 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import '../interface/coin.dart';
+import '../main.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 import 'package:bs58check/bs58check.dart' as bs58check;
 
-final pref = Hive.box(secureStorageKey);
 const tezorDecimals = 6;
 
 class TezosCoin extends Coin {

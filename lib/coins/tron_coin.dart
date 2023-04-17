@@ -13,11 +13,11 @@ import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:wallet/wallet.dart' as wallet;
 import 'package:web3dart/crypto.dart';
 import '../interface/coin.dart';
+import '../main.dart';
 import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-final pref = Hive.box(secureStorageKey);
 const TRX_FEE_LIMIT = 150000000;
 const TRX_ADDRESS_PREFIX = '41';
 const TRX_MESSAGE_HEADER = '\x19TRON Signed Message:\n32';

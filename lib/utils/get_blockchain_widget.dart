@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cryptowallet/main.dart';
 import 'package:cryptowallet/utils/app_config.dart';
 import 'package:cryptowallet/utils/format_money.dart';
 import 'package:cryptowallet/utils/rpc_urls.dart';
@@ -80,8 +81,7 @@ class _GetBlockChainWidgetState extends State<GetBlockChainWidget> {
         await rootBundle.loadString('json/currency_symbol.json'),
       );
 
-      final defaultCurrency =
-          Hive.box(secureStorageKey).get('defaultCurrency') ?? "USD";
+      final defaultCurrency = pref.get('defaultCurrency') ?? "USD";
       final symbol = currencyWithSymbol[defaultCurrency]['symbol'];
 
       final Map cryptoMarket = allCryptoPrice[coinGeckoID[widget.symbol]];

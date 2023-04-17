@@ -12,7 +12,6 @@ class DarkModeToggler extends StatefulWidget {
 }
 
 class _DarkModeTogglerState extends State<DarkModeToggler> {
-  final pref = Hive.box(secureStorageKey);
   @override
   Widget build(BuildContext context) {
     return IconButton(

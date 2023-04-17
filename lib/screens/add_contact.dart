@@ -323,8 +323,6 @@ class _AddContactState extends State<AddContact> {
                           'dataList': addressDataMap
                         };
 
-                        // check if name exists
-                        final pref = Hive.box(secureStorageKey);
                         List addedContacts = [];
                         if (pref.get(addcontactKey) != null) {
                           addedContacts =

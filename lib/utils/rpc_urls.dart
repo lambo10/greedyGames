@@ -104,7 +104,6 @@ Future<Map> viewUserTokens(
   String address, {
   bool skipNetworkRequest,
 }) async {
-  final pref = Hive.box(secureStorageKey);
   final tokenListKey = 'tokenListKey_$chainId-$address/__';
   final tokenList = pref.get(tokenListKey);
   Map userTokens = {
@@ -373,7 +372,6 @@ Future<bool> authenticateIsAvailable() async {
 }
 
 Future<bool> localAuthentication() async {
-  final pref = Hive.box(secureStorageKey);
   if (!pref.get(biometricsKey, defaultValue: true)) {
     return false;
   }
@@ -413,7 +411,6 @@ Future<bool> authenticate(BuildContext context,
 }
 
 String getAddTokenKey() {
-  final pref = Hive.box(secureStorageKey);
   final String mnemonicHash = sha3(pref.get(currentMmenomicKey));
   return 'userTokenList$mnemonicHash'.toLowerCase();
 }
@@ -468,7 +465,6 @@ final List<String> months = [
 ];
 
 Future reInstianteSeedRoot() async {
-  final pref = Hive.box(secureStorageKey);
   final currentPhrase = pref.get(currentMmenomicKey);
   if (currentPhrase != null) {
     seedPhraseRoot = await compute(seedFromMnemonic, currentPhrase);
@@ -480,6 +476,7 @@ const coinGeckoID = {
   "XTZ": "tezos",
   "TRX": "tron",
   "ETH": "ethereum",
+  "RON": "ronin",
   "ALGO": "algorand",
   "BNB": "binancecoin",
   "AVAX": "avalanche-2",
@@ -760,7 +757,6 @@ Future<String> getCryptoPrice({
   }
   const secondsToResendRequest = 15;
 
-  final pref = Hive.box(secureStorageKey);
   final savedCryptoPrice = pref.get(coinGeckoCryptoPriceKey);
 
   if (savedCryptoPrice != null) {
@@ -1136,7 +1132,6 @@ Future returnInitEvm(
   int chainId,
   String rpc,
 ) async {
-  final pref = Hive.box(secureStorageKey);
   await pref.put(dappChainIdKey, chainId);
   final mnemonic = pref.get(currentMmenomicKey);
   final evmDetails = evmFromChainId(chainId);
@@ -1187,7 +1182,6 @@ Future navigateToDappBrowser(
   final provider = await rootBundle.loadString('js/trust.min.js');
   final webNotifer = await rootBundle.loadString('js/web_notification.js');
 
-  final pref = Hive.box(secureStorageKey);
   if (pref.get(dappChainIdKey) == null) {
     await pref.put(
       dappChainIdKey,
@@ -2211,7 +2205,7 @@ Future<void> disEnableScreenShot() async {
   }
 }
 
-Future<Map> processEIP681(String eip681URL) async {
+Future<Coin> processEIP681(String eip681URL) async {
   Map parsedUrl;
 
   try {
@@ -2256,48 +2250,48 @@ Future<Map> processEIP681(String eip681URL) async {
         'amount':
             (parseUrlUint256 / BigInt.from(parseUrlUint256Decimals)).toString()
       });
-    } else {
-      final parsedUrlValue = parsedUrl['parameters']['value'];
-      final parsedUrlAmount = parsedUrl['parameters']['amount'];
-      String amount = '0';
+      return EthContractCoin.fromJson(Map.from(sendToken));
+    }
+    final parsedUrlValue = parsedUrl['parameters']['value'];
+    final parsedUrlAmount = parsedUrl['parameters']['amount'];
+    String amount = '0';
 
-      if (parsedUrlValue != null) {
-        final etherBigInt = BigInt.from(pow(10, etherDecimals));
-        amount = (BigInt.parse(parsedUrlValue) / etherBigInt).toString();
-      } else if (parsedUrlAmount != null) {
-        amount = parsedUrl['parameters']['amount'];
-      }
-
-      sendToken.addAll({
-        "name": networkName,
-        "symbol": cryptoBlock['symbol'],
-        "default": cryptoBlock['symbol'],
-        "recipient": parsedUrl['target_address'],
-        'amount': amount
-      });
+    if (parsedUrlValue != null) {
+      final etherBigInt = BigInt.from(pow(10, etherDecimals));
+      amount = (BigInt.parse(parsedUrlValue) / etherBigInt).toString();
+    } else if (parsedUrlAmount != null) {
+      amount = parsedUrl['parameters']['amount'];
     }
 
-    return {'success': true, 'msg': sendToken};
+    sendToken.addAll({
+      "name": networkName,
+      "symbol": cryptoBlock['symbol'],
+      "default": cryptoBlock['symbol'],
+      "recipient": parsedUrl['target_address'],
+      'amount': amount
+    });
+    return EthereumCoin.fromJson(Map.from(sendToken));
   } catch (e) {
-    return {'success': false, 'msg': e.toString()};
+    return null;
   }
 }
 
-Map getInfoScheme(String coinScheme) {
+Coin getInfoScheme(String coinScheme) {
   String symbol = '';
-  // for (String key in requestPaymentScheme.keys) {
-  //   if (requestPaymentScheme[key] == coinScheme) {
-  //     symbol = key;
-  //     break;
-  //   }
-  // }
-  // Map allBlockchains = getAllBlockchains();
-  // for (String i in allBlockchains.keys) {
-  //   Map value = allBlockchains[i];
-  //   if (value['symbol'] == symbol) {
-  //     return Map.from(value)..addAll({'name': i});
-  //   }
-  // }
+  for (String key in requestPaymentScheme.keys) {
+    if (requestPaymentScheme[key] == coinScheme) {
+      symbol = key;
+      break;
+    }
+  }
+  // Map allBlockchains = getAllBlockchains;
+  for (int i = 0; i < getAllBlockchains.length; i++) {
+    Coin blockchain = getAllBlockchains[i];
+    if (blockchain.symbol_() == symbol) {
+      return blockchain;
+    }
+  }
+
   return null;
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localization.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../main.dart';
 import '../utils/rpc_urls.dart';
 
 class UnlockWithBiometrics extends StatefulWidget {
@@ -13,7 +14,6 @@ class UnlockWithBiometrics extends StatefulWidget {
 }
 
 class _UnlockWithBiometricsState extends State<UnlockWithBiometrics> {
-  final pref = Hive.box(secureStorageKey);
   bool allowedBiometrics = true;
   @override
   void initState() {

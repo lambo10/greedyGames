@@ -1,7 +1,6 @@
 import 'dart:math';
 
 class PasswordGenerator {
-
   static String generatePassword(
       {required double length,
       required bool isWithLetters,
@@ -11,7 +10,7 @@ class PasswordGenerator {
     String _lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
     String _upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     String _numbers = "0123456789";
-    String _special = r'!@#$%^&*()+_-=}{[]|:;"/?.><,`~';  
+    String _special = r'!@#$%^&*()+_-=}{[]|:;"/?.><,`~';
 
     String _allowedChars = "";
 
