@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:algorand_dart/algorand_dart.dart';
@@ -93,6 +94,11 @@ class PolkadotCoin extends Coin {
     mmenomicMapping.add({'key': keys, 'mmenomic': mnemonic});
     await pref.put(keyName, jsonEncode(mmenomicMapping));
     return keys;
+  }
+
+  @override
+  String savedTransKey() {
+    return '$default_$api Details';
   }
 
   @override
@@ -217,6 +223,15 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<String> transferToken(String amount, String to) async {
+    final planck = double.parse(amount) * pow(10, polkadotDecimals);
+    final transferReq = {
+      'call_module': 'Balances',
+      'call_function': 'transfer',
+      'call_args': {
+        'dest': to,
+        'value': planck,
+      }
+    };
     return '';
   }
 
