@@ -54,6 +54,7 @@ class _SendTokenState extends State<SendToken> {
   @override
   void initState() {
     super.initState();
+    amountContrl.text = widget.amount ?? '';
     if (widget.tokenData is EthContractCoin) {
       tokenType = (widget.tokenData as EthContractCoin).tokenType;
       rpc = (widget.tokenData as EthContractCoin).rpc;
@@ -208,7 +209,7 @@ class _SendTokenState extends State<SendToken> {
                             FilteringTextInputFormatter.digitsOnly
                           ]
                         : null,
-                    controller: amountContrl..text = widget.amount,
+                    controller: amountContrl,
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),
