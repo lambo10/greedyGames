@@ -133,7 +133,7 @@ class PolkadotCoin extends Coin {
 
         final input = Input.fromHex(storageData.substring(0, 0 + 4));
 
-        return U8Codec.codec.decode(input);
+        return U16Codec.codec.decode(input);
       }
       return nonce;
     } catch (_) {
@@ -297,7 +297,7 @@ class PolkadotCoin extends Coin {
       }
     };
     // print(encodedData);
-    // print(transferReq);
+    print(transferReq);
     return null;
   }
 
