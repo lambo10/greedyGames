@@ -102,9 +102,8 @@ class PolkadotCoin extends Coin {
   }
 
   Future<int> _getNonce() async {
+    const nonce = 0;
     try {
-      int nonce = 0;
-
       if (rpcMethods == null) {
         final result = await _queryRpc('rpc_methods', []);
         rpcMethods = result['result']['methods'];
@@ -134,11 +133,11 @@ class PolkadotCoin extends Coin {
 
         final input = Input.fromHex(storageData.substring(0, 0 + 4));
 
-        return U32Codec.codec.decode(input);
+        return U8Codec.codec.decode(input);
       }
       return nonce;
     } catch (_) {
-      return 0;
+      return nonce;
     }
   }
 
