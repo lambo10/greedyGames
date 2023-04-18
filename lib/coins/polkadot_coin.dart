@@ -224,6 +224,7 @@ class PolkadotCoin extends Coin {
   @override
   Future<String> transferToken(String amount, String to) async {
     final planck = double.parse(amount) * pow(10, polkadotDecimals);
+
     final transferReq = {
       'call_module': 'Balances',
       'call_function': 'transfer',
@@ -232,7 +233,7 @@ class PolkadotCoin extends Coin {
         'value': planck,
       }
     };
-    return '';
+    return null;
   }
 
   @override
