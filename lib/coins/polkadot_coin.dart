@@ -228,20 +228,34 @@ class PolkadotCoin extends Coin {
     double planck = double.parse(amount) * pow(10, _getDecimals());
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
+    String hexDecAddr0x =
+        hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
 
     final encodedData = '0x040000$hexDecAddr$compactPrice';
 
-    print(encodedData);
-
     final transferReq = {
-      'call_module': 'Balances',
+      'account_id': hexDecAddr0x,
+      'signature': {
+        'Sr25519':
+            '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
+      },
       'call_function': 'transfer',
-      'call_args': {
-        'dest': to,
-        'value': planckInt,
+      'call_module': 'Balances',
+      'call_args': {'dest': to, 'value': planckInt},
+      'nonce': 0,
+      'era': '00',
+      'tip': 0,
+      'asset_id': {'tip': 0, 'asset_id': None},
+      'signature_version': 1,
+      'address': hexDecAddr0x,
+      'call': {
+        'call_function': 'transfer',
+        'call_module': 'Balances',
+        'call_args': {'dest': to, 'value': planckInt}
       }
     };
+    print(encodedData);
     print(transferReq);
     return null;
   }
