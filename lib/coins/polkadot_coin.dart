@@ -148,10 +148,8 @@ class PolkadotCoin extends Coin {
         final input = Input.fromHex(storageData.substring(32, 32 + 48));
 
         final BigInt balanceBigInt = U128Codec.codec.decode(input);
-        final DOTDecimals =
-            name == 'Polkadot' ? polkadotDecimals : westendDecimals;
         balanceInFileCoin =
-            (balanceBigInt / BigInt.from(10).pow(DOTDecimals)).toDouble();
+            (balanceBigInt / BigInt.from(10).pow(_getDecimals())).toDouble();
       }
       await pref.put(key, balanceInFileCoin);
       return balanceInFileCoin;
@@ -221,9 +219,13 @@ class PolkadotCoin extends Coin {
     }
   }
 
+  int _getDecimals() {
+    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
+  }
+
   @override
   Future<String> transferToken(String amount, String to) async {
-    final planck = double.parse(amount) * pow(10, polkadotDecimals);
+    final planck = double.parse(amount) * pow(10, _getDecimals());
 
     final transferReq = {
       'call_module': 'Balances',
@@ -233,6 +235,7 @@ class PolkadotCoin extends Coin {
         'value': planck,
       }
     };
+    print(transferReq);
     return null;
   }
 
