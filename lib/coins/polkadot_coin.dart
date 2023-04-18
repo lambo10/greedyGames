@@ -273,7 +273,7 @@ class PolkadotCoin extends Coin {
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
     final nonce = await _getNonce();
 
-    final encodedData = '0x040000$hexDecAddr$compactPrice';
+    final encodedData = '040000$hexDecAddr$compactPrice';
 
     final transferReq = {
       'account_id': hexDecAddr0x,
