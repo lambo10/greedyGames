@@ -297,14 +297,10 @@ class PolkadotCoin extends Coin {
       }
     };
 
-    final submitTran = {
-      'jsonrpc': '2.0',
-      'method': 'author_submitAndWatchExtrinsic',
-      'params': [
-        '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000 40000073982bb0db1e735f1dc9510c470ffc23630fe31b28b7cd190c7382754556b270b009062edf150'
-      ],
-      'id': 14
-    };
+    final submitResult = await _queryRpc('author_submitExtrinsic', [
+      '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
+    ]);
+    print(submitResult);
     print(encodedData);
     return null;
   }
