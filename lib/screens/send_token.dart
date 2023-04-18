@@ -55,6 +55,7 @@ class _SendTokenState extends State<SendToken> {
   void initState() {
     super.initState();
     amountContrl.text = widget.amount ?? '';
+    recipientContrl.text = widget.recipient ?? '';
     if (widget.tokenData is EthContractCoin) {
       tokenType = (widget.tokenData as EthContractCoin).tokenType;
       rpc = (widget.tokenData as EthContractCoin).rpc;
@@ -94,7 +95,7 @@ class _SendTokenState extends State<SendToken> {
                       return null;
                     }
                   },
-                  controller: recipientContrl..text = widget.recipient,
+                  controller: recipientContrl,
                   decoration: InputDecoration(
                     suffixIcon: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
