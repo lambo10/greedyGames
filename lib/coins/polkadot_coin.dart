@@ -225,14 +225,21 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<String> transferToken(String amount, String to) async {
-    final planck = double.parse(amount) * pow(10, _getDecimals());
+    double planck = double.parse(amount) * pow(10, _getDecimals());
+    int planckInt = planck.toInt();
+    final hexDecAddr = HEX.encode(decodeDOTAddress(to));
+    final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
+
+    final encodedData = '0x040000$hexDecAddr$compactPrice';
+
+    print(encodedData);
 
     final transferReq = {
       'call_module': 'Balances',
       'call_function': 'transfer',
       'call_args': {
         'dest': to,
-        'value': planck,
+        'value': planckInt,
       }
     };
     print(transferReq);
