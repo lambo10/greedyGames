@@ -54,6 +54,8 @@ class _SendTokenState extends State<SendToken> {
   @override
   void initState() {
     super.initState();
+    amountContrl.text = widget.amount ?? '';
+    recipientContrl.text = widget.recipient ?? '';
     if (widget.tokenData is EthContractCoin) {
       tokenType = (widget.tokenData as EthContractCoin).tokenType;
       rpc = (widget.tokenData as EthContractCoin).rpc;
@@ -93,7 +95,7 @@ class _SendTokenState extends State<SendToken> {
                       return null;
                     }
                   },
-                  controller: recipientContrl..text = widget.recipient,
+                  controller: recipientContrl,
                   decoration: InputDecoration(
                     suffixIcon: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,12 +205,12 @@ class _SendTokenState extends State<SendToken> {
                         return null;
                       }
                     },
-                    inputFormatters: <TextInputFormatter>[
-                      tokenType == EthTokenType.ERC1155
-                          ? FilteringTextInputFormatter.digitsOnly
-                          : null
-                    ],
-                    controller: amountContrl..text = widget.amount,
+                    inputFormatters: tokenType == EthTokenType.ERC1155
+                        ? <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ]
+                        : null,
+                    controller: amountContrl,
                     decoration: InputDecoration(
                       suffixIconConstraints:
                           const BoxConstraints(minWidth: 100),

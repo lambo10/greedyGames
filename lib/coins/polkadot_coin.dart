@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:algorand_dart/algorand_dart.dart';
@@ -20,6 +21,7 @@ import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
 const polkadotDecimals = 10;
+const westendDecimals = 12;
 final systemAccount = '0x${xxhashAsHex('System')}${xxhashAsHex('Account')}';
 
 class PolkadotCoin extends Coin {
@@ -95,6 +97,51 @@ class PolkadotCoin extends Coin {
   }
 
   @override
+  String savedTransKey() {
+    return '$default_$api Details';
+  }
+
+  Future<int> _getNonce() async {
+    const nonce = 0;
+    try {
+      if (rpcMethods == null) {
+        final result = await _queryRpc('rpc_methods', []);
+        rpcMethods = result['result']['methods'];
+      }
+      String getHead =
+          rpcMethods.firstWhere((element) => element == 'chain_getHead');
+
+      getHead ??=
+          rpcMethods.firstWhere((element) => element == 'chain_getBlockHash');
+      final blockHashRes = await _queryRpc(getHead, []);
+      final String address = await address_();
+      final decodedAddr = decodeDOTAddress(address);
+      final storageName = blake2_128_concat(decodedAddr);
+      final storageKey = '$systemAccount${HEX.encode(storageName)}';
+
+      String getStorageAt =
+          rpcMethods.firstWhere((element) => element == 'state_getStorageAt');
+
+      getStorageAt ??=
+          rpcMethods.firstWhere((element) => element == 'state_getStorage');
+
+      final storageResult =
+          await _queryRpc(getStorageAt, [storageKey, blockHashRes['result']]);
+      String storageData = storageResult['result'];
+      if (storageData != null) {
+        storageData = storageData.replaceFirst('0x', '');
+
+        final input = Input.fromHex(storageData.substring(0, 0 + 4));
+
+        return U16Codec.codec.decode(input);
+      }
+      return nonce;
+    } catch (_) {
+      return nonce;
+    }
+  }
+
+  @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final address = await address_();
     final key = 'polkadotAddressBalance$address$api';
@@ -141,9 +188,8 @@ class PolkadotCoin extends Coin {
         final input = Input.fromHex(storageData.substring(32, 32 + 48));
 
         final BigInt balanceBigInt = U128Codec.codec.decode(input);
-
         balanceInFileCoin =
-            (balanceBigInt / BigInt.from(10).pow(polkadotDecimals)).toDouble();
+            (balanceBigInt / BigInt.from(10).pow(_getDecimals())).toDouble();
       }
       await pref.put(key, balanceInFileCoin);
       return balanceInFileCoin;
@@ -213,9 +259,52 @@ class PolkadotCoin extends Coin {
     }
   }
 
+  int _getDecimals() {
+    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
+  }
+
   @override
   Future<String> transferToken(String amount, String to) async {
-    return '';
+    double planck = double.parse(amount) * pow(10, _getDecimals());
+    int planckInt = planck.toInt();
+    final hexDecAddr = HEX.encode(decodeDOTAddress(to));
+    String hexDecAddr0x =
+        hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
+    final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
+    final nonce = await _getNonce();
+
+    final encodedData = '040000$hexDecAddr$compactPrice';
+
+    final transferReq = {
+      'account_id': hexDecAddr0x,
+      'signature': {
+        'Sr25519':
+            '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
+      },
+      'call_function': 'transfer',
+      'call_module': 'Balances',
+      'call_args': {'dest': to, 'value': planckInt},
+      'nonce': nonce,
+      'era': '00',
+      'tip': 0,
+      'asset_id': {'tip': 0, 'asset_id': None},
+      'signature_version': 1,
+      'address': hexDecAddr0x,
+      'call': {
+        'call_function': 'transfer',
+        'call_module': 'Balances',
+        'call_args': {'dest': to, 'value': planckInt}
+      }
+    };
+
+    // 0b2a48cd72ccbeaf31da224746fb0ed0527eac3b58e5e284ff401e3fc16cba0def9e51f1bc590e960d06d1f76904cd5301e3be4f1774a16758742388d7ab2d9e
+
+    final submitResult = await _queryRpc('author_submitExtrinsic', [
+      '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
+    ]);
+    print(submitResult);
+    print(encodedData);
+    return null;
   }
 
   @override
@@ -254,6 +343,20 @@ List<Map> getPolkadoBlockChains() {
       'api': 'https://rpc.polkadot.io/'
     }
   ];
+
+  if (enableTestNet) {
+    blockChains.addAll([
+      {
+        'blockExplorer':
+            'https://westend.subscan.io/extrinsic/$transactionhashTemplateKey',
+        'symbol': 'DOT',
+        'name': 'Polkadot(Westend)',
+        'default': 'DOT',
+        'image': 'assets/polkadot.png',
+        'api': 'https://westend-rpc.polkadot.io'
+      },
+    ]);
+  }
 
   return blockChains;
 }
