@@ -273,7 +273,7 @@ class PolkadotCoin extends Coin {
         hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
     final nonce = await _getNonce();
-    print(nonce);
+
     final encodedData = '0x040000$hexDecAddr$compactPrice';
 
     final transferReq = {
@@ -285,7 +285,7 @@ class PolkadotCoin extends Coin {
       'call_function': 'transfer',
       'call_module': 'Balances',
       'call_args': {'dest': to, 'value': planckInt},
-      'nonce': 0,
+      'nonce': nonce,
       'era': '00',
       'tip': 0,
       'asset_id': {'tip': 0, 'asset_id': None},
