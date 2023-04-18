@@ -280,7 +280,7 @@ class PolkadotCoin extends Coin {
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
-        'Sr25519':
+        'Ed25519':
             '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
       },
       'call_function': 'transfer',
@@ -290,7 +290,7 @@ class PolkadotCoin extends Coin {
       'era': '00',
       'tip': 0,
       'asset_id': {'tip': 0, 'asset_id': None},
-      'signature_version': 1,
+      'signature_version': 0,
       'address': hexDecAddr0x,
       'call': {
         'call_function': 'transfer',
@@ -305,10 +305,10 @@ class PolkadotCoin extends Coin {
       '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
     ]);
     final mnemonic = pref.get(currentMmenomicKey);
-    final miniSeed = await bip39ToMiniSeed(mnemonic);
-    print(miniSeed);
-    // print(submitResult);
-    // print(encodedData);
+    final privateMiniSeed = await bip39ToMiniSeed(mnemonic);
+    print(privateMiniSeed);
+    print(submitResult);
+    print(encodedData);
     return null;
   }
 
