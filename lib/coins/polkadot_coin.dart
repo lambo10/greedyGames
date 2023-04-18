@@ -101,6 +101,47 @@ class PolkadotCoin extends Coin {
     return '$default_$api Details';
   }
 
+  Future<int> _getNonce() async {
+    try {
+      int nonce = 0;
+
+      if (rpcMethods == null) {
+        final result = await _queryRpc('rpc_methods', []);
+        rpcMethods = result['result']['methods'];
+      }
+      String getHead =
+          rpcMethods.firstWhere((element) => element == 'chain_getHead');
+
+      getHead ??=
+          rpcMethods.firstWhere((element) => element == 'chain_getBlockHash');
+      final blockHashRes = await _queryRpc(getHead, []);
+      final String address = await address_();
+      final decodedAddr = decodeDOTAddress(address);
+      final storageName = blake2_128_concat(decodedAddr);
+      final storageKey = '$systemAccount${HEX.encode(storageName)}';
+
+      String getStorageAt =
+          rpcMethods.firstWhere((element) => element == 'state_getStorageAt');
+
+      getStorageAt ??=
+          rpcMethods.firstWhere((element) => element == 'state_getStorage');
+
+      final storageResult =
+          await _queryRpc(getStorageAt, [storageKey, blockHashRes['result']]);
+      String storageData = storageResult['result'];
+      if (storageData != null) {
+        storageData = storageData.replaceFirst('0x', '');
+
+        final input = Input.fromHex(storageData.substring(0, 0 + 4));
+
+        return U32Codec.codec.decode(input);
+      }
+      return nonce;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
     final address = await address_();
@@ -231,7 +272,8 @@ class PolkadotCoin extends Coin {
     String hexDecAddr0x =
         hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
-
+    final nonce = await _getNonce();
+    print(nonce);
     final encodedData = '0x040000$hexDecAddr$compactPrice';
 
     final transferReq = {
@@ -255,8 +297,8 @@ class PolkadotCoin extends Coin {
         'call_args': {'dest': to, 'value': planckInt}
       }
     };
-    print(encodedData);
-    print(transferReq);
+    // print(encodedData);
+    // print(transferReq);
     return null;
   }
 
