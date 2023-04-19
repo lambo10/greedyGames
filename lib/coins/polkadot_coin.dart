@@ -278,6 +278,8 @@ class PolkadotCoin extends Coin {
     final encodedData = '040000$hexDecAddr$compactPrice';
 
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
+    final privatekey = HEX.decode(response['privateKey']);
+    final signaturePayload = await _signaturePayload(encodedData, nonce);
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
@@ -300,14 +302,21 @@ class PolkadotCoin extends Coin {
       }
     };
 
-    // 0b2a48cd72ccbeaf31da224746fb0ed0527eac3b58e5e284ff401e3fc16cba0def9e51f1bc590e960d06d1f76904cd5301e3be4f1774a16758742388d7ab2d9e
-
     final submitResult = await _queryRpc('author_submitExtrinsic', [
       '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
     ]);
     // print(submitResult);
-    print(encodedData);
+    // print(encodedData);
     return null;
+  }
+
+  Future _signaturePayload(String call, int nonce) async {
+    final genesisHashRes = await _queryRpc('chain_getBlockHash', [0]);
+    final genesisHash = genesisHashRes['result'];
+    const era = '00';
+    print(genesisHash);
+    print(call);
+    print(nonce);
   }
 
   @override
