@@ -276,7 +276,7 @@ class PolkadotCoin extends Coin {
     final nonce = await _getNonce();
 
     final encodedData = '040000$hexDecAddr$compactPrice';
-
+    final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
@@ -304,9 +304,6 @@ class PolkadotCoin extends Coin {
     final submitResult = await _queryRpc('author_submitExtrinsic', [
       '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
     ]);
-    final mnemonic = pref.get(currentMmenomicKey);
-    final privateMiniSeed = await bip39ToMiniSeed(mnemonic);
-    print(privateMiniSeed);
     print(submitResult);
     print(encodedData);
     return null;
