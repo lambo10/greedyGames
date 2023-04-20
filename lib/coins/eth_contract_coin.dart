@@ -26,6 +26,7 @@ class EthContractCoin extends EthereumCoin {
   String network;
   List parameters_;
   ContractAbi contrAbi;
+  int decimals_;
 
   @override
   bool noPrice() {
@@ -37,6 +38,11 @@ class EthContractCoin extends EthereumCoin {
     return contractAddress_;
   }
 
+  @override
+  int decimals() {
+    return decimals_;
+  }
+
   EthContractCoin({
     String blockExplorer,
     int chainId,
@@ -46,6 +52,7 @@ class EthContractCoin extends EthereumCoin {
     int coinType,
     String rpc,
     String name,
+    this.decimals_,
     this.tokenType,
     this.tokenId,
     this.contractAddress_,
@@ -92,6 +99,9 @@ class EthContractCoin extends EthereumCoin {
       tokenId: json['tokenId'],
       contractAddress_: json['contractAddress'],
       network: json['network'],
+      decimals_: json['decimals'].runtimeType == String
+          ? int.parse(json['decimals'])
+          : json['decimals'],
     );
   }
 
@@ -110,6 +120,7 @@ class EthContractCoin extends EthereumCoin {
     data['tokenId'] = tokenId;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;
+    data['decimals'] = decimals_;
 
     return data;
   }
