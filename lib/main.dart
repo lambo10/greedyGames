@@ -54,7 +54,7 @@ Future<List<Coin>> getAllBlockchains_fun() async {
     ...getSolanaBlockChains().map((e) => SolanaCoin.fromJson(Map.from(e))),
     ...getAlgorandBlockchains().map((e) => AlgorandCoin.fromJson(Map.from(e))),
     ...getTronBlockchains().map((e) => TronCoin.fromJson(Map.from(e))),
-    ...getPolkadoBlockChains().map((e) => PolkadotCoin.fromJson(Map.from(e))),
+    // ...getPolkadoBlockChains().map((e) => PolkadotCoin.fromJson(Map.from(e))),
     ...getRoninBlockchains().map((e) => RoninCoin.fromJson(Map.from(e))),
   ]..sort((a, b) => a.name_().compareTo(b.name_()));
 }
