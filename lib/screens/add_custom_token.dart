@@ -52,8 +52,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
     emptyInput();
     if (enteredContractAddress.isEmpty) return;
     try {
-      Map evnNetwork =
-          getEVMBlockchains().firstWhere((e) => e['name'] == networkName);
+      Map evnNetwork = networks.firstWhere((e) => e['name'] == networkName);
       Map erc20Details = await savedERC20Details(
         contractAddress: enteredContractAddress.trim(),
         rpc: evnNetwork['rpc'],
@@ -101,7 +100,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Map evnNetwork = getEVMBlockchains().firstWhere(
+                        Map evnNetwork = networks.firstWhere(
                           (e) => e['name'] == networkName,
                         );
                         showBlockChainDialog(
@@ -373,7 +372,7 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                       }
 
                       final userTokenListKey = getAddTokenKey();
-                      Map evnNetwork = getEVMBlockchains().firstWhere(
+                      Map evnNetwork = networks.firstWhere(
                         (e) => e['name'] == networkName,
                       );
 

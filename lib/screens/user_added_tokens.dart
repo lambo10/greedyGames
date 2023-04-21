@@ -42,17 +42,23 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
     super.dispose();
   }
 
-  final List<EthContractCoin> tokenList = [];
+  List userTokenList = [];
   Future getUserAddedToken() async {
     final userTokenListKey = getAddTokenKey();
     final prefToken = pref.get(userTokenListKey);
-
-    List userTokenList = [];
 
     if (prefToken != null) {
       userTokenList = jsonDecode(prefToken);
     }
 
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<EthContractCoin> tokenList = [];
     for (final token in userTokenList) {
       tokenList.add(EthContractCoin.fromJson({
         'name': token['name'],
@@ -70,13 +76,7 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
         'tokenType': EthTokenType.ERC20,
       }));
     }
-    if (mounted) {
-      setState(() {});
-    }
-  }
 
-  @override
-  Widget build(BuildContext context) {
     List<Widget> addedTokens = <Widget>[];
     if (tokenList != null) {
       for (int i = 0; i < tokenList.length; i++) {
@@ -114,12 +114,13 @@ class _UserAddedTokensState extends State<UserAddedTokens> {
               if (pref.get(customTokenDetailsKey) != null) {
                 await pref.delete(customTokenDetailsKey);
               }
-              tokenList.removeAt(i);
+              userTokenList.removeAt(i);
 
               await pref.put(
                 userTokenListKey,
-                jsonEncode(tokenList),
+                jsonEncode(userTokenList),
               );
+
               return true;
             },
             child: InkWell(

@@ -106,6 +106,8 @@ class StellarCoin extends Coin {
     final keys = await compute(
         calculateStellarKey,
         Map.from(toJson())
+          ..remove('sdk')
+          ..remove('cluster')
           ..addAll({
             mnemonicKey: mnemonic,
           }));

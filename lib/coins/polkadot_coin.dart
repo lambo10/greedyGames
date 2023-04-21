@@ -5,12 +5,14 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:algorand_dart/algorand_dart.dart';
+import 'package:bip39/bip39.dart';
 import 'package:bs58check/bs58check.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin;
 import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:http/http.dart';
 import 'package:polkadart_scale_codec/polkadart_scale_codec.dart';
 import 'package:xxh64/xxh64.dart';
@@ -275,10 +277,13 @@ class PolkadotCoin extends Coin {
 
     final encodedData = '040000$hexDecAddr$compactPrice';
 
+    final response = await fromMnemonic(pref.get(currentMmenomicKey));
+    final privatekey = HEX.decode(response['privateKey']);
+    final signaturePayload = await _signaturePayload(encodedData, nonce);
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
-        'Sr25519':
+        'Ed25519':
             '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
       },
       'call_function': 'transfer',
@@ -288,7 +293,7 @@ class PolkadotCoin extends Coin {
       'era': '00',
       'tip': 0,
       'asset_id': {'tip': 0, 'asset_id': None},
-      'signature_version': 1,
+      'signature_version': 0,
       'address': hexDecAddr0x,
       'call': {
         'call_function': 'transfer',
@@ -297,14 +302,21 @@ class PolkadotCoin extends Coin {
       }
     };
 
-    // 0b2a48cd72ccbeaf31da224746fb0ed0527eac3b58e5e284ff401e3fc16cba0def9e51f1bc590e960d06d1f76904cd5301e3be4f1774a16758742388d7ab2d9e
-
     final submitResult = await _queryRpc('author_submitExtrinsic', [
       '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
     ]);
-    print(submitResult);
-    print(encodedData);
+    // print(submitResult);
+    // print(encodedData);
     return null;
+  }
+
+  Future _signaturePayload(String call, int nonce) async {
+    final genesisHashRes = await _queryRpc('chain_getBlockHash', [0]);
+    final genesisHash = genesisHashRes['result'];
+    const era = '00';
+    print(genesisHash);
+    print(call);
+    print(nonce);
   }
 
   @override
@@ -374,6 +386,19 @@ Uint8List decodeDOTAddress(String address) {
   return decoded.sublist(ss58Length, endPos);
 }
 
+Future<List<int>> bip39ToMiniSeed(mnemonic) async {
+  final entropy = HEX.decode(mnemonicToEntropy(mnemonic));
+  final salt = StrCodec.codec.encode('mnemonic').sublist(1);
+  final pdkd = Pbkdf2(
+    macAlgorithm: Hmac.sha512(),
+    iterations: 2048,
+    bits: 256,
+  );
+
+  final keys = await pdkd.deriveKey(secretKey: SecretKey(entropy), nonce: salt);
+  return await keys.extractBytes();
+}
+
 List<int> sshash(Uint8List bytes) {
   const SS58_PREFIX = [83, 83, 53, 56, 80, 82, 69];
   return blake2bHash(
@@ -430,3 +455,6 @@ Uint8List xxh128(String data) {
 // 'f9170000000000000100000000000000503b9566ad6d01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'.substr(32,48)
 // balance is a U128 // gotten from 32 -> 48
 // nonce is a U32 // gotten from 0 -> 4
+
+
+// [203, 56, 67, 63, 165, 89, 107, 182, 49, 254, 58, 83, 33, 38, 191, 171, 57, 7, 56, 162, 44, 169, 222, 185, 46, 128, 101, 69, 33, 50, 7, 217]

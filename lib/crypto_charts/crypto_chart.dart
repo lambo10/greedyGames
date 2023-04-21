@@ -38,17 +38,8 @@ String getMarketInfo(String coinGeckoId) {
 class _CryptoChartState extends State<CryptoChart> {
   List<charts.Series<List, num>> series;
   List<List<dynamic>> chartData = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   int days = 1;
-  int currentDays = 1;
-
   Map savedData = {};
-  final maxSecondsToRemakeRequest = 15;
 
   ValueNotifier<String> priceNotifier = ValueNotifier<String>('');
   @override
