@@ -248,8 +248,6 @@ class _AddContactState extends State<AddContact> {
                               ),
                             );
 
-                            print(addressData);
-
                             if (addressData == null) return;
 
                             addressData.removeWhere((key, value) {

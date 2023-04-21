@@ -10,9 +10,12 @@ import '../utils/rpc_urls.dart';
 class RecoveryPhrase extends StatefulWidget {
   final String data;
   final bool verify;
-  final bool add;
-  const RecoveryPhrase({Key key, this.data, this.verify, this.add})
-      : super(key: key);
+
+  const RecoveryPhrase({
+    Key key,
+    this.data,
+    this.verify,
+  }) : super(key: key);
 
   @override
   _RecoveryPhraseState createState() => _RecoveryPhraseState();
@@ -186,6 +189,45 @@ class _RecoveryPhraseState extends State<RecoveryPhrase>
                           height: 15,
                         )
                       ],
+                      if (widget.verify == null)
+                        GestureDetector(
+                          onTap: () async {
+                            await Clipboard.setData(
+                              ClipboardData(
+                                text: widget.data,
+                              ),
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)
+                                      .copiedToClipboard,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context).copy,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const Icon(Icons.copy)
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       const SizedBox(
                         height: 15,
                       ),
@@ -221,44 +263,44 @@ class _RecoveryPhraseState extends State<RecoveryPhrase>
                       const SizedBox(
                         height: 40,
                       ),
-                      widget.verify != null
-                          ? Container()
-                          : SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.resolveWith(
-                                          (states) => appBackgroundblue),
-                                  shape: MaterialStateProperty.resolveWith(
-                                    (states) => RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (ctx) => Confirmmnemonic(
-                                        mmenomic: widget.data.split(' '),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  child: Text(
-                                    AppLocalizations.of(context).continue_,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                      if (widget.verify == null) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                      (states) => appBackgroundblue),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => Confirmmnemonic(
+                                    mmenomic: widget.data.split(' '),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Text(
+                                AppLocalizations.of(context).continue_,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
                     ],
                   ),
                 ),

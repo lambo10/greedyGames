@@ -65,8 +65,8 @@ class _MainScreenState extends State<MainScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (ctx) => RecoveryPhrase(
-                                    data: mmemnomic, add: true)));
+                                builder: (ctx) =>
+                                    RecoveryPhrase(data: mmemnomic)));
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(15),
