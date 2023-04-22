@@ -288,7 +288,7 @@ class PolkadotCoin extends Coin {
       privateKey: privatekey,
     );
 
-    final publicKey = await ED25519_HD_KEY.getPublicKey(privatekey);
+    final publicKey = HEX.decode(response['publicKey']);
 
     final transferReq = {
       'account_id': '0x${HEX.encode(publicKey.sublist(1))}',
@@ -481,6 +481,7 @@ calculatePolkadotKey(Map config) async {
   ]));
   return {
     'address': address,
+    'publicKey': HEX.encode(publicKey),
     'privateKey': HEX.encode(derivedKey.key),
   };
 }
