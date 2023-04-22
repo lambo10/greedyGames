@@ -324,10 +324,9 @@ class PolkadotCoin extends Coin {
       genesisHash = genesisHashRes['result'];
     }
 
-    const era = '00';
     final payload = {
       'call': call,
-      'era': era,
+      'era': '00',
       'nonce': nonce,
       'tip': 0,
       'spec_version': runTimeResult['specVersion'],
