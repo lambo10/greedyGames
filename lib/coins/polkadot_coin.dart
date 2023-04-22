@@ -288,9 +288,11 @@ class PolkadotCoin extends Coin {
       privateKey: privatekey,
     );
 
+    final publicKey = await ED25519_HD_KEY.getPublicKey(privatekey);
+
     final transferReq = {
-      'account_id': hexDecAddr0x,
-      'signature': {'Ed25519': '0x${HEX.encode(signature)}'},
+      'account_id': '0x${HEX.encode(publicKey.sublist(1))}',
+      'signature': '0x${HEX.encode(signature)}',
       'call_function': 'transfer',
       'call_module': 'Balances',
       'call_args': {'dest': to, 'value': planckInt},
@@ -299,19 +301,13 @@ class PolkadotCoin extends Coin {
       'tip': 0,
       'asset_id': {'tip': 0, 'asset_id': null},
       'signature_version': 0,
-      'address': hexDecAddr0x,
-      'call': {
-        'call_function': 'transfer',
-        'call_module': 'Balances',
-        'call_args': {'dest': to, 'value': planckInt}
-      }
     };
 
     final submitResult = await _queryRpc('author_submitExtrinsic', [
       '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
     ]);
     // print(submitResult);
-    // print(encodedData);
+    print(transferReq);
     throw Exception('sending failed');
   }
 
