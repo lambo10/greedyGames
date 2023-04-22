@@ -34,6 +34,8 @@ class PolkadotCoin extends Coin {
   String name;
   String api;
   static List rpcMethods;
+  Map runTimeResult;
+  String genesisHash;
 
   @override
   Future<String> address_() async {
@@ -280,6 +282,7 @@ class PolkadotCoin extends Coin {
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final privatekey = HEX.decode(response['privateKey']);
     final signaturePayload = await _signaturePayload(encodedData, nonce);
+
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
@@ -311,12 +314,32 @@ class PolkadotCoin extends Coin {
   }
 
   Future _signaturePayload(String call, int nonce) async {
-    final genesisHashRes = await _queryRpc('chain_getBlockHash', [0]);
-    final genesisHash = genesisHashRes['result'];
+    if (runTimeResult == null) {
+      final runTimeVersion = await _queryRpc('chain_getRuntimeVersion', []);
+      runTimeResult = runTimeVersion['result'];
+    }
+
+    if (genesisHash == null) {
+      final genesisHashRes = await _queryRpc('chain_getBlockHash', [0]);
+      genesisHash = genesisHashRes['result'];
+    }
+
     const era = '00';
+    final payload = {
+      'call': call,
+      'era': era,
+      'nonce': nonce,
+      'tip': 0,
+      'spec_version': runTimeResult['specVersion'],
+      'genesis_hash': genesisHash,
+      'block_hash': genesisHash,
+      'transaction_version': runTimeResult['transactionVersion'],
+      'asset_id': {'tip': 0, 'asset_id': null}
+    };
     print(genesisHash);
     print(call);
     print(nonce);
+    print(json.encode(payload));
   }
 
   @override
