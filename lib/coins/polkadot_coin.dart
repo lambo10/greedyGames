@@ -68,7 +68,7 @@ class PolkadotCoin extends Coin {
 
   @override
   int decimals() {
-    return polkadotDecimals;
+    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
   }
 
   @override
@@ -191,7 +191,7 @@ class PolkadotCoin extends Coin {
 
         final BigInt balanceBigInt = U128Codec.codec.decode(input);
         balanceInFileCoin =
-            (balanceBigInt / BigInt.from(10).pow(_getDecimals())).toDouble();
+            (balanceBigInt / BigInt.from(10).pow(decimals())).toDouble();
       }
       await pref.put(key, balanceInFileCoin);
       return balanceInFileCoin;
@@ -261,10 +261,6 @@ class PolkadotCoin extends Coin {
     }
   }
 
-  int _getDecimals() {
-    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
-  }
-
   Future<Uint8List> _signEd25519(EDSignature signature) async {
     return signEd25519(
       message: HEX.decode(signature.signaturePayload.replaceFirst('0x', '')),
@@ -274,7 +270,7 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<String> transferToken(String amount, String to) async {
-    double planck = double.parse(amount) * pow(10, _getDecimals());
+    double planck = double.parse(amount) * pow(10, decimals());
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
 
