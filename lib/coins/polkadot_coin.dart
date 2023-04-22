@@ -267,11 +267,19 @@ class PolkadotCoin extends Coin {
     return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
   }
 
+  Future<Uint8List> _signEd25519(EDSignature signature) async {
+    return signEd25519(
+      message: HEX.decode(signature.signaturePayload.replaceFirst('0x', '')),
+      privateKey: signature.privatekey,
+    );
+  }
+
   @override
   Future<String> transferToken(String amount, String to) async {
     double planck = double.parse(amount) * pow(10, _getDecimals());
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
+
     String hexDecAddr0x =
         hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
@@ -283,37 +291,31 @@ class PolkadotCoin extends Coin {
     final privatekey = HEX.decode(response['privateKey']);
     final signaturePayload = await _signaturePayload(encodedData, nonce);
 
-    final transferReq = {
-      'account_id': hexDecAddr0x,
-      'signature': {
-        'Ed25519':
-            '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
-      },
-      'call_function': 'transfer',
-      'call_module': 'Balances',
-      'call_args': {'dest': to, 'value': planckInt},
-      'nonce': nonce,
-      'era': '00',
-      'tip': 0,
-      'asset_id': {'tip': 0, 'asset_id': None},
-      'signature_version': 0,
-      'address': hexDecAddr0x,
-      'call': {
-        'call_function': 'transfer',
-        'call_module': 'Balances',
-        'call_args': {'dest': to, 'value': planckInt}
-      }
-    };
+    final publicKey = HEX.decode(response['publicKey']);
+    final signature = await compute(
+      _signEd25519,
+      EDSignature(
+        privatekey: privatekey,
+        signaturePayload: signaturePayload,
+      ),
+    );
 
-    final submitResult = await _queryRpc('author_submitExtrinsic', [
-      '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
-    ]);
-    // print(submitResult);
-    // print(encodedData);
-    throw Exception('sending failed');
+    String txSubmission = '0x3502';
+    txSubmission += '8400';
+    txSubmission += HEX.encode(publicKey.sublist(1));
+    txSubmission += '00';
+    txSubmission += HEX.encode(signature);
+    txSubmission += '00';
+    txSubmission += HEX.encode(CompactCodec.codec.encode(nonce));
+    txSubmission += '00';
+    txSubmission += encodedData;
+
+    final submitResult =
+        await _queryRpc('author_submitExtrinsic', [txSubmission]);
+    return submitResult['result'];
   }
 
-  Future _signaturePayload(String call, int nonce) async {
+  Future<String> _signaturePayload(String call, int nonce) async {
     if (runTimeResult == null) {
       final runTimeVersion = await _queryRpc('chain_getRuntimeVersion', []);
       runTimeResult = runTimeVersion['result'];
@@ -324,21 +326,18 @@ class PolkadotCoin extends Coin {
       genesisHash = genesisHashRes['result'];
     }
 
-    final payload = {
-      'call': call,
-      'era': '00',
-      'nonce': nonce,
-      'tip': 0,
-      'spec_version': runTimeResult['specVersion'],
-      'genesis_hash': genesisHash,
-      'block_hash': genesisHash,
-      'transaction_version': runTimeResult['transactionVersion'],
-      'asset_id': {'tip': 0, 'asset_id': null}
-    };
-    print(genesisHash);
-    print(call);
-    print(nonce);
-    print(json.encode(payload));
+    String payload = '0x$call';
+
+    payload += '00';
+    payload += HEX.encode(CompactCodec.codec.encode(nonce));
+    payload += '00';
+    payload += HEX.encode(U32Codec.codec.encode(runTimeResult['specVersion']));
+    payload +=
+        HEX.encode(U32Codec.codec.encode(runTimeResult['transactionVersion']));
+    payload += genesisHash.replaceFirst('0x', '');
+    payload += genesisHash.replaceFirst('0x', '');
+
+    return payload;
   }
 
   @override
@@ -447,6 +446,7 @@ calculatePolkadotKey(Map config) async {
   ]));
   return {
     'address': address,
+    'publicKey': HEX.encode(publicKey),
     'privateKey': HEX.encode(derivedKey.key),
   };
 }
@@ -471,12 +471,16 @@ Uint8List xxh128(String data) {
   return Uint8List.fromList(storage_key1 + storage_key2);
 }
 
-
 // extending ScaleDecoder
 // removing the 0x
 // 'f9170000000000000100000000000000503b9566ad6d01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'.substr(32,48)
 // balance is a U128 // gotten from 32 -> 48
 // nonce is a U32 // gotten from 0 -> 4
 
-
 // [203, 56, 67, 63, 165, 89, 107, 182, 49, 254, 58, 83, 33, 38, 191, 171, 57, 7, 56, 162, 44, 169, 222, 185, 46, 128, 101, 69, 33, 50, 7, 217]
+
+class EDSignature {
+  final String signaturePayload;
+  final Uint8List privatekey;
+  const EDSignature({this.privatekey, this.signaturePayload});
+}
