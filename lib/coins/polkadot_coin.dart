@@ -300,24 +300,17 @@ class PolkadotCoin extends Coin {
       ),
     );
 
-    final transferReq = {
-      'account_id': '0x${HEX.encode(publicKey.sublist(1))}',
-      'signature': '0x${HEX.encode(signature)}',
-      'call_function': 'transfer',
-      'call_module': 'Balances',
-      'call_args': {'dest': to, 'value': planckInt},
-      'nonce': nonce,
-      'era': '00',
-      'tip': 0,
-      'asset_id': {'tip': 0, 'asset_id': null},
-      'signature_version': 0,
-    };
+    String txSubmission = '0x41028400';
+    txSubmission += response['publicKey'];
+    txSubmission += HEX.encode(signature);
+    txSubmission += '00';
+    txSubmission += HEX.encode(CompactCodec.codec.encode(nonce));
+    txSubmission += '00';
+    txSubmission += encodedData;
 
-    final submitResult = await _queryRpc('author_submitExtrinsic', [
-      '0x41028400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d01740941d2a43cbfe0827780cb7d8904c8d97e073f756dec043ba18461916c4f1d770b0db317a5a26de83d58f9028994e954b76ea19d1a495a3dca01788f0fdb820000000$encodedData'
-    ]);
-    // print(submitResult);
-    print(transferReq);
+    final submitResult =
+        await _queryRpc('author_submitExtrinsic', [txSubmission]);
+    print(submitResult);
     throw Exception('sending failed');
   }
 
@@ -332,22 +325,6 @@ class PolkadotCoin extends Coin {
       genesisHash = genesisHashRes['result'];
     }
 
-    // final payload = {
-    //   'call': '0x$call',
-    //   'era': '00',
-    //   'nonce': nonce,
-    //   'tip': 0,
-    //   'spec_version': runTimeResult['specVersion'],
-    //   'genesis_hash': genesisHash,
-    //   'block_hash': genesisHash,
-    //   'transaction_version': runTimeResult['transactionVersion'],
-    //   'asset_id': {'tip': 0, 'asset_id': null}
-    // };
-
-// 001800 => 6
-// 001c00 => 7
-// 002400 => 8
-
     String payload = '0x$call';
 
     payload += '00';
@@ -359,30 +336,7 @@ class PolkadotCoin extends Coin {
     payload += genesisHash.replaceFirst('0x', '');
     payload += genesisHash.replaceFirst('0x', '');
 
-    return payload;
-
-    // 0x0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b02286bee => call
-    // 00
-    // 18 => nonce - CompactCodec
-    //00
-    // b9240000 => spec_version - Uint32
-    // 14000000 => transaction_version - Uint32
-    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
-    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e => genesisHash
-
-    // 0x0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b0b000a80d83012 => call
-    // 00
-    // 18
-    // 00
-    // b9240000
-    // 14000000
-    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
-    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
-
-// 0x41028400073982bb0db1e735f1dc9510c470ffc23630fe31b28b7cd190c7382754556b2700
-// 35ccd35db965230eec3ae89fbb8e2dbf3ff72423095f65e74f1d9b081441ac1098e1a6fb583a338677dbf90aa594a441e85c70de523a5ecdb66c954e1c46cf0f
-// 001800
-// 0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b0b000a80d83012
+    return payload; 
   }
 
   @override
