@@ -307,7 +307,7 @@ class PolkadotCoin extends Coin {
     ]);
     // print(submitResult);
     // print(encodedData);
-    return null;
+    throw Exception('sending failed');
   }
 
   Future _signaturePayload(String call, int nonce) async {
