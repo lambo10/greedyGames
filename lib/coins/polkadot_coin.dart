@@ -283,6 +283,9 @@ class PolkadotCoin extends Coin {
     final privatekey = HEX.decode(response['privateKey']);
     final signaturePayload = await _signaturePayload(encodedData, nonce);
 
+    final signature = signEd25519(
+        message: HEX.decode(signaturePayload), privateKey: privatekey);
+
     final transferReq = {
       'account_id': hexDecAddr0x,
       'signature': {
@@ -313,7 +316,7 @@ class PolkadotCoin extends Coin {
     throw Exception('sending failed');
   }
 
-  Future _signaturePayload(String call, int nonce) async {
+  Future<String> _signaturePayload(String call, int nonce) async {
     if (runTimeResult == null) {
       final runTimeVersion = await _queryRpc('chain_getRuntimeVersion', []);
       runTimeResult = runTimeVersion['result'];
@@ -324,21 +327,52 @@ class PolkadotCoin extends Coin {
       genesisHash = genesisHashRes['result'];
     }
 
-    final payload = {
-      'call': call,
-      'era': '00',
-      'nonce': nonce,
-      'tip': 0,
-      'spec_version': runTimeResult['specVersion'],
-      'genesis_hash': genesisHash,
-      'block_hash': genesisHash,
-      'transaction_version': runTimeResult['transactionVersion'],
-      'asset_id': {'tip': 0, 'asset_id': null}
-    };
-    print(genesisHash);
-    print(call);
-    print(nonce);
-    print(json.encode(payload));
+    // final payload = {
+    //   'call': '0x$call',
+    //   'era': '00',
+    //   'nonce': nonce,
+    //   'tip': 0,
+    //   'spec_version': runTimeResult['specVersion'],
+    //   'genesis_hash': genesisHash,
+    //   'block_hash': genesisHash,
+    //   'transaction_version': runTimeResult['transactionVersion'],
+    //   'asset_id': {'tip': 0, 'asset_id': null}
+    // };
+
+// 001800 => 6
+// 001c00 => 7
+// 002400 => 8
+
+    String payload = '0x$call';
+
+    payload += '00';
+    payload += HEX.encode(CompactCodec.codec.encode(nonce));
+    payload += '00';
+    payload += HEX.encode(U32Codec.codec.encode(runTimeResult['specVersion']));
+    payload +=
+        HEX.encode(U32Codec.codec.encode(runTimeResult['transactionVersion']));
+    payload += genesisHash.replaceFirst('0x', '');
+    payload += genesisHash.replaceFirst('0x', '');
+
+    return payload;
+
+    // 0x0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b02286bee => call
+    // 00
+    // 18 => nonce - CompactCodec
+    //00
+    // b9240000 => spec_version - Uint32
+    // 14000000 => transaction_version - Uint32
+    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
+    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e => genesisHash
+
+    // 0x0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b0b000a80d83012 => call
+    // 00
+    // 18
+    // 00
+    // b9240000
+    // 14000000
+    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
+    // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
   }
 
   @override
@@ -471,12 +505,10 @@ Uint8List xxh128(String data) {
   return Uint8List.fromList(storage_key1 + storage_key2);
 }
 
-
 // extending ScaleDecoder
 // removing the 0x
 // 'f9170000000000000100000000000000503b9566ad6d01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'.substr(32,48)
 // balance is a U128 // gotten from 32 -> 48
 // nonce is a U32 // gotten from 0 -> 4
-
 
 // [203, 56, 67, 63, 165, 89, 107, 182, 49, 254, 58, 83, 33, 38, 191, 171, 57, 7, 56, 162, 44, 169, 222, 185, 46, 128, 101, 69, 33, 50, 7, 217]
