@@ -300,8 +300,10 @@ class PolkadotCoin extends Coin {
       ),
     );
 
-    String txSubmission = '0x41028400';
-    txSubmission += response['publicKey'];
+    String txSubmission = '0x3502';
+    txSubmission += '8400';
+    txSubmission += HEX.encode(publicKey.sublist(1));
+    txSubmission += '00';
     txSubmission += HEX.encode(signature);
     txSubmission += '00';
     txSubmission += HEX.encode(CompactCodec.codec.encode(nonce));
@@ -310,8 +312,7 @@ class PolkadotCoin extends Coin {
 
     final submitResult =
         await _queryRpc('author_submitExtrinsic', [txSubmission]);
-    print(submitResult);
-    throw Exception('sending failed');
+    return submitResult['result'];
   }
 
   Future<String> _signaturePayload(String call, int nonce) async {
@@ -336,7 +337,7 @@ class PolkadotCoin extends Coin {
     payload += genesisHash.replaceFirst('0x', '');
     payload += genesisHash.replaceFirst('0x', '');
 
-    return payload; 
+    return payload;
   }
 
   @override
