@@ -272,6 +272,7 @@ class PolkadotCoin extends Coin {
     double planck = double.parse(amount) * pow(10, _getDecimals());
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
+
     String hexDecAddr0x =
         hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
@@ -282,23 +283,21 @@ class PolkadotCoin extends Coin {
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final privatekey = HEX.decode(response['privateKey']);
     final signaturePayload = await _signaturePayload(encodedData, nonce);
-
     final signature = signEd25519(
-        message: HEX.decode(signaturePayload), privateKey: privatekey);
+      message: HEX.decode(signaturePayload.replaceFirst('0x', '')),
+      privateKey: privatekey,
+    );
 
     final transferReq = {
       'account_id': hexDecAddr0x,
-      'signature': {
-        'Ed25519':
-            '0x00419e81980c632ae1d2239c18d1721ecb2707457a9af3f08812ea8c40cebc457e63e994419ecd08bc95f94ec497508de601237b4a9250ffb9db09e3d0713889'
-      },
+      'signature': {'Ed25519': '0x${HEX.encode(signature)}'},
       'call_function': 'transfer',
       'call_module': 'Balances',
       'call_args': {'dest': to, 'value': planckInt},
       'nonce': nonce,
       'era': '00',
       'tip': 0,
-      'asset_id': {'tip': 0, 'asset_id': None},
+      'asset_id': {'tip': 0, 'asset_id': null},
       'signature_version': 0,
       'address': hexDecAddr0x,
       'call': {
@@ -373,6 +372,11 @@ class PolkadotCoin extends Coin {
     // 14000000
     // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
     // e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e
+
+// 0x41028400073982bb0db1e735f1dc9510c470ffc23630fe31b28b7cd190c7382754556b2700
+// 35ccd35db965230eec3ae89fbb8e2dbf3ff72423095f65e74f1d9b081441ac1098e1a6fb583a338677dbf90aa594a441e85c70de523a5ecdb66c954e1c46cf0f
+// 001800
+// 0400004591a946b92b9ecbbd442eb6e02905d1227c06ee497bb174230c846ca35eef4b0b000a80d83012
   }
 
   @override
