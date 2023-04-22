@@ -267,6 +267,13 @@ class PolkadotCoin extends Coin {
     return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
   }
 
+  Future<Uint8List> _signEd25519(EDSignature signature) async {
+    return signEd25519(
+      message: HEX.decode(signature.signaturePayload.replaceFirst('0x', '')),
+      privateKey: signature.privatekey,
+    );
+  }
+
   @override
   Future<String> transferToken(String amount, String to) async {
     double planck = double.parse(amount) * pow(10, _getDecimals());
@@ -283,12 +290,15 @@ class PolkadotCoin extends Coin {
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final privatekey = HEX.decode(response['privateKey']);
     final signaturePayload = await _signaturePayload(encodedData, nonce);
-    final signature = signEd25519(
-      message: HEX.decode(signaturePayload.replaceFirst('0x', '')),
-      privateKey: privatekey,
-    );
 
     final publicKey = HEX.decode(response['publicKey']);
+    final signature = await compute(
+      _signEd25519,
+      EDSignature(
+        privatekey: privatekey,
+        signaturePayload: signaturePayload,
+      ),
+    );
 
     final transferReq = {
       'account_id': '0x${HEX.encode(publicKey.sublist(1))}',
@@ -513,3 +523,9 @@ Uint8List xxh128(String data) {
 // nonce is a U32 // gotten from 0 -> 4
 
 // [203, 56, 67, 63, 165, 89, 107, 182, 49, 254, 58, 83, 33, 38, 191, 171, 57, 7, 56, 162, 44, 169, 222, 185, 46, 128, 101, 69, 33, 50, 7, 217]
+
+class EDSignature {
+  final String signaturePayload;
+  final Uint8List privatekey;
+  const EDSignature({this.privatekey, this.signaturePayload});
+}
