@@ -35,8 +35,8 @@ class _ExchangeTokenState extends State<ExchangeToken>
   final amountPay = TextEditingController()..text = '1';
   final networks = getEVMBlockchains();
   String network;
-  String currentSelectedTokenPay = 'ETH';
-  String currentSelectedTokenGet = 'ETH';
+  String currentSelectedTokenPay;
+  String currentSelectedTokenGet;
   String payAddress = nativeTokenAddress;
   String getAddress = nativeTokenAddress;
   Map tokenList;
@@ -82,6 +82,8 @@ class _ExchangeTokenState extends State<ExchangeToken>
   void initState() {
     super.initState();
     network = networks[0]['name'];
+    currentSelectedTokenPay = networks[0]['symbol'];
+    currentSelectedTokenGet = networks[0]['symbol'];
     getAllExchangeToken();
     timer = Timer.periodic(
       httpPollingDelay,
