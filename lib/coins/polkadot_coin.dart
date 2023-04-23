@@ -292,7 +292,7 @@ class PolkadotCoin extends Coin {
       ),
     );
 
-    String txSubmission = HEX.encode(CompactCodec.codec.encode(143));
+    String txSubmission = HEX.encode(CompactCodec.codec.encode(143)); // 780000000000
     txSubmission += '8400';
     txSubmission += HEX.encode(publicKey.sublist(1));
     txSubmission += '00';
