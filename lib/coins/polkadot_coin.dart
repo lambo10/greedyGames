@@ -31,7 +31,7 @@ class PolkadotCoin extends Coin {
   String image;
   String name;
   String api;
-  static List rpcMethods;
+  List rpcMethods;
   Map runTimeResult;
   String genesisHash;
 
