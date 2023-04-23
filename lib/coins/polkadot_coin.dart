@@ -292,8 +292,7 @@ class PolkadotCoin extends Coin {
       ),
     );
 
-    String txSubmission = HEX.encode(CompactCodec.codec.encode(143)); // 780000000000
-    txSubmission += '8400';
+    String txSubmission = '8400';
     txSubmission += HEX.encode(publicKey.sublist(1));
     txSubmission += '00';
     txSubmission += HEX.encode(signature);
@@ -302,8 +301,13 @@ class PolkadotCoin extends Coin {
     txSubmission += '00';
     txSubmission += encodedData;
 
+    int txLength = HEX.decode(txSubmission).length;
+
+    txSubmission =
+        HEX.encode(CompactCodec.codec.encode(txLength)) + txSubmission;
+
     final submitResult =
-        await _queryRpc('author_submitExtrinsic', [txSubmission]);
+        await _queryRpc('author_submitExtrinsic', ['0x$txSubmission']);
     return submitResult['result'];
   }
 
