@@ -2,13 +2,11 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:algorand_dart/algorand_dart.dart';
 import 'package:bip39/bip39.dart';
 import 'package:bs58check/bs58check.dart';
 import 'package:cardano_wallet_sdk/cardano_wallet_sdk.dart' hide Coin;
-import 'package:cryptowallet/utils/alt_ens.dart';
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
@@ -33,7 +31,7 @@ class PolkadotCoin extends Coin {
   String image;
   String name;
   String api;
-  static List rpcMethods;
+  List rpcMethods;
   Map runTimeResult;
   String genesisHash;
 
@@ -70,7 +68,7 @@ class PolkadotCoin extends Coin {
 
   @override
   int decimals() {
-    return polkadotDecimals;
+    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
   }
 
   @override
@@ -193,7 +191,7 @@ class PolkadotCoin extends Coin {
 
         final BigInt balanceBigInt = U128Codec.codec.decode(input);
         balanceInFileCoin =
-            (balanceBigInt / BigInt.from(10).pow(_getDecimals())).toDouble();
+            (balanceBigInt / BigInt.from(10).pow(decimals())).toDouble();
       }
       await pref.put(key, balanceInFileCoin);
       return balanceInFileCoin;
@@ -263,10 +261,6 @@ class PolkadotCoin extends Coin {
     }
   }
 
-  int _getDecimals() {
-    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
-  }
-
   Future<Uint8List> _signEd25519(EDSignature signature) async {
     return signEd25519(
       message: HEX.decode(signature.signaturePayload.replaceFirst('0x', '')),
@@ -276,12 +270,10 @@ class PolkadotCoin extends Coin {
 
   @override
   Future<String> transferToken(String amount, String to) async {
-    double planck = double.parse(amount) * pow(10, _getDecimals());
+    double planck = double.parse(amount) * pow(10, decimals());
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
 
-    String hexDecAddr0x =
-        hexDecAddr.startsWith('0x') ? hexDecAddr : '0x$hexDecAddr';
     final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
     final nonce = await _getNonce();
 
@@ -300,8 +292,7 @@ class PolkadotCoin extends Coin {
       ),
     );
 
-    String txSubmission = '0x3502';
-    txSubmission += '8400';
+    String txSubmission = '8400';
     txSubmission += HEX.encode(publicKey.sublist(1));
     txSubmission += '00';
     txSubmission += HEX.encode(signature);
@@ -310,8 +301,13 @@ class PolkadotCoin extends Coin {
     txSubmission += '00';
     txSubmission += encodedData;
 
+    int txLength = HEX.decode(txSubmission).length;
+
+    txSubmission =
+        HEX.encode(CompactCodec.codec.encode(txLength)) + txSubmission;
+
     final submitResult =
-        await _queryRpc('author_submitExtrinsic', [txSubmission]);
+        await _queryRpc('author_submitExtrinsic', ['0x$txSubmission']);
     return submitResult['result'];
   }
 
@@ -470,14 +466,6 @@ Uint8List xxh128(String data) {
 
   return Uint8List.fromList(storage_key1 + storage_key2);
 }
-
-// extending ScaleDecoder
-// removing the 0x
-// 'f9170000000000000100000000000000503b9566ad6d01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'.substr(32,48)
-// balance is a U128 // gotten from 32 -> 48
-// nonce is a U32 // gotten from 0 -> 4
-
-// [203, 56, 67, 63, 165, 89, 107, 182, 49, 254, 58, 83, 33, 38, 191, 171, 57, 7, 56, 162, 44, 169, 222, 185, 46, 128, 101, 69, 33, 50, 7, 217]
 
 class EDSignature {
   final String signaturePayload;
