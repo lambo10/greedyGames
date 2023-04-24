@@ -20,8 +20,6 @@ import '../model/seed_phrase_root.dart';
 import '../utils/app_config.dart';
 import '../utils/rpc_urls.dart';
 
-const polkadotDecimals = 10;
-const westendDecimals = 12;
 final systemAccount = '0x${xxhashAsHex('System')}${xxhashAsHex('Account')}';
 
 class PolkadotCoin extends Coin {
@@ -31,6 +29,7 @@ class PolkadotCoin extends Coin {
   String image;
   String name;
   String api;
+  int decimals_;
   List rpcMethods;
   Map runTimeResult;
   String genesisHash;
@@ -68,7 +67,7 @@ class PolkadotCoin extends Coin {
 
   @override
   int decimals() {
-    return name == 'Polkadot' ? polkadotDecimals : westendDecimals;
+    return decimals_;
   }
 
   @override
@@ -212,6 +211,7 @@ class PolkadotCoin extends Coin {
     this.image,
     this.name,
     this.api,
+    this.decimals_,
   });
 
   factory PolkadotCoin.fromJson(Map<String, dynamic> json) {
@@ -222,6 +222,7 @@ class PolkadotCoin extends Coin {
       image: json['image'],
       name: json['name'],
       api: json['api'],
+      decimals_: json['decimals'],
     );
   }
 
@@ -235,6 +236,7 @@ class PolkadotCoin extends Coin {
     data['blockExplorer'] = blockExplorer;
     data['image'] = image;
     data['api'] = api;
+    data['decimals'] = decimals_;
 
     return data;
   }
@@ -369,7 +371,8 @@ List<Map> getPolkadoBlockChains() {
       'name': 'Polkadot',
       'default': 'DOT',
       'image': 'assets/polkadot.png',
-      'api': 'https://rpc.polkadot.io/'
+      'api': 'https://rpc.polkadot.io/',
+      'decimals': 10,
     }
   ];
 
@@ -382,7 +385,8 @@ List<Map> getPolkadoBlockChains() {
         'name': 'Polkadot(Westend)',
         'default': 'DOT',
         'image': 'assets/polkadot.png',
-        'api': 'https://westend-rpc.polkadot.io'
+        'api': 'https://westend-rpc.polkadot.io',
+        'decimals': 12,
       },
     ]);
   }
