@@ -93,7 +93,7 @@ void main() async {
     await secureStorage.write(
       key: _secureEncryptionKey,
       value: base64UrlEncode(key),
-    );
+    );  
   }
 
   var encryptionKey =
