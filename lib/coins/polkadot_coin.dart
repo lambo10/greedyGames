@@ -274,10 +274,10 @@ class PolkadotCoin extends Coin {
     int planckInt = planck.toInt();
     final hexDecAddr = HEX.encode(decodeDOTAddress(to));
 
-    final compactPrice = HEX.encode(CompactCodec.codec.encode(planckInt));
+    final compactAmount = HEX.encode(CompactCodec.codec.encode(planckInt));
     final nonce = await _getNonce();
 
-    final encodedData = '040000$hexDecAddr$compactPrice';
+    final encodedData = '040000$hexDecAddr$compactAmount';
 
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
     final privatekey = HEX.decode(response['privateKey']);
