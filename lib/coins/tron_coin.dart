@@ -159,9 +159,8 @@ class TronCoin extends Coin {
         balanceInTron =
             (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals)))
                 .toDouble();
-        await pref.put(key, balanceInTron);
       }
-
+      await pref.put(key, balanceInTron);
       return balanceInTron;
     } catch (e) {
       return savedBalance;
