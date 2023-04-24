@@ -153,12 +153,14 @@ class TronCoin extends Coin {
       }
       Map decodedData = jsonDecode(request.body);
 
+      double balanceInTron = 0;
       final int balance = decodedData['data'][0]['balance'];
-
-      final balanceInTron =
-          (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals)))
-              .toDouble();
-      await pref.put(key, balanceInTron);
+      if (balance != null) {
+        balanceInTron =
+            (BigInt.from(balance) / BigInt.from(pow(10, tronDecimals)))
+                .toDouble();
+        await pref.put(key, balanceInTron);
+      }
 
       return balanceInTron;
     } catch (e) {
