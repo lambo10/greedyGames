@@ -263,7 +263,7 @@ class PolkadotCoin extends Coin {
     }
   }
 
-  Future<Uint8List> _signEd25519(EDSignature signature) async {
+  Uint8List _signEd25519(EDSignature signature) {
     return signEd25519(
       message: HEX.decode(signature.signaturePayload.replaceFirst('0x', '')),
       privateKey: signature.privatekey,
