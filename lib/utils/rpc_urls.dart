@@ -938,8 +938,8 @@ showDialogWithMessage({
   BuildContext context,
   String message,
   Function onConfirm,
-}) {
-  AwesomeDialog(
+}) async {
+  await AwesomeDialog(
     closeIcon: const Icon(
       Icons.close,
     ),
