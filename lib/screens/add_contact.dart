@@ -54,7 +54,7 @@ class _AddContactState extends State<AddContact> {
         bool willPop = false;
         await showDialogWithMessage(
           context: context,
-          message: "Please confirm you have saved any changes",
+          message: AppLocalizations.of(context).saveChanges,
           onConfirm: () {
             willPop = true;
           },
