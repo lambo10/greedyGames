@@ -120,7 +120,7 @@ class EthContractCoin extends EthereumCoin {
     data['blockExplorer'] = blockExplorer;
     data['coinType'] = coinType;
     data['image'] = image;
-    data['tokenType'] = tokenType.toString();
+    data['tokenType'] = tokenType.name;
     data['tokenId'] = tokenId;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;
