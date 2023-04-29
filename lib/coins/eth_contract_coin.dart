@@ -86,6 +86,10 @@ class EthContractCoin extends EthereumCoin {
   }
 
   factory EthContractCoin.fromJson(Map<String, dynamic> json) {
+    if (json['tokenType'].runtimeType == String) {
+      json['tokenType'] = EthTokenType.values.byName(json['tokenType']);
+    }
+
     return EthContractCoin(
       chainId: json['chainId'],
       rpc: json['rpc'],
@@ -116,7 +120,7 @@ class EthContractCoin extends EthereumCoin {
     data['blockExplorer'] = blockExplorer;
     data['coinType'] = coinType;
     data['image'] = image;
-    data['tokenType'] = tokenType;
+    data['tokenType'] = tokenType.toString();
     data['tokenId'] = tokenId;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;

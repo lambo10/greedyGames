@@ -304,93 +304,94 @@ class _WalletMainBodyState extends State<WalletMainBody>
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FutureBuilder(
-                          future: _getWalletToken,
-                          builder: (ctx, snapshot) {
-                            if (snapshot.hasError) {
-                              if (kDebugMode) {
-                                print(snapshot.error.toString());
-                              }
-                              return Container();
-                            }
+                      // FutureBuilder(
+                      //     future: _getWalletToken,
+                      //     builder: (ctx, snapshot) {
+                      //       if (snapshot.hasError) {
+                      //         if (kDebugMode) {
+                      //           print(snapshot.error.toString());
+                      //         }
+                      //         return Container();
+                      //       }
 
-                            if (snapshot.hasData) {
-                              final appTokenWidget = <Widget>[];
+                      //       if (snapshot.hasData) {
+                      //         final appTokenWidget = <Widget>[];
 
-                              final EthContractCoin appToken =
-                                  snapshot.data['appTokenDetails'];
-                              appToken.tokenType = EthTokenType.ERC20;
+                      //         final EthContractCoin appToken =
+                      //             snapshot.data['appTokenDetails'];
+                      //         appToken.tokenType = EthTokenType.ERC20;
 
-                              appTokenWidget.add(
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (ctx) => Token(
-                                          tokenData: appToken,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: GetBlockChainWidget(
-                                    name_: appToken.name_(),
-                                    image_: appToken.image_() != null
-                                        ? AssetImage(appToken.image_())
-                                        : null,
-                                    priceWithCurrency_:
-                                        snapshot.data['nativeCurrency'] + '0',
-                                    hasPrice_: false,
-                                    cryptoChange_: 0,
-                                    symbol_: appToken.symbol_(),
-                                    cryptoAmount_: ValueListenableBuilder(
-                                      valueListenable: walletNotifier,
-                                      builder: ((_, double value, Widget __) {
-                                        if (value == null) {
-                                          () async {
-                                            try {
-                                              walletNotifier.value =
-                                                  await appToken.getBalance(
-                                                      walletNotifier.value ==
-                                                          null);
-                                            } catch (_) {}
+                      //         appTokenWidget.add(
+                      //           InkWell(
+                      //             onTap: () {
+                      //               Navigator.push(
+                      //                 context,
+                      //                 MaterialPageRoute(
+                      //                   builder: (ctx) => Token(
+                      //                     tokenData: appToken,
+                      //                   ),
+                      //                 ),
+                      //               );
+                      //             },
+                      //             child: GetBlockChainWidget(
+                      //               name_: appToken.name_(),
+                      //               image_: appToken.image_() != null
+                      //                   ? AssetImage(appToken.image_())
+                      //                   : null,
+                      //               priceWithCurrency_:
+                      //                   snapshot.data['nativeCurrency'] + '0',
+                      //               hasPrice_: false,
+                      //               cryptoChange_: 0,
+                      //               symbol_: appToken.symbol_(),
+                      //               cryptoAmount_: ValueListenableBuilder(
+                      //                 valueListenable: walletNotifier,
+                      //                 builder: ((_, double value, Widget __) {
+                      //                   if (value == null) {
+                      //                     () async {
+                      //                       try {
+                      //                         walletNotifier.value =
+                      //                             await appToken.getBalance(
+                      //                                 walletNotifier.value ==
+                      //                                     null);
+                      //                       } catch (_) {}
 
-                                            cryptoBalancesTimer.add(
-                                              Timer.periodic(httpPollingDelay,
-                                                  (timer) async {
-                                                try {
-                                                  walletNotifier.value =
-                                                      await appToken.getBalance(
-                                                          walletNotifier
-                                                                  .value ==
-                                                              null);
-                                                } catch (_) {}
-                                              }),
-                                            );
-                                          }();
-                                          return Container();
-                                        }
-                                        return UserBalance(
-                                          symbol: appToken.symbol_(),
-                                          balance: value,
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                                ),
-                              );
+                      //                       cryptoBalancesTimer.add(
+                      //                         Timer.periodic(httpPollingDelay,
+                      //                             (timer) async {
+                      //                           try {
+                      //                             walletNotifier.value =
+                      //                                 await appToken.getBalance(
+                      //                                     walletNotifier
+                      //                                             .value ==
+                      //                                         null);
+                      //                           } catch (_) {}
+                      //                         }),
+                      //                       );
+                      //                     }();
+                      //                     return Container();
+                      //                   }
+                      //                   return UserBalance(
+                      //                     symbol: appToken.symbol_(),
+                      //                     balance: value,
+                      //                   );
+                      //                 }),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         );
 
-                              appTokenWidget.add(
-                                const Divider(),
-                              );
+                      //         appTokenWidget.add(
+                      //           const Divider(),
+                      //         );
 
-                              return Column(
-                                children: appTokenWidget,
-                              );
-                            } else {
-                              return Container();
-                            }
-                          }),
+                      //         return Column(
+                      //           children: appTokenWidget,
+                      //         );
+                      //       } else {
+                      //         return Container();
+                      //       }
+                      //     }),
+
                       ...blockChainsArray,
                       const UserAddedTokens(),
                       const SizedBox(
