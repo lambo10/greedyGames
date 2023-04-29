@@ -56,6 +56,9 @@ class _AddContactState extends State<AddContact> {
           context: context,
           message: AppLocalizations.of(context).saveChanges,
           onConfirm: () {
+            willPop = false;
+          },
+          onCancel: () {
             willPop = true;
           },
         );

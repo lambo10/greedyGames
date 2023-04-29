@@ -221,5 +221,6 @@
   "token": "Token",
   "viewOnBlockExplorer": "View on block explorer",
   "useBiometrics": "Use Biometrics",
-  "saveChanges":"Please confirm you have saved any changes"
+  "saveChanges": "Please confirm you have saved any changes",
+  "exit": "Exit"
 }

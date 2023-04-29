@@ -938,6 +938,7 @@ showDialogWithMessage({
   BuildContext context,
   String message,
   Function onConfirm,
+  Function onCancel,
 }) async {
   await AwesomeDialog(
     closeIcon: const Icon(
@@ -954,7 +955,9 @@ showDialogWithMessage({
     desc: message,
     showCloseIcon: true,
     btnOkText: AppLocalizations.of(context).ok,
+    btnCancelText: AppLocalizations.of(context).exit,
     btnOkOnPress: onConfirm ?? () {},
+    btnCancelOnPress: onCancel,
   ).show();
 }
 

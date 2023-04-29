@@ -1,17 +1,21 @@
 {
   "de": [
-    "saveChanges"
+    "saveChanges",
+    "exit"
   ],
 
   "fr": [
-    "saveChanges"
+    "saveChanges",
+    "exit"
   ],
 
   "hi": [
-    "saveChanges"
+    "saveChanges",
+    "exit"
   ],
 
   "zh": [
-    "saveChanges"
+    "saveChanges",
+    "exit"
   ]
 }
