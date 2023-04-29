@@ -61,7 +61,7 @@ class _AddContactState extends State<AddContact> {
             willPop = true;
           },
           onCancel: () {
-            willPop = true;
+            willPop = false;
           },
         );
 
