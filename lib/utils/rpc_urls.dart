@@ -939,6 +939,8 @@ showDialogWithMessage({
   String message,
   Function onConfirm,
   Function onCancel,
+  Color btnOkColor,
+  Color btnCancelColor,
 }) async {
   await AwesomeDialog(
     closeIcon: const Icon(
@@ -946,7 +948,7 @@ showDialogWithMessage({
     ),
     buttonsTextStyle: const TextStyle(color: Colors.white),
     context: context,
-    btnOkColor: appBackgroundblue,
+    btnOkColor: btnOkColor ?? appBackgroundblue,
     dialogType: DialogType.INFO,
     buttonsBorderRadius: const BorderRadius.all(Radius.circular(10)),
     headerAnimationLoop: false,
@@ -954,8 +956,7 @@ showDialogWithMessage({
     title: AppLocalizations.of(context).info,
     desc: message,
     showCloseIcon: true,
-    btnOkText: AppLocalizations.of(context).ok,
-    btnCancelText: AppLocalizations.of(context).exit,
+    btnCancelColor: btnCancelColor,
     btnOkOnPress: onConfirm ?? () {},
     btnCancelOnPress: onCancel,
   ).show();

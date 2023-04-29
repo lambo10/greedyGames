@@ -54,9 +54,11 @@ class _AddContactState extends State<AddContact> {
         bool willPop = false;
         await showDialogWithMessage(
           context: context,
-          message: AppLocalizations.of(context).saveChanges,
+          btnCancelColor: Colors.blue,
+          btnOkColor: Colors.red[400],
+          message: AppLocalizations.of(context).confirmClose,
           onConfirm: () {
-            willPop = false;
+            willPop = true;
           },
           onCancel: () {
             willPop = true;

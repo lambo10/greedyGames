@@ -1,21 +1,17 @@
 {
   "de": [
-    "saveChanges",
-    "exit"
+    "confirmClose"
   ],
 
   "fr": [
-    "saveChanges",
-    "exit"
+    "confirmClose"
   ],
 
   "hi": [
-    "saveChanges",
-    "exit"
+    "confirmClose"
   ],
 
   "zh": [
-    "saveChanges",
-    "exit"
+    "confirmClose"
   ]
 }
