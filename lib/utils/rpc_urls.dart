@@ -1054,16 +1054,17 @@ addAddressBlockchain({
 }
 
 showBlockChainDialog({
-  Function onTap,
+  Function(EthereumCoin e) onTap,
   BuildContext context,
   int selectedChainId,
 }) {
   final ethEnabledBlockChain = <Widget>[];
-  List evmBlockchain = getEVMBlockchains();
+  List<EthereumCoin> evmBlockchain =
+      getAllBlockchains.whereType<EthereumCoin>().toList();
   for (int i = 0; i < evmBlockchain.length; i++) {
     bool isSelected = false;
     if (selectedChainId != null &&
-        evmBlockchain[i]['chainId'] == selectedChainId) {
+        evmBlockchain[i].chainId == selectedChainId) {
       isSelected = true;
     }
 
@@ -1073,8 +1074,8 @@ showBlockChainDialog({
           onTap(evmBlockchain[i]);
         },
         child: buildRow(
-          evmBlockchain[i]['image'],
-          evmBlockchain[i]['name'],
+          evmBlockchain[i].image,
+          evmBlockchain[i].name,
           isSelected: isSelected,
         ),
       ),

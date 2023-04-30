@@ -111,8 +111,8 @@ class _AddCustomTokenState extends State<AddCustomToken> {
                             Navigator.pop(context);
                             if (mounted) {
                               setState(() {
-                                networkName = blockChainData['name'];
-                                networkImage = blockChainData['image'];
+                                networkName = blockChainData.name;
+                                networkImage = blockChainData.image;
                               });
                               await autoFillNameDecimalSymbol(
                                 contractAddrContrl.text,
