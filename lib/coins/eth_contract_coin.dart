@@ -164,6 +164,15 @@ class EthContractCoin extends EthereumCoin {
   }
 
   @override
+  void validateAddress(String address) {
+    if (default_ == 'RON') {
+      super.validateAddress(roninAddrToEth(address));
+    } else {
+      super.validateAddress(address);
+    }
+  }
+
+  @override
   Future<String> transferToken(String amount, String to) async {
     await fillParameter(amount, to);
 
