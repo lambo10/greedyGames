@@ -240,10 +240,7 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<double> getTransactionFee(String amount, String to) async {
-    final client = Web3Client(
-      rpc,
-      Client(),
-    );
+    await fillParameter(amount, to);
 
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
 
@@ -261,7 +258,7 @@ class EthContractCoin extends EthereumCoin {
         : contract.findFunctionsByName('safeTransferFrom').toList()[0];
 
     Uint8List contractData = transfer.encodeCall(parameters_);
-    await fillParameter(amount, to);
+
     final transactionFee = await getEtherTransactionFee(
       rpc,
       contractData,
