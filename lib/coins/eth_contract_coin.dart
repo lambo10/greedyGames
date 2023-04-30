@@ -165,11 +165,23 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   void validateAddress(String address) {
-    if (default_ == 'RON') {
-      super.validateAddress(roninAddrToEth(address));
-    } else {
+    if (default_ != "RON") {
       super.validateAddress(address);
+      return;
     }
+
+    super.validateAddress(roninAddrToEth(address));
+  }
+
+  @override
+  Future<Map> fromMnemonic(String mnemonic) async {
+    if (default_ != "RON") return await super.fromMnemonic(mnemonic);
+
+    final mnemonicDetails = await super.fromMnemonic(mnemonic);
+    return {
+      ...mnemonicDetails,
+      'address': ethAddrToRonin(mnemonicDetails['address']),
+    };
   }
 
   @override
