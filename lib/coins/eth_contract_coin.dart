@@ -277,34 +277,9 @@ class EthContractCoin extends EthereumCoin {
     final transfer = tokenType == EthTokenType.ERC20
         ? contract.function('transfer')
         : contract.findFunctionsByName('safeTransferFrom').toList()[0];
-    List _parameters;
-    if (tokenType == EthTokenType.ERC20) {
-      ContractFunction decimalsFunction = contract.function('decimals');
-      BigInt decimals = (await client
-              .call(contract: contract, function: decimalsFunction, params: []))
-          .first;
-      _parameters = [
-        EthereumAddress.fromHex(to),
-        BigInt.from(
-          double.parse(amount) * pow(10, decimals.toInt()),
-        )
-      ];
-    } else if (tokenType == EthTokenType.ERC721) {
-      _parameters = [sendingAddress, EthereumAddress.fromHex(to), tokenId];
-    } else if (tokenType == EthTokenType.ERC1155) {
-      _parameters = [
-        sendingAddress,
-        EthereumAddress.fromHex(to),
-        tokenId,
-        BigInt.from(
-          double.parse(amount),
-        ),
-        Uint8List(1)
-      ];
-    }
 
-    Uint8List contractData = transfer.encodeCall(_parameters);
-
+    Uint8List contractData = transfer.encodeCall(parameters_);
+    await fillParameter(amount, to);
     final transactionFee = await getEtherTransactionFee(
       rpc,
       contractData,
