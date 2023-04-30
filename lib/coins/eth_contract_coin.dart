@@ -251,24 +251,6 @@ class EthContractCoin extends EthereumCoin {
       response['address'],
     );
 
-    ContractAbi contrAbi;
-    if (tokenType == EthTokenType.ERC20) {
-      contrAbi = ContractAbi.fromJson(
-        erc20Abi,
-        '',
-      );
-    } else if (tokenType == EthTokenType.ERC721) {
-      contrAbi = ContractAbi.fromJson(
-        erc721Abi,
-        '',
-      );
-    } else if (tokenType == EthTokenType.ERC1155) {
-      contrAbi = ContractAbi.fromJson(
-        erc1155Abi,
-        '',
-      );
-    }
-
     final contract = DeployedContract(
       contrAbi,
       EthereumAddress.fromHex(contractAddress()),
