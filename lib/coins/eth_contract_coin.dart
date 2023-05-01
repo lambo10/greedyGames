@@ -166,12 +166,11 @@ class EthContractCoin extends EthereumCoin {
   final roninChainIds = [2020, 2021];
   @override
   void validateAddress(String address) {
-    if (!_isRonin()) {
-      super.validateAddress(address);
+    if (_isRonin()) {
+      super.validateAddress(roninAddrToEth(address));
       return;
     }
-
-    super.validateAddress(roninAddrToEth(address));
+    super.validateAddress(address);
   }
 
   bool _isRonin() {
@@ -180,13 +179,15 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<Map> fromMnemonic(String mnemonic) async {
-    if (!_isRonin()) return await super.fromMnemonic(mnemonic);
+    if (_isRonin()) {
+      final mnemonicDetails = await super.fromMnemonic(mnemonic);
+      return {
+        ...mnemonicDetails,
+        'address': ethAddrToRonin(mnemonicDetails['address']),
+      };
+    }
 
-    final mnemonicDetails = await super.fromMnemonic(mnemonic);
-    return {
-      ...mnemonicDetails,
-      'address': ethAddrToRonin(mnemonicDetails['address']),
-    };
+    return await super.fromMnemonic(mnemonic);
   }
 
   @override
