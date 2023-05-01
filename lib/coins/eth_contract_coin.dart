@@ -120,7 +120,7 @@ class EthContractCoin extends EthereumCoin {
     data['blockExplorer'] = blockExplorer;
     data['coinType'] = coinType;
     data['image'] = image;
-    data['tokenType'] = tokenType.toString();
+    data['tokenType'] = tokenType.name;
     data['tokenId'] = tokenId;
     data['contractAddress'] = contractAddress_;
     data['network'] = network;
@@ -161,6 +161,27 @@ class EthContractCoin extends EthereumCoin {
   @override
   String savedTransKey() {
     return '$contractAddress_$rpc Details';
+  }
+
+  @override
+  void validateAddress(String address) {
+    if (default_ != "RON") {
+      super.validateAddress(address);
+      return;
+    }
+
+    super.validateAddress(roninAddrToEth(address));
+  }
+
+  @override
+  Future<Map> fromMnemonic(String mnemonic) async {
+    if (default_ != "RON") return await super.fromMnemonic(mnemonic);
+
+    final mnemonicDetails = await super.fromMnemonic(mnemonic);
+    return {
+      ...mnemonicDetails,
+      'address': ethAddrToRonin(mnemonicDetails['address']),
+    };
   }
 
   @override
@@ -219,34 +240,13 @@ class EthContractCoin extends EthereumCoin {
 
   @override
   Future<double> getTransactionFee(String amount, String to) async {
-    final client = Web3Client(
-      rpc,
-      Client(),
-    );
+    await fillParameter(amount, to);
 
     final response = await fromMnemonic(pref.get(currentMmenomicKey));
 
     final sendingAddress = EthereumAddress.fromHex(
       response['address'],
     );
-
-    ContractAbi contrAbi;
-    if (tokenType == EthTokenType.ERC20) {
-      contrAbi = ContractAbi.fromJson(
-        erc20Abi,
-        '',
-      );
-    } else if (tokenType == EthTokenType.ERC721) {
-      contrAbi = ContractAbi.fromJson(
-        erc721Abi,
-        '',
-      );
-    } else if (tokenType == EthTokenType.ERC1155) {
-      contrAbi = ContractAbi.fromJson(
-        erc1155Abi,
-        '',
-      );
-    }
 
     final contract = DeployedContract(
       contrAbi,
@@ -256,33 +256,8 @@ class EthContractCoin extends EthereumCoin {
     final transfer = tokenType == EthTokenType.ERC20
         ? contract.function('transfer')
         : contract.findFunctionsByName('safeTransferFrom').toList()[0];
-    List _parameters;
-    if (tokenType == EthTokenType.ERC20) {
-      ContractFunction decimalsFunction = contract.function('decimals');
-      BigInt decimals = (await client
-              .call(contract: contract, function: decimalsFunction, params: []))
-          .first;
-      _parameters = [
-        EthereumAddress.fromHex(to),
-        BigInt.from(
-          double.parse(amount) * pow(10, decimals.toInt()),
-        )
-      ];
-    } else if (tokenType == EthTokenType.ERC721) {
-      _parameters = [sendingAddress, EthereumAddress.fromHex(to), tokenId];
-    } else if (tokenType == EthTokenType.ERC1155) {
-      _parameters = [
-        sendingAddress,
-        EthereumAddress.fromHex(to),
-        tokenId,
-        BigInt.from(
-          double.parse(amount),
-        ),
-        Uint8List(1)
-      ];
-    }
 
-    Uint8List contractData = transfer.encodeCall(_parameters);
+    Uint8List contractData = transfer.encodeCall(parameters_);
 
     final transactionFee = await getEtherTransactionFee(
       rpc,

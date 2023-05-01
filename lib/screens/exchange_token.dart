@@ -273,13 +273,13 @@ class _ExchangeTokenState extends State<ExchangeToken>
 
                             try {
                               tokenList = await get1InchUrlList(
-                                blockChainData['chainId'],
+                                blockChainData.chainId,
                               );
 
                               if (tokenList[nativeTokenLCase] == null) return;
 
-                              network = blockChainData['name'];
-                              networkImage = blockChainData['image'];
+                              network = blockChainData.name;
+                              networkImage = blockChainData.image;
                               selectedItemPay =
                                   selectedItemGet = tokenList[nativeTokenLCase];
                               final Map networkDetails =

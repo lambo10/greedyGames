@@ -105,10 +105,9 @@ class BitcoinCoin extends Coin {
 
   @override
   Future<double> getBalance(bool skipNetworkRequest) async {
-    final sochainType = _abrFromNetwork(POSNetwork);
     final address = await address_();
 
-    final key = '${sochainType}AddressBalance$address';
+    final key = '${symbol}AddressBalance$address';
     final storedBalance = pref.get(key);
 
     double savedBalance = 0;
@@ -121,11 +120,11 @@ class BitcoinCoin extends Coin {
 
     try {
       double balance = 0.0;
-      if (sochainType == 'BCH') {
+      if (symbol == 'BCH') {
         final addressDetails = await bitbox.Address.details(address);
         balance = addressDetails['balance'];
       } else {
-        final url = '${sochainApi}get_address_balance/$sochainType/$address';
+        final url = '${sochainApi}get_address_balance/$symbol/$address';
         final response = await get(Uri.parse(url));
         final data = response.body;
         balance = double.parse(jsonDecode(data)['data']['confirmed_balance']);
@@ -243,7 +242,7 @@ class BitcoinCoin extends Coin {
     final bitcoinDetails = await fromMnemonic(pref.get(currentMmenomicKey));
     NetworkType bitcoinNetworkType = posDetails['POSNetwork'];
     final url =
-        "${sochainApi}get_tx_unspent/${_abrFromNetwork(bitcoinNetworkType)}/${bitcoinDetails['address']}";
+        "${sochainApi}get_tx_unspent/$symbol/${bitcoinDetails['address']}";
     final request = await http.get(Uri.parse(url));
 
     if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
@@ -251,10 +250,6 @@ class BitcoinCoin extends Coin {
     }
 
     return jsonDecode(request.body)['data']['txs'];
-  }
-
-  String _abrFromNetwork(NetworkType bitcoinNetworkType) {
-    return symbol;
   }
 
   Future<String> _sendBTCType(
@@ -271,7 +266,6 @@ class BitcoinCoin extends Coin {
     List<int> utxInputsValues = [];
 
     NetworkType bitcoinNetworkType = posDetails['POSNetwork'];
-    String sochainNetwork = _abrFromNetwork(bitcoinNetworkType);
 
     List userUnspentInput = await _getUnspentTXs(posDetails);
     final mmemomic = pref.get(currentMmenomicKey);
@@ -322,7 +316,7 @@ class BitcoinCoin extends Coin {
     String hexBuilt = txb.build().toHex();
 
     final sendTransaction = await http.post(
-      Uri.parse("${sochainApi}send_tx/$sochainNetwork"),
+      Uri.parse("${sochainApi}send_tx/$symbol"),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'tx_hex': hexBuilt}),
     );

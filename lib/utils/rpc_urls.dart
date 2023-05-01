@@ -938,14 +938,17 @@ showDialogWithMessage({
   BuildContext context,
   String message,
   Function onConfirm,
-}) {
-  AwesomeDialog(
+  Function onCancel,
+  Color btnOkColor,
+  Color btnCancelColor,
+}) async {
+  await AwesomeDialog(
     closeIcon: const Icon(
       Icons.close,
     ),
     buttonsTextStyle: const TextStyle(color: Colors.white),
     context: context,
-    btnOkColor: appBackgroundblue,
+    btnOkColor: btnOkColor ?? appBackgroundblue,
     dialogType: DialogType.INFO,
     buttonsBorderRadius: const BorderRadius.all(Radius.circular(10)),
     headerAnimationLoop: false,
@@ -953,8 +956,9 @@ showDialogWithMessage({
     title: AppLocalizations.of(context).info,
     desc: message,
     showCloseIcon: true,
-    btnOkText: AppLocalizations.of(context).ok,
+    btnCancelColor: btnCancelColor,
     btnOkOnPress: onConfirm ?? () {},
+    btnCancelOnPress: onCancel,
   ).show();
 }
 
@@ -1050,16 +1054,17 @@ addAddressBlockchain({
 }
 
 showBlockChainDialog({
-  Function onTap,
+  Function(EthereumCoin e) onTap,
   BuildContext context,
   int selectedChainId,
 }) {
   final ethEnabledBlockChain = <Widget>[];
-  List evmBlockchain = getEVMBlockchains();
+  List<EthereumCoin> evmBlockchain =
+      getAllBlockchains.whereType<EthereumCoin>().toList();
   for (int i = 0; i < evmBlockchain.length; i++) {
     bool isSelected = false;
     if (selectedChainId != null &&
-        evmBlockchain[i]['chainId'] == selectedChainId) {
+        evmBlockchain[i].chainId == selectedChainId) {
       isSelected = true;
     }
 
@@ -1069,8 +1074,8 @@ showBlockChainDialog({
           onTap(evmBlockchain[i]);
         },
         child: buildRow(
-          evmBlockchain[i]['image'],
-          evmBlockchain[i]['name'],
+          evmBlockchain[i].image,
+          evmBlockchain[i].name,
           isSelected: isSelected,
         ),
       ),

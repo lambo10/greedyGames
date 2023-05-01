@@ -176,11 +176,11 @@ class WcConnector {
                       showBlockChainDialog(
                           context: context,
                           onTap: (blockChainData) async {
-                            _chainId = blockChainData['chainId'];
+                            _chainId = blockChainData.chainId;
                             await setSigningDetails(_chainId);
                             wcClient.approveSession(
                               accounts: [_walletAddress],
-                              chainId: blockChainData['chainId'],
+                              chainId: blockChainData.chainId,
                             );
                             List sessions = [];
 

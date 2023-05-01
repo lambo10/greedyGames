@@ -220,5 +220,6 @@
   "tokenDetails": "Token Details",
   "token": "Token",
   "viewOnBlockExplorer": "View on block explorer",
-  "useBiometrics": "Use Biometrics"
+  "useBiometrics": "Use Biometrics",
+  "confirmClose": "Are you sure you want to close this screen?"
 }

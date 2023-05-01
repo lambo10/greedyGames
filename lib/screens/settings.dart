@@ -708,6 +708,9 @@ class _SettingsState extends State<Settings> {
                         ]),
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(

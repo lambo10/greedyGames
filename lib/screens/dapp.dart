@@ -456,8 +456,8 @@ class _DappState extends State<Dapp> {
                                       onTap: (blockChainData) async {
                                         await webViewTabs[currentTabIndex]
                                             .switchWeb3(
-                                          blockChainData['chainId'],
-                                          blockChainData['rpc'],
+                                          blockChainData.chainId,
+                                          blockChainData.rpc,
                                         );
                                         int count = 0;
                                         Navigator.popUntil(context, (route) {
