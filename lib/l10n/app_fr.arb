@@ -204,5 +204,6 @@
   "tokenDetails": "Détails du jeton",
   "token": "Jeton",
   "viewOnBlockExplorer": "Afficher sur l'explorateur de blocs",
-  "useBiometrics": "Utiliser la biométrie"
+  "useBiometrics": "Utiliser la biométrie",
+  "confirmClose": "Voulez-vous vraiment fermer cet écran ?"
 }

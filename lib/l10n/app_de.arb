@@ -241,5 +241,6 @@
   "tokenDetails": "Token-Details",
   "token": "Zeichen",
   "viewOnBlockExplorer": "Ansicht im Block-Explorer",
-  "useBiometrics": "Verwenden Sie Biometrie"
+  "useBiometrics": "Verwenden Sie Biometrie",
+  "confirmClose": "Möchten Sie diesen Bildschirm wirklich schließen?"
 }
