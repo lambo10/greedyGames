@@ -241,5 +241,6 @@
   "tokenDetails": "代币详情",
   "token": "代币",
   "viewOnBlockExplorer": "在区块浏览器上查看",
-  "useBiometrics": "使用生物识别技术"
+  "useBiometrics": "使用生物识别技术",
+  "confirmClose": "您确定要关闭此屏幕吗？"
 }
