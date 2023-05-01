@@ -174,7 +174,7 @@ class EthContractCoin extends EthereumCoin {
     super.validateAddress(roninAddrToEth(address));
   }
 
-  _isRonin() {
+  bool _isRonin() {
     return roninChainIds.contains(chainId);
   }
 
